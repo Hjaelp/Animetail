@@ -1,5 +1,6 @@
 package eu.kanade.presentation.entries.manga
 
+import ChapterTranslationAction
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
@@ -136,6 +137,9 @@ fun MangaScreen(
     onChapterSelected: (ChapterList.Item, Boolean, Boolean, Boolean) -> Unit,
     onAllChapterSelected: (Boolean) -> Unit,
     onInvertSelection: () -> Unit,
+    // translation
+    translationEnabled: Boolean = false,
+    onTranslateChapter: ((ChapterList.Item, ChapterTranslationAction) -> Unit)?,
 ) {
     val context = LocalContext.current
     val onCopyTagToClipboard: (tag: String) -> Unit = {
@@ -187,6 +191,8 @@ fun MangaScreen(
             onAllChapterSelected = onAllChapterSelected,
             onInvertSelection = onInvertSelection,
             onSettingsClicked = onSettingsClicked,
+            translationEnabled = translationEnabled,
+            onTranslateChapter = onTranslateChapter,
         )
     } else {
         MangaScreenLargeImpl(
@@ -226,6 +232,8 @@ fun MangaScreen(
             onAllChapterSelected = onAllChapterSelected,
             onInvertSelection = onInvertSelection,
             onSettingsClicked = onSettingsClicked,
+            translationEnabled = translationEnabled,
+            onTranslateChapter = onTranslateChapter,
         )
     }
 }
@@ -283,6 +291,9 @@ private fun MangaScreenSmallImpl(
     onChapterSelected: (ChapterList.Item, Boolean, Boolean, Boolean) -> Unit,
     onAllChapterSelected: (Boolean) -> Unit,
     onInvertSelection: () -> Unit,
+    // translation
+    onTranslateChapter: ((ChapterList.Item, ChapterTranslationAction) -> Unit)?,
+    translationEnabled: Boolean = false,
 ) {
     val chapterListState = rememberLazyListState()
 
@@ -479,7 +490,8 @@ private fun MangaScreenSmallImpl(
                         onChapterClicked = onChapterClicked,
                         onDownloadChapter = onDownloadChapter,
                         onChapterSelected = onChapterSelected,
-                        onChapterSwipe = onChapterSwipe,
+                        onChapterSwipe = onChapterSwipe, translationEnabled = translationEnabled,
+                        onTranslateChapter = onTranslateChapter,
                     )
                 }
             }
@@ -540,6 +552,9 @@ fun MangaScreenLargeImpl(
     onChapterSelected: (ChapterList.Item, Boolean, Boolean, Boolean) -> Unit,
     onAllChapterSelected: (Boolean) -> Unit,
     onInvertSelection: () -> Unit,
+    // translation
+    onTranslateChapter: ((ChapterList.Item, ChapterTranslationAction) -> Unit)?,
+    translationEnabled: Boolean = false,
 ) {
     val layoutDirection = LocalLayoutDirection.current
     val density = LocalDensity.current
@@ -731,7 +746,8 @@ fun MangaScreenLargeImpl(
                                 onChapterClicked = onChapterClicked,
                                 onDownloadChapter = onDownloadChapter,
                                 onChapterSelected = onChapterSelected,
-                                onChapterSwipe = onChapterSwipe,
+                                onChapterSwipe = onChapterSwipe, translationEnabled = translationEnabled,
+                                onTranslateChapter = onTranslateChapter,
                             )
                         }
                     }
@@ -794,6 +810,8 @@ private fun LazyListScope.sharedChapterItems(
     onDownloadChapter: ((List<ChapterList.Item>, ChapterDownloadAction) -> Unit)?,
     onChapterSelected: (ChapterList.Item, Boolean, Boolean, Boolean) -> Unit,
     onChapterSwipe: (ChapterList.Item, LibraryPreferences.ChapterSwipeAction) -> Unit,
+    translationEnabled: Boolean = false,
+    onTranslateChapter: ((ChapterList.Item, ChapterTranslationAction) -> Unit)?,
 ) {
     items(
         items = chapters,
@@ -859,6 +877,13 @@ private fun LazyListScope.sharedChapterItems(
                     onChapterSwipe = {
                         onChapterSwipe(item, it)
                     },
+                    onTranslateClick = if (onTranslateChapter != null) {
+                        { onTranslateChapter(item, it) }
+                    } else {
+                        null
+                    },
+                    translationStateProvider = { item.translationState },
+                    translationEnabled = translationEnabled,
                 )
             }
         }

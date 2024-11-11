@@ -51,7 +51,7 @@ fun ChapterDownloadIndicator(
     downloadStateProvider: () -> MangaDownload.State,
     downloadProgressProvider: () -> Int,
     onClick: (ChapterDownloadAction) -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier,translationEnabled: Boolean =false
 ) {
     when (val downloadState = downloadStateProvider()) {
         MangaDownload.State.NOT_DOWNLOADED -> NotDownloadedIndicator(
@@ -64,7 +64,8 @@ fun ChapterDownloadIndicator(
             modifier = modifier,
             downloadState = downloadState,
             downloadProgressProvider = downloadProgressProvider,
-            onClick = onClick,
+            onClick = onClick,  translationEnabled=translationEnabled
+
         )
         MangaDownload.State.DOWNLOADED -> DownloadedIndicator(
             enabled = enabled,
@@ -112,7 +113,7 @@ private fun DownloadingIndicator(
     downloadState: MangaDownload.State,
     downloadProgressProvider: () -> Int,
     onClick: (ChapterDownloadAction) -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier,translationEnabled: Boolean =false
 ) {
     var isMenuExpanded by remember { mutableStateOf(false) }
     Box(
@@ -128,6 +129,7 @@ private fun DownloadingIndicator(
     ) {
         val arrowColor: Color
         val strokeColor = MaterialTheme.colorScheme.onSurfaceVariant
+        var isTranslating = false;
         val downloadProgress = downloadProgressProvider()
         val indeterminate = downloadState == MangaDownload.State.QUEUE ||
             (downloadState == MangaDownload.State.DOWNLOADING && downloadProgress == 0)
@@ -146,20 +148,32 @@ private fun DownloadingIndicator(
                 animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec,
                 label = "progress",
             )
-            arrowColor = if (animatedProgress < 0.5f) {
-                strokeColor
-            } else {
-                MaterialTheme.colorScheme.background
+           isTranslating= translationEnabled && animatedProgress==1f
+            if (isTranslating) {
+                arrowColor = strokeColor
+                CircularProgressIndicator(
+                    modifier = IndicatorModifier,
+                    color = strokeColor,
+                    strokeWidth = IndicatorStrokeWidth,
+                    trackColor = Color.Transparent,
+                    strokeCap = StrokeCap.Butt,
+                )
+            }else{
+                arrowColor = if (animatedProgress < 0.5f) {
+                    strokeColor
+                } else {
+                    MaterialTheme.colorScheme.background
+                }
+                CircularProgressIndicator(
+                    progress = { animatedProgress },
+                    modifier = IndicatorModifier,
+                    color = strokeColor,
+                    strokeWidth = IndicatorSize / 2,
+                    trackColor = Color.Transparent,
+                    strokeCap = StrokeCap.Butt,
+                    gapSize = 0.dp,
+                )
             }
-            CircularProgressIndicator(
-                progress = { animatedProgress },
-                modifier = IndicatorModifier,
-                color = strokeColor,
-                strokeWidth = IndicatorSize / 2,
-                trackColor = Color.Transparent,
-                strokeCap = StrokeCap.Butt,
-                gapSize = 0.dp,
-            )
         }
         DropdownMenu(expanded = isMenuExpanded, onDismissRequest = { isMenuExpanded = false }) {
             DropdownMenuItem(
@@ -177,12 +191,21 @@ private fun DownloadingIndicator(
                 },
             )
         }
-        Icon(
-            imageVector = Icons.Outlined.ArrowDownward,
-            contentDescription = null,
-            modifier = ArrowModifier,
-            tint = arrowColor,
-        )
+        if (isTranslating) {
+            Icon(
+                painter = painterResource(R.drawable.ic_translate),
+                contentDescription = null,
+                modifier = ArrowModifier,
+                tint = arrowColor,
+            )
+        }else{
+            Icon(
+                imageVector = Icons.Outlined.ArrowDownward,
+                contentDescription = null,
+                modifier = ArrowModifier,
+                tint = arrowColor,
+            )
+        }
     }
 }
 

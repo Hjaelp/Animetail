@@ -3,6 +3,8 @@ package eu.kanade.tachiyomi.ui.reader.model
 import eu.kanade.tachiyomi.source.model.Page
 import net.lingala.zip4j.ZipFile
 import net.lingala.zip4j.model.FileHeader
+import eu.kanade.translation.TextTranslations
+
 import java.io.InputStream
 
 open class ReaderPage(
@@ -18,6 +20,8 @@ open class ReaderPage(
     /** Value to check if a page is can be doubled up, but can't because the next page is too wide */
     var isolatedPage: Boolean = false,
     // SY <--
+    var translations:List<TextTranslations>? = null,
+
     var stream: (() -> InputStream)? = null,
 
 ) : Page(index, url, imageUrl, null), ReaderItem {

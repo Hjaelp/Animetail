@@ -1,6 +1,8 @@
 package eu.kanade.tachiyomi.data.download.manga
 
 import android.content.Context
+import androidx.lifecycle.ProcessLifecycleOwner
+import androidx.lifecycle.lifecycleScope
 import aniyomi.util.DataSaver
 import aniyomi.util.DataSaver.Companion.getImage
 import com.hippo.unifile.UniFile
@@ -12,6 +14,7 @@ import eu.kanade.tachiyomi.data.download.manga.model.MangaDownload
 import eu.kanade.tachiyomi.data.library.manga.MangaLibraryUpdateNotifier
 import eu.kanade.tachiyomi.data.notification.NotificationHandler
 import eu.kanade.tachiyomi.source.UnmeteredSource
+import eu.kanade.translation.TranslationManager
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.util.storage.DiskUtil
@@ -34,6 +37,8 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.retryWhen
 import kotlinx.coroutines.flow.transformLatest
@@ -84,6 +89,7 @@ class MangaDownloader(
     private val chapterCache: ChapterCache = Injekt.get(),
     private val downloadPreferences: DownloadPreferences = Injekt.get(),
     private val xml: XML = Injekt.get(),
+    private val translationManager: TranslationManager = Injekt.get(),
     private val getCategories: GetMangaCategories = Injekt.get(),
     private val getMangaTracks: GetMangaTracks = Injekt.get(),
     // SY -->
@@ -121,6 +127,8 @@ class MangaDownloader(
     val isRunning: Boolean
         get() = downloaderJob?.isActive ?: false
 
+    private var translateOnDownload = false
+
     /**
      * Whether the downloader is paused
      */
@@ -131,6 +139,9 @@ class MangaDownloader(
         launchNow {
             val chapters = async { store.restore() }
             addAllToQueue(chapters.await())
+            downloadPreferences.translateOnDownload().changes().onEach {
+                translateOnDownload=it
+            }.launchIn(ProcessLifecycleOwner.get().lifecycleScope)
         }
     }
 
@@ -431,6 +442,7 @@ class MangaDownloader(
             DiskUtil.createNoMediaFile(tmpDir, context)
 
             download.status = MangaDownload.State.DOWNLOADED
+            if (translateOnDownload) scope.launchIO {  translationManager.translateChapter(chapterID =download.chapter.id ) }
         } catch (error: Throwable) {
             if (error is CancellationException) throw error
             // If the page list threw, it will resume here

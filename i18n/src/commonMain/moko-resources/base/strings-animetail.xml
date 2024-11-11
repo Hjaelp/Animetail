@@ -173,4 +173,7 @@
     <string name="sync_on_app_start">Sync on App Start</string>
     <string name="sync_on_app_resume">Sync on App Resume</string>
     <string name="sync_library">Sync library</string>
+    <!-- TachiyomiAT -->
+    <string name="pref_category_translation">Translations</string>
+    <string name="pref_translation_summary">Automatic Translations</string>
 </resources>

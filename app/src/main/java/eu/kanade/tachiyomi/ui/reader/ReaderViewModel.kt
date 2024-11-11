@@ -8,6 +8,7 @@ import androidx.compose.runtime.Immutable
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import eu.kanade.translation.TranslationManager
 import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.entries.manga.interactor.SetMangaViewerFlags
 import eu.kanade.domain.entries.manga.model.readerOrientation
@@ -108,6 +109,7 @@ class ReaderViewModel @JvmOverloads constructor(
     private val getManga: GetManga = Injekt.get(),
     private val getChaptersByMangaId: GetChaptersByMangaId = Injekt.get(),
     private val getNextChapters: GetNextChapters = Injekt.get(),
+    private  val translationManager: TranslationManager = Injekt.get(),
     private val upsertHistory: UpsertMangaHistory = Injekt.get(),
     private val updateChapter: UpdateChapter = Injekt.get(),
     private val setMangaViewerFlags: SetMangaViewerFlags = Injekt.get(),
@@ -298,7 +300,8 @@ class ReaderViewModel @JvmOverloads constructor(
 
                     val context = Injekt.get<Application>()
                     val source = sourceManager.getOrStub(manga.source)
-                    loader = ChapterLoader(context, downloadManager, downloadProvider, manga, source)
+                    loader = ChapterLoader(context, downloadManager, downloadProvider, manga, source ,translationManager=translationManager,
+                        downloadPreferences=downloadPreferences)
 
                     loadChapter(
                         loader!!,

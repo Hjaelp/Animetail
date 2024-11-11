@@ -744,6 +744,7 @@
     <string name="manga_interval_expected_update_soon">Soon</string>
     <string name="manga_interval_custom_amount">Custom update frequency:</string>
     <string name="chapter_downloading_progress">Downloading (%1$d/%2$d)</string>
+    <string name="chapter_error">Error</string>
     <string name="show_title">Source title</string>
     <string name="show_chapter_number">Chapter number</string>
     <string name="sort_by_source">By source</string>

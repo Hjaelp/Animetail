@@ -12,6 +12,12 @@ class ReaderPreferences(
     private val preferenceStore: PreferenceStore,
 ) {
 
+    fun showTranslations() = preferenceStore.getBoolean("show_translations", true)
+    fun translationOffsetX() = preferenceStore.getInt("translation_offset_x", 0)
+    fun translationOffsetY() = preferenceStore.getInt("translation_offset_y", 0)
+    fun translationOffsetWidth() = preferenceStore.getInt("translation_offset_width", 0)
+    fun translationOffsetHeight() = preferenceStore.getInt("translation_offset_height", 0)
+
     // region General
 
     // SY -->

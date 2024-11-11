@@ -17,6 +17,7 @@ interface MangaSourceManager {
 
     fun getOrStub(sourceKey: Long): MangaSource
 
+
     fun getOnlineSources(): List<HttpSource>
 
     fun getCatalogueSources(): List<CatalogueSource>

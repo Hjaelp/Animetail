@@ -3,9 +3,15 @@ package eu.kanade.tachiyomi.ui.reader.viewer.webtoon
 import android.content.res.Resources
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.FrameLayout
+import androidx.compose.ui.text.font.FontFamily
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.core.view.updateMargins
@@ -17,6 +23,7 @@ import eu.kanade.tachiyomi.ui.reader.viewer.ReaderPageImageView
 import eu.kanade.tachiyomi.ui.reader.viewer.ReaderProgressIndicator
 import eu.kanade.tachiyomi.ui.webview.WebViewActivity
 import eu.kanade.tachiyomi.util.system.dpToPx
+import eu.kanade.translation.WebtoonTranslationsView
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.collectLatest
@@ -41,7 +48,12 @@ import tachiyomi.core.common.util.system.logcat
 class WebtoonPageHolder(
     private val frame: ReaderPageImageView,
     viewer: WebtoonViewer,
+    private val font: FontFamily,
+    private val readerPreferences: ReaderPreferences = Injekt.get(),
 ) : WebtoonBaseHolder(frame, viewer) {
+
+    private var showTranslations = true
+    private var translationsView: WebtoonTranslationsView? = null
 
     /**
      * Loading progress bar to indicate the current progress.
@@ -83,6 +95,16 @@ class WebtoonPageHolder(
         frame.onImageLoaded = { onImageDecoded() }
         frame.onImageLoadError = { setError() }
         frame.onScaleChanged = { viewer.activity.hideMenu() }
+        showTranslations = readerPreferences.showTranslations().get()
+        readerPreferences.showTranslations().changes().onEach {
+            showTranslations = it
+            if (it) {
+                translationsView?.show()
+            } else {
+                translationsView?.hide()
+            }
+
+        }.launchIn(scope)
     }
 
     /**
@@ -93,6 +115,7 @@ class WebtoonPageHolder(
         loadJob?.cancel()
         loadJob = scope.launch { loadPageAndProcessStatus() }
         refreshLayoutParams()
+
     }
 
     private fun refreshLayoutParams() {
@@ -144,7 +167,13 @@ class WebtoonPageHolder(
                             progressIndicator.setProgress(value)
                         }
                     }
-                    Page.State.READY -> setImage()
+
+                    Page.State.READY -> {
+                        setImage()
+                        addTranslationsView()
+
+                    }
+
                     Page.State.ERROR -> setError()
                 }
             }
@@ -244,6 +273,7 @@ class WebtoonPageHolder(
     private fun setError() {
         progressContainer.isVisible = false
         initErrorLayout()
+        translationsView?.hide()
     }
 
     /**
@@ -252,6 +282,16 @@ class WebtoonPageHolder(
     private fun onImageDecoded() {
         progressContainer.isVisible = false
         removeErrorLayout()
+        translationsView?.show()
+
+    }
+
+    private fun addTranslationsView() {
+        if (page?.translations == null || page!!.translations!!.isEmpty()) return
+        frame.removeView(translationsView)
+        translationsView = WebtoonTranslationsView(context, null, 0, page!!.translations!![0], viewer.config.translationOffset, font)
+        if (!showTranslations) translationsView?.hide()
+        frame.addView(translationsView, MATCH_PARENT, MATCH_PARENT)
     }
 
     /**
@@ -276,10 +316,7 @@ class WebtoonPageHolder(
     private fun initErrorLayout(): ReaderErrorBinding {
         if (errorLayout == null) {
             errorLayout = ReaderErrorBinding.inflate(LayoutInflater.from(context), frame, true)
-            errorLayout?.root?.layoutParams = FrameLayout.LayoutParams(
-                MATCH_PARENT,
-                (parentHeight * 0.8).toInt(),
-            )
+            errorLayout?.root?.layoutParams = FrameLayout.LayoutParams(MATCH_PARENT, (parentHeight * 0.8).toInt())
             errorLayout?.actionRetry?.setOnClickListener {
                 page?.let { it.chapter.pageLoader?.retryPage(it) }
             }

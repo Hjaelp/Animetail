@@ -12,6 +12,10 @@ import eu.kanade.tachiyomi.ui.reader.model.ReaderChapter
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import mihon.core.archive.archiveReader
 import tachiyomi.domain.entries.manga.model.Manga
+import eu.kanade.translation.TextTranslations
+import eu.kanade.translation.TranslationManager
+import tachiyomi.core.common.i18n.stringResource
+import tachiyomi.i18n.MR
 import uy.kohesive.injekt.injectLazy
 
 /**
@@ -23,6 +27,7 @@ internal class DownloadPageLoader(
     private val source: MangaSource,
     private val downloadManager: MangaDownloadManager,
     private val downloadProvider: MangaDownloadProvider,
+    private val translationManager: TranslationManager,
 ) : PageLoader() {
 
     private val context: Application by injectLazy()
@@ -57,9 +62,33 @@ internal class DownloadPageLoader(
     }
 
     private fun getPagesFromDirectory(): List<ReaderPage> {
-        val pages = downloadManager.buildPageList(source, manga, chapter.chapter.toDomainChapter()!!)
-        return pages.map { page ->
-            ReaderPage(page.index, page.url, page.imageUrl) {
+        val dbChapter = chapter.chapter.toDomainChapter()!!
+        val chapterDir = downloadProvider.findChapterDir(
+            dbChapter.name,
+            dbChapter.scanlator,
+            manga.title,
+            source,
+        )
+        val files = chapterDir?.listFiles().orEmpty()
+            .filter { "image" in it.type.orEmpty() }.sortedBy { it.name }
+        if (files.isEmpty()) {
+            throw Exception(context.stringResource(MR.strings.page_list_empty_error))
+        }
+        val pageTranslations: Map<String, TextTranslations> = translationManager.getChapterTranslation(
+            chapter.chapter.name,
+            chapter.chapter.scanlator,
+            manga.title,
+            source,
+        )
+
+        val pages = files.mapIndexed { i, file ->
+            Page(i, uri = file.uri).apply {
+                status = Page.State.READY
+            }
+        }
+
+        return pages.mapIndexed { i, page ->
+            ReaderPage(page.index, page.url, page.imageUrl, translations = pageTranslations[files[i].name]?.let { listOf(it) }) {
                 context.contentResolver.openInputStream(page.uri ?: Uri.EMPTY)!!
             }.apply {
                 status = Page.State.READY

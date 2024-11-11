@@ -10,6 +10,7 @@ import data.History
 import data.Mangas
 import dataanime.Animehistory
 import dataanime.Animes
+import eu.kanade.translation.TranslationManager
 import eu.kanade.domain.track.anime.store.DelayedAnimeTrackingStore
 import eu.kanade.domain.track.manga.store.DelayedMangaTrackingStore
 import eu.kanade.tachiyomi.BuildConfig
@@ -58,6 +59,7 @@ import tachiyomi.source.local.image.manga.LocalMangaCoverManager
 import tachiyomi.source.local.io.anime.LocalAnimeSourceFileSystem
 import tachiyomi.source.local.io.manga.LocalMangaSourceFileSystem
 import uy.kohesive.injekt.api.InjektModule
+import eu.kanade.translation.TranslationProvider
 import uy.kohesive.injekt.api.InjektRegistrar
 import uy.kohesive.injekt.api.addSingleton
 import uy.kohesive.injekt.api.addSingletonFactory
@@ -216,6 +218,10 @@ class AppModule(val app: Application) : InjektModule {
         addSingletonFactory { LocalAnimeCoverManager(app, get()) }
 
         addSingletonFactory { StorageManager(app, get()) }
+
+        //TachiyomiAT
+        addSingletonFactory { TranslationManager(app) }
+        addSingletonFactory {  TranslationProvider(app) }
 
         addSingletonFactory { ExternalIntents() }
 
