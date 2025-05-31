@@ -2,4 +2,5 @@
 <resources>
     <item name="reader_pager" type="id"/>
     <item name="castMiniController" type="id"/>
+    <item name="auto_focus" type="id" />
 </resources>

@@ -1,5 +1,6 @@
 package eu.kanade.presentation.entries.anime.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -33,8 +34,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawOutline
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -72,6 +77,11 @@ fun AnimeEpisodeListItem(
     // <-- AM (FILE_SIZE)
     modifier: Modifier = Modifier,
 ) {
+    val context = LocalContext.current
+    val isAndroidTV = remember {
+        context.packageManager.hasSystemFeature("android.software.leanback")
+    }
+
     val start = getSwipeAction(
         action = episodeSwipeStartAction,
         seen = seen,
@@ -88,6 +98,7 @@ fun AnimeEpisodeListItem(
         background = MaterialTheme.colorScheme.primaryContainer,
         onSwipe = { onEpisodeSwipe(episodeSwipeEndAction) },
     )
+    val tvSelectionColor = Color(0xFF2196F3)
 
     SwipeableActionsBox(
         modifier = Modifier.clipToBounds(),
@@ -97,13 +108,36 @@ fun AnimeEpisodeListItem(
         backgroundUntilSwipeThreshold = MaterialTheme.colorScheme.surfaceContainerLowest,
     ) {
         Row(
-            modifier = modifier
-                .selectedBackground(selected)
-                .combinedClickable(
-                    onClick = onClick,
-                    onLongClick = onLongClick,
-                )
-                .padding(start = 16.dp, top = 12.dp, end = 8.dp, bottom = 12.dp),
+            modifier = if (isAndroidTV && selected) {
+                modifier
+                    .selectedBackground(selected)
+                    .background(tvSelectionColor.copy(alpha = 0.15f))
+                    .drawWithCache {
+                        val outline = androidx.compose.foundation.shape.RoundedCornerShape(4.dp)
+                            .createOutline(size, layoutDirection, this)
+                        onDrawWithContent {
+                            drawContent()
+                            drawOutline(
+                                outline = outline,
+                                color = tvSelectionColor,
+                                style = Stroke(width = 6f),
+                            )
+                        }
+                    }
+                    .combinedClickable(
+                        onClick = onClick,
+                        onLongClick = onLongClick,
+                    )
+                    .padding(start = 16.dp, top = 12.dp, end = 8.dp, bottom = 12.dp)
+            } else {
+                modifier
+                    .selectedBackground(selected)
+                    .combinedClickable(
+                        onClick = onClick,
+                        onLongClick = onLongClick,
+                    )
+                    .padding(start = 16.dp, top = 12.dp, end = 8.dp, bottom = 12.dp)
+            },
         ) {
             Column(
                 modifier = Modifier.weight(1f),
@@ -139,7 +173,11 @@ fun AnimeEpisodeListItem(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         onTextLayout = { textHeight = it.size.height },
-                        color = LocalContentColor.current.copy(alpha = if (seen) DISABLED_ALPHA else 1f),
+                        color = if (isAndroidTV && selected) {
+                            tvSelectionColor.copy(alpha = 0.9f) // Color más intenso para texto en TV
+                        } else {
+                            LocalContentColor.current.copy(alpha = if (seen) DISABLED_ALPHA else 1f)
+                        },
                     )
                 }
 
@@ -220,6 +258,7 @@ private fun getSwipeAction(
                 AnimeDownload.State.DOWNLOADED -> Icons.Outlined.Delete
             },
             background = background,
+            isUndo = downloadState != AnimeDownload.State.NOT_DOWNLOADED,
             onSwipe = onSwipe,
         )
         LibraryPreferences.EpisodeSwipeAction.Disabled -> null

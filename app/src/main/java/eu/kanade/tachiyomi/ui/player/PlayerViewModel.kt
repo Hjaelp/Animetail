@@ -58,7 +58,6 @@ import eu.kanade.tachiyomi.animesource.online.AnimeHttpSource
 import eu.kanade.tachiyomi.data.database.models.anime.Episode
 import eu.kanade.tachiyomi.data.database.models.anime.isRecognizedNumber
 import eu.kanade.tachiyomi.data.database.models.anime.toDomainEpisode
-import eu.kanade.tachiyomi.data.database.models.manga.isRecognizedNumber
 import eu.kanade.tachiyomi.data.download.anime.AnimeDownloadManager
 import eu.kanade.tachiyomi.data.download.anime.model.AnimeDownload
 import eu.kanade.tachiyomi.data.saver.Image
@@ -105,7 +104,6 @@ import logcat.LogPriority
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.launchNonCancellable
-import tachiyomi.core.common.util.lang.toLong
 import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.core.common.util.system.logcat
@@ -594,11 +592,15 @@ class PlayerViewModel @JvmOverloads constructor(
 
     private val showStatusBar = playerPreferences.showSystemStatusBar().get()
     fun showControls() {
-        if (sheetShown.value != Sheets.None ||
-            panelShown.value != Panels.None ||
-            dialogShown.value != Dialogs.None
-        ) {
-            return
+        // Detectar si estamos en Android TVAdd commentMore actions
+        val isAndroidTV = activity.packageManager.hasSystemFeature("android.software.leanback")
+        if (!isAndroidTV) {
+            if (sheetShown.value != Sheets.None ||
+                panelShown.value != Panels.None ||
+                dialogShown.value != Dialogs.None
+            ) {
+                return
+            }
         }
         if (showStatusBar) {
             activity.windowInsetsController.show(WindowInsetsCompat.Type.statusBars())
@@ -1269,9 +1271,36 @@ class PlayerViewModel @JvmOverloads constructor(
 
     private fun initEpisodeList(anime: Anime): List<Episode> {
         val episodes = runBlocking { getEpisodesByAnimeId.await(anime.id) }
+        // Detectar si estamos en Android TVAdd commentMore actions
+        val isAndroidTV = activity.packageManager.hasSystemFeature("android.software.leanback")
 
+        // Para Android TV, usar siempre ordenamiento por número de episodio ascendente
+        // independientemente de la configuración del anime
+        val sortDescending = if (isAndroidTV) {
+            false // Ascendente para Android TV
+        } else {
+            anime.sortDescending()
+        }
+
+        // Para Android TV, usar siempre ordenamiento por número
+        val sorting = if (isAndroidTV) {
+            Anime.EPISODE_SORTING_NUMBER
+        } else {
+            anime.sorting
+        }
+
+        // Crear una copia temporal del anime con el ordenamiento para Android TV
+        val animeForSort = if (isAndroidTV) {
+            anime.copy(
+                episodeFlags = (anime.episodeFlags and Anime.EPISODE_SORTING_MASK.inv()) or
+                    Anime.EPISODE_SORTING_NUMBER or
+                    Anime.EPISODE_SORT_ASC,
+            )
+        } else {
+            anime
+        }
         return episodes
-            .sortedWith(getEpisodeSort(anime, sortDescending = false))
+            .sortedWith(getEpisodeSort(animeForSort, sortDescending))
             .run {
                 if (basePreferences.downloadedOnly().get()) {
                     filterDownloadedEpisodes(anime)

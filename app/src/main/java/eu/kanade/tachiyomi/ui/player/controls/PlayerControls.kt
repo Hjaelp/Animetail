@@ -421,11 +421,17 @@ fun PlayerControls(
                         end.linkTo(topRightControls.start)
                     },
                 ) {
+                    // Detectar si estamos en Android TVAdd commentMore actions
+                    val context = LocalContext.current
+                    val isAndroidTV = remember {
+                        context.packageManager.hasSystemFeature("android.software.leanback")
+                    }
                     TopLeftPlayerControls(
                         animeTitle = animeTitle,
                         mediaTitle = mediaTitle,
                         onTitleClick = { viewModel.showEpisodeListDialog() },
                         onBackClick = onBackPress,
+                        isAndroidTV = isAndroidTV,
                     )
                 }
                 // Top right controls

@@ -108,7 +108,13 @@ fun AnimeInfoBox(
     onCoverClick: () -> Unit,
     doSearch: (query: String, global: Boolean) -> Unit,
     modifier: Modifier = Modifier,
+    showTitle: Boolean = true,
 ) {
+    // Detectar si estamos en Android TVAdd commentMore actions
+    val context = LocalContext.current
+    val isAndroidTV = remember {
+        context.packageManager.hasSystemFeature("android.software.leanback")
+    }
     Box(modifier = modifier) {
         // Backdrop
         val backdropGradientColors = listOf(
@@ -144,6 +150,8 @@ fun AnimeInfoBox(
                     isStubSource = isStubSource,
                     onCoverClick = onCoverClick,
                     doSearch = doSearch,
+                    isAndroidTV = isAndroidTV,
+                    showTitle = showTitle,
                 )
             } else {
                 AnimeAndSourceTitlesLarge(
@@ -153,6 +161,8 @@ fun AnimeInfoBox(
                     isStubSource = isStubSource,
                     onCoverClick = onCoverClick,
                     doSearch = doSearch,
+                    isAndroidTV = isAndroidTV,
+                    showTitle = showTitle,
                 )
             }
         }
@@ -172,6 +182,7 @@ fun AnimeActionRow(
     onEditIntervalClicked: (() -> Unit)?,
     onEditCategory: (() -> Unit)?,
     modifier: Modifier = Modifier,
+    isAndroidTV: Boolean = false,
 ) {
     val defaultActionButtonColor = MaterialTheme.colorScheme.onSurface.copy(alpha = DISABLED_ALPHA)
 
@@ -341,6 +352,8 @@ private fun AnimeAndSourceTitlesLarge(
     isStubSource: Boolean,
     onCoverClick: () -> Unit,
     doSearch: (query: String, global: Boolean) -> Unit,
+    isAndroidTV: Boolean = false,
+    showTitle: Boolean = true,
 ) {
     Column(
         modifier = Modifier
@@ -367,6 +380,7 @@ private fun AnimeAndSourceTitlesLarge(
             isStubSource = isStubSource,
             doSearch = doSearch,
             textAlign = TextAlign.Center,
+            showTitle = showTitle,
         )
     }
 }
@@ -379,6 +393,8 @@ private fun AnimeAndSourceTitlesSmall(
     isStubSource: Boolean,
     onCoverClick: () -> Unit,
     doSearch: (query: String, global: Boolean) -> Unit,
+    isAndroidTV: Boolean = false,
+    showTitle: Boolean = true,
 ) {
     Row(
         modifier = Modifier
@@ -409,6 +425,7 @@ private fun AnimeAndSourceTitlesSmall(
                 sourceName = sourceName,
                 isStubSource = isStubSource,
                 doSearch = doSearch,
+                showTitle = showTitle,
             )
         }
     }
@@ -424,24 +441,32 @@ private fun ColumnScope.AnimeContentInfo(
     isStubSource: Boolean,
     doSearch: (query: String, global: Boolean) -> Unit,
     textAlign: TextAlign? = LocalTextStyle.current.textAlign,
+    showTitle: Boolean = true,
 ) {
     val context = LocalContext.current
-    Text(
-        text = title.ifBlank { stringResource(MR.strings.unknown_title) },
-        style = MaterialTheme.typography.titleLarge,
-        modifier = Modifier.clickableNoIndication(
-            onLongClick = {
-                if (title.isNotBlank()) {
-                    context.copyToClipboard(
-                        title,
-                        title,
-                    )
-                }
-            },
-            onClick = { if (title.isNotBlank()) doSearch(title, true) },
-        ),
-        textAlign = textAlign,
-    )
+    if (showTitle) {
+        SelectionContainer {
+            Text(
+                text = title.ifBlank { stringResource(MR.strings.unknown_title) },
+                style = MaterialTheme.typography.titleLarge,
+                textAlign = textAlign,
+                modifier = Modifier.clickableNoIndication(
+                    onLongClick = {
+                        if (title.isNotBlank()) {
+                            context.copyToClipboard(
+                                title,
+                                title,
+                            )
+                        }
+                    },
+                    onClick = { if (title.isNotBlank()) doSearch(title, true) },
+                ),
+
+            )
+        }
+    } else {
+        Spacer(modifier = Modifier.height(2.dp))
+    }
 
     Spacer(modifier = Modifier.height(2.dp))
 
@@ -661,10 +686,13 @@ private fun RowScope.AnimeActionButton(
     color: Color,
     onClick: () -> Unit,
     onLongClick: (() -> Unit)? = null,
+    modifier: Modifier = Modifier,
 ) {
     TextButton(
         onClick = onClick,
-        modifier = Modifier.weight(1f),
+        modifier = Modifier
+            .weight(1f)
+            .then(modifier),
         onLongClick = onLongClick,
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {

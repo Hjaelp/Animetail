@@ -5,6 +5,8 @@
     <!-- Android TV -->
    <uses-feature android:name="android.software.leanback" android:required="false" />
    <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
+    <uses-feature android:name="android.hardware.gamepad" android:required="false" />
+    <uses-feature android:name="android.hardware.microphone" android:required="false" />
 
    <!-- Internet -->
     <uses-permission android:name="android.permission.INTERNET" />
@@ -38,6 +40,7 @@
         tools:ignore="ProtectedPermissions" />
 
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+
 
     <!-- Remove permission from Firebase dependency -->
     <uses-permission
