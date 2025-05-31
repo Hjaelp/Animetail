@@ -6,13 +6,21 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.browse.InLibraryBadge
 import eu.kanade.presentation.library.components.AnimeComfortableGridItem
@@ -36,18 +44,44 @@ fun GlobalSearchCardRow(
         return
     }
 
+    // Detectar si estamos en Android TV
+    val context = LocalContext.current
+    val isAndroidTV = remember {
+        context.packageManager.hasSystemFeature("android.software.leanback")
+    }
+
     LazyRow(
         contentPadding = PaddingValues(MaterialTheme.padding.small),
         horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.extraSmall),
     ) {
-        items(titles) {
-            val title by getAnime(it)
+        itemsIndexed(titles) { index, anime ->
+            val title by getAnime(anime)
+            val focusRequester = remember { FocusRequester() }
+            var isFocused by remember { mutableStateOf(false) }
+
+            // Solicitar foco para el primer elemento en Android TV
+            if (isAndroidTV && index == 0) {
+                LaunchedEffect(Unit) {
+                    focusRequester.requestFocus()
+                }
+            }
+
             AnimeItem(
                 title = title.title,
                 cover = title.asAnimeCover(),
                 isFavorite = title.favorite,
                 onClick = { onClick(title) },
                 onLongClick = { onLongClick(title) },
+                isSelected = isFocused,
+                modifier = if (isAndroidTV) {
+                    Modifier
+                        .focusRequester(focusRequester)
+                        .onFocusChanged { focusState ->
+                            isFocused = focusState.isFocused
+                        }
+                } else {
+                    Modifier
+                }
             )
         }
     }
@@ -62,8 +96,9 @@ internal fun AnimeItem(
     onLongClick: () -> Unit,
     // KMK -->
     isSelected: Boolean = false,
+    modifier: Modifier = Modifier,
 ) {
-    Box(modifier = Modifier.width(96.dp)) {
+    Box(modifier = modifier.width(96.dp)) {
         AnimeComfortableGridItem(
             title = title,
             titleMaxLines = 3,

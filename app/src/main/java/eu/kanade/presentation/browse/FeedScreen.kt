@@ -28,6 +28,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.browse.anime.components.AnimeSourceIcon
@@ -325,7 +328,13 @@ fun RadioSelectorSearchable(
                 Modifier
                     .fillMaxWidth()
                     .height(48.dp)
-                    .clickable { onSelectOption(index) },
+                    .clickable { onSelectOption(index) }
+                    .focusRequester(FocusRequester())
+                    .onFocusChanged { focusState ->
+                        if (focusState.isFocused) {
+                            onSelectOption(index)
+                        }
+                    },
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 RadioButton(selected == index, onClick = null)

@@ -25,10 +25,14 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalConfiguration
@@ -181,8 +185,30 @@ data class BrowseAnimeSourceScreen(
                             .padding(horizontal = MaterialTheme.padding.small),
                         horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
                     ) {
+                        // Detectar si estamos en Android TV
+                        val isAndroidTV = remember {
+                            context.packageManager.hasSystemFeature("android.software.leanback")
+                        }
+
+                        // Focus requesters para Android TV
+                        val popularFocusRequester = remember { FocusRequester() }
+                        val latestFocusRequester = remember { FocusRequester() }
+                        val filterFocusRequester = remember { FocusRequester() }
+
+                        // Variables para rastrear el estado de foco
+                        var isPopularFocused by remember { mutableStateOf(false) }
+                        var isLatestFocused by remember { mutableStateOf(false) }
+                        var isFilterFocused by remember { mutableStateOf(false) }
+
+                        // Solicitar foco para el primer elemento en Android TV
+                        if (isAndroidTV) {
+                            LaunchedEffect(Unit) {
+                                popularFocusRequester.requestFocus()
+                            }
+                        }
+
                         FilterChip(
-                            selected = state.listing == Listing.Popular,
+                            selected = state.listing == Listing.Popular || isPopularFocused,
                             onClick = {
                                 screenModel.resetFilters()
                                 screenModel.setListing(Listing.Popular)
@@ -198,10 +224,23 @@ data class BrowseAnimeSourceScreen(
                             label = {
                                 Text(text = stringResource(MR.strings.popular))
                             },
+                            modifier = if (isAndroidTV) {
+                                Modifier
+                                    .focusRequester(popularFocusRequester)
+                                    .onFocusChanged { focusState ->
+                                        isPopularFocused = focusState.isFocused
+                                        if (focusState.isFocused) {
+                                            screenModel.resetFilters()
+                                            screenModel.setListing(Listing.Popular)
+                                        }
+                                    }
+                            } else {
+                                Modifier
+                            }
                         )
                         if ((screenModel.source as AnimeCatalogueSource).supportsLatest) {
                             FilterChip(
-                                selected = state.listing == Listing.Latest,
+                                selected = state.listing == Listing.Latest || isLatestFocused,
                                 onClick = {
                                     screenModel.resetFilters()
                                     screenModel.setListing(Listing.Latest)
@@ -217,13 +256,26 @@ data class BrowseAnimeSourceScreen(
                                 label = {
                                     Text(text = stringResource(MR.strings.latest))
                                 },
+                                modifier = if (isAndroidTV) {
+                                    Modifier
+                                        .focusRequester(latestFocusRequester)
+                                        .onFocusChanged { focusState ->
+                                            isLatestFocused = focusState.isFocused
+                                            if (focusState.isFocused) {
+                                                screenModel.resetFilters()
+                                                screenModel.setListing(Listing.Latest)
+                                            }
+                                        }
+                                } else {
+                                    Modifier
+                                }
                             )
                         }
                         if (state.filterable) {
                             FilterChip(
-                                selected = state.listing is Listing.Search &&
+                                selected = (state.listing is Listing.Search &&
                                     // KMK -->
-                                    (state.listing as Listing.Search).savedSearchId == null,
+                                    (state.listing as Listing.Search).savedSearchId == null) || isFilterFocused,
                                 // KMK <--
                                 onClick = screenModel::openFilterSheet,
                                 leadingIcon = {
@@ -245,13 +297,28 @@ data class BrowseAnimeSourceScreen(
                                     )
                                     // SY <--
                                 },
+                                modifier = if (isAndroidTV) {
+                                    Modifier
+                                        .focusRequester(filterFocusRequester)
+                                        .onFocusChanged { focusState ->
+                                            isFilterFocused = focusState.isFocused
+                                            if (focusState.isFocused && !state.filters.isNotEmpty()) {
+                                                screenModel.openFilterSheet()
+                                            }
+                                        }
+                                } else {
+                                    Modifier
+                                }
                             )
                         }
                         // KMK -->
                         state.savedSearches.forEach { savedSearch ->
+                            var isSavedSearchFocused by remember { mutableStateOf(false) }
+                            val savedSearchFocusRequester = remember { FocusRequester() }
+
                             FilterChip(
-                                selected = state.listing is Listing.Search &&
-                                    (state.listing as Listing.Search).savedSearchId == savedSearch.id,
+                                selected = (state.listing is Listing.Search &&
+                                    (state.listing as Listing.Search).savedSearchId == savedSearch.id) || isSavedSearchFocused,
                                 onClick = {
                                     screenModel.onSavedSearch(savedSearch) {
                                         context.toast(it)
@@ -262,6 +329,20 @@ data class BrowseAnimeSourceScreen(
                                         text = savedSearch.name,
                                     )
                                 },
+                                modifier = if (isAndroidTV) {
+                                    Modifier
+                                        .focusRequester(savedSearchFocusRequester)
+                                        .onFocusChanged { focusState ->
+                                            isSavedSearchFocused = focusState.isFocused
+                                            if (focusState.isFocused) {
+                                                screenModel.onSavedSearch(savedSearch) {
+                                                    context.toast(it)
+                                                }
+                                            }
+                                        }
+                                } else {
+                                    Modifier
+                                }
                             )
                         }
                         // KMK <--
