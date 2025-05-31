@@ -83,7 +83,7 @@ fun BrowseAnimeSourceComfortableGrid(
                         }
                 } else {
                     Modifier
-                }
+                },
             )
         }
 

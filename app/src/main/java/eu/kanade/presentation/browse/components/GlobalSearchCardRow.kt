@@ -81,7 +81,7 @@ fun GlobalSearchCardRow(
                         }
                 } else {
                     Modifier
-                }
+                },
             )
         }
     }

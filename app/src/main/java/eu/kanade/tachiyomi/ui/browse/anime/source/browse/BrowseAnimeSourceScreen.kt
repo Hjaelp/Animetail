@@ -236,7 +236,7 @@ data class BrowseAnimeSourceScreen(
                                     }
                             } else {
                                 Modifier
-                            }
+                            },
                         )
                         if ((screenModel.source as AnimeCatalogueSource).supportsLatest) {
                             FilterChip(
@@ -268,14 +268,17 @@ data class BrowseAnimeSourceScreen(
                                         }
                                 } else {
                                     Modifier
-                                }
+                                },
                             )
                         }
                         if (state.filterable) {
                             FilterChip(
-                                selected = (state.listing is Listing.Search &&
-                                    // KMK -->
-                                    (state.listing as Listing.Search).savedSearchId == null) || isFilterFocused,
+                                selected = (
+                                    state.listing is Listing.Search &&
+                                        // KMK -->
+                                        (state.listing as Listing.Search).savedSearchId == null
+                                    ) ||
+                                    isFilterFocused,
                                 // KMK <--
                                 onClick = screenModel::openFilterSheet,
                                 leadingIcon = {
@@ -308,7 +311,7 @@ data class BrowseAnimeSourceScreen(
                                         }
                                 } else {
                                     Modifier
-                                }
+                                },
                             )
                         }
                         // KMK -->
@@ -317,8 +320,11 @@ data class BrowseAnimeSourceScreen(
                             val savedSearchFocusRequester = remember { FocusRequester() }
 
                             FilterChip(
-                                selected = (state.listing is Listing.Search &&
-                                    (state.listing as Listing.Search).savedSearchId == savedSearch.id) || isSavedSearchFocused,
+                                selected = (
+                                    state.listing is Listing.Search &&
+                                        (state.listing as Listing.Search).savedSearchId == savedSearch.id
+                                    ) ||
+                                    isSavedSearchFocused,
                                 onClick = {
                                     screenModel.onSavedSearch(savedSearch) {
                                         context.toast(it)
@@ -342,7 +348,7 @@ data class BrowseAnimeSourceScreen(
                                         }
                                 } else {
                                     Modifier
-                                }
+                                },
                             )
                         }
                         // KMK <--
