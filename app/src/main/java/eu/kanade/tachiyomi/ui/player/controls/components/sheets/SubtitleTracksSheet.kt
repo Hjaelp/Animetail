@@ -18,6 +18,7 @@
 package eu.kanade.tachiyomi.ui.player.controls.components.sheets
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -34,8 +35,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import eu.kanade.tachiyomi.ui.player.PlayerViewModel.VideoTrack
@@ -55,6 +62,7 @@ fun SubtitlesSheet(
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+
     GenericTracksSheet(
         tracks = tracks,
         onDismissRequest = onDismissRequest,
@@ -87,11 +95,27 @@ fun SubtitlesSheet(
                 onClick = onAddSubtitle,
             )
         },
-        track = { track ->
+        track = { track, isAndroidTV, focusRequester ->
+            var isFocused by remember { mutableStateOf(false) }
+
             SubtitleTrackRow(
                 title = getTrackTitle(track),
                 selected = selectedTracks.indexOf(track.id),
                 onClick = { onSelect(track.id) },
+                modifier = if (isAndroidTV) {
+                    Modifier
+                        .focusRequester(focusRequester)
+                        .onFocusChanged { focusState ->
+                            isFocused = focusState.isFocused
+                            if (focusState.isFocused) {
+                                // Opcionalmente, puedes seleccionar automáticamente al recibir el foco
+                                // onSelect(track.id)
+                            }
+                        }
+                } else {
+                    Modifier
+                },
+                isFocused = isFocused
             )
         },
         footer = {
@@ -116,12 +140,14 @@ fun SubtitleTrackRow(
     selected: Int, // -1 unselected, otherwise return 0 and 1 for the selected indices
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    isFocused: Boolean = false,
 ) {
     Row(
         modifier = modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(start = MaterialTheme.padding.small, end = MaterialTheme.padding.medium),
+            .padding(start = MaterialTheme.padding.small, end = MaterialTheme.padding.medium)
+            .focusable(isFocused),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Checkbox(

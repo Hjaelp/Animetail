@@ -30,8 +30,14 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import eu.kanade.tachiyomi.ui.player.PlayerViewModel.VideoTrack
@@ -50,9 +56,13 @@ fun AudioTracksSheet(
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    // Encontrar el índice de la pista seleccionada para dar foco en Android TV
+    val selectedIndex = tracks.indexOfFirst { track -> track.id == selectedId }
+
     GenericTracksSheet(
         tracks = tracks,
         onDismissRequest = onDismissRequest,
+        selectedIndex = selectedIndex,
         header = {
             TrackSheetTitle(
                 title = stringResource(MR.strings.pref_player_audio),
@@ -74,11 +84,28 @@ fun AudioTracksSheet(
                 onClick = onAddAudioTrack,
             )
         },
-        track = {
+        track = { track, isAndroidTV, focusRequester ->
+            val isSelected = selectedId == track.id
+            var isFocused by remember { mutableStateOf(false) }
+
             AudioTrackRow(
-                title = getTrackTitle(it),
-                isSelected = selectedId == it.id,
-                onClick = { onSelect(it.id) },
+                title = getTrackTitle(track),
+                isSelected = isSelected,
+                onClick = { onSelect(track.id) },
+                modifier = if (isAndroidTV) {
+                    Modifier
+                        .focusRequester(focusRequester)
+                        .onFocusChanged { focusState ->
+                            isFocused = focusState.isFocused
+                            if (focusState.isFocused) {
+                                // Opcionalmente, puedes seleccionar automáticamente al recibir el foco
+                                // onSelect(track.id)
+                            }
+                        }
+                } else {
+                    Modifier
+                },
+                isFocused = isFocused
             )
         },
         modifier = modifier,
@@ -91,6 +118,7 @@ fun AudioTrackRow(
     isSelected: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    isFocused: Boolean = false,
 ) {
     Row(
         modifier = modifier

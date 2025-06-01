@@ -28,15 +28,20 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.player.components.PlayerSheet
 import eu.kanade.tachiyomi.ui.player.PlayerViewModel.VideoTrack
@@ -52,15 +57,36 @@ fun <T> GenericTracksSheet(
     modifier: Modifier = Modifier,
     dismissEvent: Boolean = false,
     header: @Composable () -> Unit = {},
-    track: @Composable (T) -> Unit = {},
+    track: @Composable (T, Boolean, FocusRequester) -> Unit = { _, _, _ -> },
     footer: @Composable () -> Unit = {},
+    selectedIndex: Int = -1,
 ) {
+    // Detectar si estamos en Android TV
+    val context = LocalContext.current
+    val isAndroidTV = remember {
+        context.packageManager.hasSystemFeature("android.software.leanback")
+    }
+
+    // Estado para la lista
+    val listState = rememberLazyListState()
+
     PlayerSheet(onDismissRequest, dismissEvent = dismissEvent) {
         Column(modifier) {
             header()
-            LazyColumn {
-                items(tracks) {
-                    track(it)
+            LazyColumn(
+                state = listState
+            ) {
+                itemsIndexed(tracks) { index, item ->
+                    val focusRequester = remember { FocusRequester() }
+
+                    // Si es Android TV, dar foco automático al elemento seleccionado o al primero
+                    if (isAndroidTV && (index == selectedIndex || (index == 0 && selectedIndex == -1))) {
+                        LaunchedEffect(Unit) {
+                            focusRequester.requestFocus()
+                        }
+                    }
+
+                    track(item, isAndroidTV, focusRequester)
                 }
                 item {
                     footer()

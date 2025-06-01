@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -31,10 +32,19 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -167,14 +177,50 @@ fun QualitySheetVideoContent(
     onClickVideo: (Int, Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    LazyColumn(modifier = modifier.fillMaxWidth()) {
+    // Detectar si estamos en Android TV
+    val context = LocalContext.current
+    val isAndroidTV = remember {
+        context.packageManager.hasSystemFeature("android.software.leanback")
+    }
+
+    // Estado para la lista
+    val listState = rememberLazyListState()
+
+    LazyColumn(
+        state = listState,
+        modifier = modifier.fillMaxWidth()
+    ) {
         itemsIndexed(videoList) { videoIdx, video ->
+            // Focus requester para Android TV
+            val focusRequester = remember { FocusRequester() }
+            var isFocused by remember { mutableStateOf(false) }
+
+            // Solicitar foco para el elemento seleccionado o el primero
+            if (isAndroidTV && (videoIdx == selectedVideoIndex || (videoIdx == 0 && selectedVideoIndex == -1))) {
+                LaunchedEffect(Unit) {
+                    focusRequester.requestFocus()
+                }
+            }
+
             VideoTrack(
                 video = video,
                 videoState = videoState[videoIdx],
-                selected = selectedVideoIndex == videoIdx,
+                selected = selectedVideoIndex == videoIdx || isFocused,
                 onClick = { onClickVideo(0, videoIdx) },
                 noHoster = true,
+                modifier = if (isAndroidTV) {
+                    Modifier
+                        .focusRequester(focusRequester)
+                        .onFocusChanged { focusState ->
+                            isFocused = focusState.isFocused
+                            if (focusState.isFocused) {
+                                // Opcionalmente, puedes seleccionar automáticamente al recibir el foco
+                                // onClickVideo(0, videoIdx)
+                            }
+                        }
+                } else {
+                    Modifier
+                }
             )
         }
     }
@@ -190,6 +236,12 @@ fun QualitySheetHosterContent(
     displayHosters: Pair<Boolean, Boolean>,
     modifier: Modifier = Modifier,
 ) {
+    // Detectar si estamos en Android TV
+    val context = LocalContext.current
+    val isAndroidTV = remember {
+        context.packageManager.hasSystemFeature("android.software.leanback")
+    }
+
     val validHosters = hosterState.withIndex().filter { (_, state) ->
         state is HosterState.Idle ||
             state is HosterState.Loading ||
@@ -202,13 +254,20 @@ fun QualitySheetHosterContent(
         state is HosterState.Ready && state.videoList.isEmpty()
     }
 
-    LazyColumn(modifier = modifier.fillMaxWidth()) {
+    // Estado para la lista
+    val listState = rememberLazyListState()
+
+    LazyColumn(
+        state = listState,
+        modifier = modifier.fillMaxWidth()
+    ) {
         hosterContent(
             hosters = validHosters,
             expandedState = expandedState,
             selectedVideoIndex = selectedVideoIndex,
             onClickHoster = onClickHoster,
             onClickVideo = onClickVideo,
+            isAndroidTV = isAndroidTV,
         )
 
         if (displayHosters.first) {
@@ -218,6 +277,7 @@ fun QualitySheetHosterContent(
                 selectedVideoIndex = selectedVideoIndex,
                 onClickHoster = onClickHoster,
                 onClickVideo = onClickVideo,
+                isAndroidTV = isAndroidTV,
             )
         }
 
@@ -228,6 +288,7 @@ fun QualitySheetHosterContent(
                 selectedVideoIndex = selectedVideoIndex,
                 onClickHoster = onClickHoster,
                 onClickVideo = onClickVideo,
+                isAndroidTV = isAndroidTV,
             )
         }
     }
@@ -239,16 +300,41 @@ internal fun LazyListScope.hosterContent(
     selectedVideoIndex: Pair<Int, Int>,
     onClickHoster: (Int) -> Unit,
     onClickVideo: (Int, Int) -> Unit,
+    isAndroidTV: Boolean,
 ) {
     hosters.forEach { (hosterIdx, hoster) ->
         val isExpanded = expandedState.getOrNull(hosterIdx) ?: false
 
         item {
+            // Focus requester para Android TV
+            val focusRequester = remember { FocusRequester() }
+            var isFocused by remember { mutableStateOf(false) }
+
+            // Solicitar foco para el elemento seleccionado o el primero
+            if (isAndroidTV && (hosterIdx == selectedVideoIndex.first || (hosterIdx == 0 && selectedVideoIndex.first == -1))) {
+                LaunchedEffect(Unit) {
+                    focusRequester.requestFocus()
+                }
+            }
+
             HosterTrack(
                 hoster = hoster,
-                selected = selectedVideoIndex.first == hosterIdx,
+                selected = selectedVideoIndex.first == hosterIdx || isFocused,
                 isExpanded = isExpanded,
                 onClick = { onClickHoster(hosterIdx) },
+                modifier = if (isAndroidTV) {
+                    Modifier
+                        .focusRequester(focusRequester)
+                        .onFocusChanged { focusState ->
+                            isFocused = focusState.isFocused
+                            if (focusState.isFocused) {
+                                // Opcionalmente, puedes seleccionar automáticamente al recibir el foco
+                                // onClickHoster(hosterIdx)
+                            }
+                        }
+                } else {
+                    Modifier
+                }
             )
 
             AnimatedVisibility(
@@ -351,17 +437,42 @@ fun VideoTrack(
     noHoster: Boolean,
     modifier: Modifier = Modifier,
 ) {
+    // Detectar si estamos en Android TV
+    val context = LocalContext.current
+    val isAndroidTV = remember {
+        context.packageManager.hasSystemFeature("android.software.leanback")
+    }
+
+    // Estado de foco para Android TV
+    var isFocused by remember { mutableStateOf(false) }
+    val focusRequester = remember { FocusRequester() }
+
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick),
+            .clickable(onClick = onClick)
+            .then(
+                if (isAndroidTV) {
+                    Modifier
+                        .focusRequester(focusRequester)
+                        .onFocusChanged { focusState ->
+                            isFocused = focusState.isFocused
+                            if (focusState.isFocused) {
+                                // Opcionalmente, puedes seleccionar automáticamente al recibir el foco
+                                // onClick()
+                            }
+                        }
+                } else {
+                    Modifier
+                }
+            ),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
     ) {
         if (noHoster) {
             VideoText(
                 video = video,
-                selected = selected,
+                selected = selected || isFocused,
                 noHoster = true,
                 modifier = Modifier.weight(1f),
             )
@@ -376,7 +487,7 @@ fun VideoTrack(
             )
             VideoText(
                 video = video,
-                selected = selected,
+                selected = selected || isFocused,
                 noHoster = false,
                 modifier = Modifier.weight(1f),
             )

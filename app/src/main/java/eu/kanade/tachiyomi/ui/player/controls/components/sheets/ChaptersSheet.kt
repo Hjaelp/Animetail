@@ -25,7 +25,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -45,20 +51,39 @@ fun ChaptersSheet(
     dismissSheet: Boolean,
     modifier: Modifier = Modifier,
 ) {
+    // Encontrar el índice del capítulo actual para dar foco en Android TV
+    val selectedIndex = chapters.indexOf(currentChapter)
+
     GenericTracksSheet(
         tracks = chapters,
+        selectedIndex = selectedIndex,
         header = {
             TrackSheetTitle(
                 title = stringResource(MR.strings.player_sheets_chapters_title),
                 modifier = modifier.padding(top = MaterialTheme.padding.small),
             )
         },
-        track = {
+        track = { chapter, isAndroidTV, focusRequester ->
+            var isFocused by remember { mutableStateOf(false) }
+
             ChapterTrack(
-                chapter = it,
-                index = chapters.indexOf(it),
-                selected = currentChapter == it,
-                onClick = { onClick(it) },
+                chapter = chapter,
+                index = chapters.indexOf(chapter),
+                selected = currentChapter == chapter || isFocused,
+                onClick = { onClick(chapter) },
+                modifier = if (isAndroidTV) {
+                    Modifier
+                        .focusRequester(focusRequester)
+                        .onFocusChanged { focusState ->
+                            isFocused = focusState.isFocused
+                            if (focusState.isFocused) {
+                                // Opcionalmente, puedes seleccionar automáticamente al recibir el foco
+                                // onClick(chapter)
+                            }
+                        }
+                } else {
+                    Modifier
+                }
             )
         },
         onDismissRequest = onDismissRequest,
