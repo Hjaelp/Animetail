@@ -62,7 +62,6 @@ fun SubtitlesSheet(
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-
     GenericTracksSheet(
         tracks = tracks,
         onDismissRequest = onDismissRequest,
@@ -115,7 +114,7 @@ fun SubtitlesSheet(
                 } else {
                     Modifier
                 },
-                isFocused = isFocused
+                isFocused = isFocused,
             )
         },
         footer = {

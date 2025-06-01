@@ -74,7 +74,7 @@ fun <T> GenericTracksSheet(
         Column(modifier) {
             header()
             LazyColumn(
-                state = listState
+                state = listState,
             ) {
                 itemsIndexed(tracks) { index, item ->
                     val focusRequester = remember { FocusRequester() }

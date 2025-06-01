@@ -83,7 +83,7 @@ fun ChaptersSheet(
                         }
                 } else {
                     Modifier
-                }
+                },
             )
         },
         onDismissRequest = onDismissRequest,

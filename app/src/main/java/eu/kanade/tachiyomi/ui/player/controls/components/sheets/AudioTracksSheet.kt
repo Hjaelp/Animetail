@@ -105,7 +105,7 @@ fun AudioTracksSheet(
                 } else {
                     Modifier
                 },
-                isFocused = isFocused
+                isFocused = isFocused,
             )
         },
         modifier = modifier,

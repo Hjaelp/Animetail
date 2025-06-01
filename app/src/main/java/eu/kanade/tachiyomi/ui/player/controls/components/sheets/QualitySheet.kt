@@ -188,7 +188,7 @@ fun QualitySheetVideoContent(
 
     LazyColumn(
         state = listState,
-        modifier = modifier.fillMaxWidth()
+        modifier = modifier.fillMaxWidth(),
     ) {
         itemsIndexed(videoList) { videoIdx, video ->
             // Focus requester para Android TV
@@ -220,7 +220,7 @@ fun QualitySheetVideoContent(
                         }
                 } else {
                     Modifier
-                }
+                },
             )
         }
     }
@@ -259,7 +259,7 @@ fun QualitySheetHosterContent(
 
     LazyColumn(
         state = listState,
-        modifier = modifier.fillMaxWidth()
+        modifier = modifier.fillMaxWidth(),
     ) {
         hosterContent(
             hosters = validHosters,
@@ -311,7 +311,9 @@ internal fun LazyListScope.hosterContent(
             var isFocused by remember { mutableStateOf(false) }
 
             // Solicitar foco para el elemento seleccionado o el primero
-            if (isAndroidTV && (hosterIdx == selectedVideoIndex.first || (hosterIdx == 0 && selectedVideoIndex.first == -1))) {
+            if (isAndroidTV &&
+                (hosterIdx == selectedVideoIndex.first || (hosterIdx == 0 && selectedVideoIndex.first == -1))
+            ) {
                 LaunchedEffect(Unit) {
                     focusRequester.requestFocus()
                 }
@@ -334,7 +336,7 @@ internal fun LazyListScope.hosterContent(
                         }
                 } else {
                     Modifier
-                }
+                },
             )
 
             AnimatedVisibility(
@@ -464,7 +466,7 @@ fun VideoTrack(
                         }
                 } else {
                     Modifier
-                }
+                },
             ),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
