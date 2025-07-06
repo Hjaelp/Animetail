@@ -888,9 +888,6 @@ class AnimeLibraryScreenModel(
                 }
             }
             AnimeLibraryGroup.BY_TAG -> {
-                val tags: List<String> = libraryAnime.flatMap { item ->
-                    item.libraryAnime.anime.genre?.distinct() ?: emptyList()
-                }
                 libraryAnime.flatMap { item ->
                     item.libraryAnime.anime.genre?.distinct()?.map { genre ->
                         Pair(genre, item)
