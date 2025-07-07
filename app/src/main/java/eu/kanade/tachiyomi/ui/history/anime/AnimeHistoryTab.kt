@@ -161,7 +161,7 @@ fun Screen.animeHistoryTab(
 
             LaunchedEffect(Unit) {
                 // AM (DISCORD) -->
-                DiscordRPCService.setAnimeScreen(context, DiscordScreen.HISTORY)
+                DiscordRPCService.setScreen(context, DiscordScreen.HISTORY)
                 // <-- AM (DISCORD)
                 screenModel.events.collectLatest { e ->
                     when (e) {

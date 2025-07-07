@@ -95,8 +95,7 @@ data object MoreTab : Tab {
         LaunchedEffect(Unit) {
             (context as? MainActivity)?.ready = true
             // AM (DISCORD) -->
-            DiscordRPCService.setAnimeScreen(context, DiscordScreen.MORE)
-            DiscordRPCService.setMangaScreen(context, DiscordScreen.MORE)
+            DiscordRPCService.setScreen(context, DiscordScreen.MORE)
             // <-- AM (DISCORD)
         }
     }

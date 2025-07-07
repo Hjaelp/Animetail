@@ -323,7 +323,7 @@ data object AnimeLibraryTab : Tab {
             if (!state.isLoading) {
                 (context as? MainActivity)?.ready = true
                 // AM (DISCORD) -->
-                DiscordRPCService.setAnimeScreen(context, DiscordScreen.LIBRARY)
+                DiscordRPCService.setScreen(context, DiscordScreen.LIBRARY)
                 // <-- AM (DISCORD)
             }
         }

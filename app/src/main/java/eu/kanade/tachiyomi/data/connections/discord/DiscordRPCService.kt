@@ -64,6 +64,7 @@ class DiscordRPCService : Service() {
             connectionsPreferences.enableDiscordRPC().set(false)
         }
     }
+
     override fun onDestroy() {
         NotificationReceiver.dismissNotification(this, Notifications.ID_DISCORD_RPC)
         rpc?.closeRPC() // Check for null before closing
@@ -100,7 +101,7 @@ class DiscordRPCService : Service() {
 
         fun start(context: Context) {
             handler.removeCallbacksAndMessages(null)
-            if (rpc == null && connectionsPreferences.enableDiscordRPC().get()) {
+            if (connectionsPreferences.enableDiscordRPC().get()) {
                 since = System.currentTimeMillis()
                 context.startService(Intent(context, DiscordRPCService::class.java))
             }
@@ -138,12 +139,29 @@ class DiscordRPCService : Service() {
         }
         private const val TAG = "DiscordRPCService"
 
+        /**
+         * Sets the appropriate screen (anime or manga) based on the last used screen context
+         */
+        internal suspend fun setScreen(context: Context, discordScreen: DiscordScreen) {
+            if (rpc == null) return
+            when (lastUsedScreen) {
+                DiscordScreen.VIDEO -> {
+                    setAnimeScreen(context, discordScreen)
+                }
+                DiscordScreen.MANGA -> {
+                    setMangaScreen(context, discordScreen)
+                }
+                else -> {
+                    setAnimeScreen(context, discordScreen)
+                }
+            }
+        }
+
         internal suspend fun setAnimeScreen(
             context: Context,
             discordScreen: DiscordScreen,
             playerData: PlayerData = PlayerData(),
         ) {
-            if (discordScreen != DiscordScreen.VIDEO) return
             lastUsedScreen = discordScreen // Update last used screen
 
             if (rpc == null) return

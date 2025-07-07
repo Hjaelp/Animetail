@@ -125,7 +125,7 @@ fun Screen.animeUpdatesTab(
 
             LaunchedEffect(Unit) {
                 // AM (DISCORD) -->
-                DiscordRPCService.setAnimeScreen(context, DiscordScreen.UPDATES)
+                DiscordRPCService.setScreen(context, DiscordScreen.UPDATES)
                 // <-- AM (DISCORD)
                 screenModel.events.collectLatest { event ->
                     when (event) {

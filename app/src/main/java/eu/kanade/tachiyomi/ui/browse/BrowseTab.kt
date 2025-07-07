@@ -158,8 +158,7 @@ data object BrowseTab : Tab {
         LaunchedEffect(Unit) {
             (context as? MainActivity)?.ready = true
             // AM (DISCORD) -->
-            DiscordRPCService.setAnimeScreen(context, DiscordScreen.BROWSE)
-            DiscordRPCService.setMangaScreen(context, DiscordScreen.BROWSE)
+            DiscordRPCService.setScreen(context, DiscordScreen.BROWSE)
             // <-- AM (DISCORD)
         }
     }
