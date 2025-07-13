@@ -479,10 +479,10 @@ class AnimeDownloader(
             val videoFile = tmpDir.createFile("$filename.tmp")!!
             try {
                 if (isTor(download.video!!)) {
-                        torrentDownload(download, tmpDir, filename)
-                    } else {
-                        ffmpegDownload(download, tmpDir, videoFile,filename)
-                    }
+                    torrentDownload(download, tmpDir, filename)
+                } else {
+                    ffmpegDownload(download, tmpDir, videoFile, filename)
+                }
             } catch (e: Exception) {
                 videoFile.delete()
                 throw e
