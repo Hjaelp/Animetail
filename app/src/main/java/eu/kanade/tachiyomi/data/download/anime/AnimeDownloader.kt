@@ -507,11 +507,11 @@ class AnimeDownloader(
         return (video.videoUrl?.startsWith("magnet") == true || video.videoUrl?.endsWith(".torrent") == true)
     }
 
-    private fun torrentDownload(
+    private suspend fun torrentDownload(
         download: AnimeDownload,
         tmpDir: UniFile,
         filename: String,
-    ): UniFile {
+    ) {
         val video = download.video!!
         TorrentServerService.start()
         TorrentServerService.wait(10)
@@ -527,7 +527,12 @@ class AnimeDownloader(
         }
         val torrentUrl = TorrentServerUtils.getTorrentPlayLink(currentTorrent, index)
         video.videoUrl = torrentUrl
-        return ffmpegDownload(download, tmpDir, filename)
+
+        // Crear el videoFile antes de llamar a ffmpegDownload
+        tmpDir.findFile("$filename.tmp")?.delete()
+        val videoFile = tmpDir.createFile("$filename.tmp")!!
+
+        return ffmpegDownload(download, tmpDir, videoFile, filename)
     }
 
     // ffmpeg is always on safe mode
