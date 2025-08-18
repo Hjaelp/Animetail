@@ -29,6 +29,7 @@ data class Manga(
     val ogDescription: String?,
     val ogGenre: List<String>?,
     val ogStatus: Long,
+    val ogSeriesName: String?,
     // SY <--
     val thumbnailUrl: String?,
     val updateStrategy: UpdateStrategy,
@@ -62,6 +63,9 @@ data class Manga(
 
     val status: Long
         get() = customMangaInfo?.status ?: ogStatus
+
+    val seriesName: String?
+        get() = customMangaInfo?.seriesName ?: ogSeriesName
 
     // SY <--
     val expectedNextUpdate: Instant?
@@ -153,6 +157,7 @@ data class Manga(
             ogDescription = null,
             ogGenre = null,
             ogStatus = 0L,
+            ogSeriesName = null,
             // SY <--
             thumbnailUrl = null,
             updateStrategy = UpdateStrategy.ALWAYS_UPDATE,

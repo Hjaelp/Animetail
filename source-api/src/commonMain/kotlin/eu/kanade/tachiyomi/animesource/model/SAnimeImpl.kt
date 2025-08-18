@@ -8,6 +8,8 @@ class SAnimeImpl : SAnime {
 
     override lateinit var title: String
 
+    override var seriesName: String? = null
+
     override var artist: String? = null
 
     override var author: String? = null

@@ -49,6 +49,7 @@ object MangaMapper {
         ogDescription = description,
         ogGenre = genre,
         ogStatus = status,
+        ogSeriesName = title,
         // SY <--
         thumbnailUrl = thumbnailUrl,
         updateStrategy = updateStrategy,

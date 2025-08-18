@@ -10,4 +10,5 @@ class AnimeDetails(
     val description: String? = null,
     val genre: List<String>? = null,
     val status: Int? = null,
+    val seriesName: String? = null,
 )

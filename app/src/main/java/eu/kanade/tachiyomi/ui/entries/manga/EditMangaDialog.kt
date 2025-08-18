@@ -72,6 +72,7 @@ fun EditMangaDialog(
         description: String?,
         tags: List<String>?,
         status: Long?,
+        seriesName: String?,
     ) -> Unit,
 ) {
     val scope = rememberCoroutineScope()
@@ -106,6 +107,7 @@ fun EditMangaDialog(
                                 else -> null
                             }
                         }?.toLong(),
+                        binding.seriesName.text.toString(),
                     )
                     onDismissRequest()
                 },
@@ -276,6 +278,11 @@ private fun onViewCreated(
                 R.string.description_hint,
                 manga.ogDescription?.takeIf { it.isNotBlank() }?.let { it.replace("\n", " ").chop(20) } ?: "",
             )
+
+        //if (manga.seriesName != manga.ogSeriesName) {
+            binding.seriesName.append(manga.seriesName.orEmpty())
+        //}
+        binding.seriesName.hint = context.getString(R.string.series_name_hint, manga.ogSeriesName ?: "")
     }
     binding.mangaGenresTags.clearFocus()
 
@@ -361,6 +368,7 @@ private fun resetInfo(manga: Manga, binding: EditMangaDialogBinding, scope: Coro
     binding.mangaAuthor.setText("")
     binding.mangaArtist.setText("")
     binding.mangaDescription.setText("")
+    binding.seriesName.setText(manga.ogTitle)
     resetTags(manga, binding, scope)
 }
 

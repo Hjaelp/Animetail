@@ -24,6 +24,7 @@ data class Anime(
     val coverLastModified: Long,
     val url: String,
     // SY -->
+    val ogSeriesName: String?,
     val ogTitle: String,
     val ogArtist: String?,
     val ogAuthor: String?,
@@ -57,6 +58,9 @@ data class Anime(
         get() = customAnimeInfo?.genre ?: ogGenre
     val status: Long
         get() = customAnimeInfo?.status ?: ogStatus
+
+    val seriesName: String?
+        get() = customAnimeInfo?.seriesName ?: ogSeriesName
 
     // SY <--
     val expectedNextUpdate: Instant?
@@ -170,6 +174,7 @@ data class Anime(
             ogDescription = null,
             ogGenre = null,
             ogStatus = 0L,
+            ogSeriesName = null,
             // SY <--
             thumbnailUrl = null,
             updateStrategy = AnimeUpdateStrategy.ALWAYS_UPDATE,

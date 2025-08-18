@@ -328,6 +328,7 @@ class AnimeScreenModel(
         description: String?,
         tags: List<String>?,
         status: Long?,
+        seriesName: String?,
     ) {
         val state = successState ?: return
         var anime = state.anime
@@ -343,6 +344,7 @@ class AnimeScreenModel(
                 ogDescription = description?.trimOrNull(),
                 ogGenre = tags?.nullIfEmpty(),
                 ogStatus = status ?: 0,
+                ogSeriesName = seriesName?.trimOrNull(),
                 lastUpdate = anime.lastUpdate + 1,
             )
             (sourceManager.get(LocalAnimeSource.ID) as LocalAnimeSource).updateAnimeInfo(
@@ -376,6 +378,7 @@ class AnimeScreenModel(
                     description?.trimOrNull(),
                     genre,
                     status.takeUnless { it == state.anime.ogStatus },
+                    seriesName?.trimOrNull(),
                 ),
             )
             anime = anime.copy(lastUpdate = anime.lastUpdate + 1)

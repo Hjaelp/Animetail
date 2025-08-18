@@ -309,6 +309,7 @@ class MangaScreenModel(
         description: String?,
         tags: List<String>?,
         status: Long?,
+        seriesName: String?,
     ) {
         val state = successState ?: return
         var manga = state.manga
@@ -324,6 +325,7 @@ class MangaScreenModel(
                 ogDescription = description?.trimOrNull(),
                 ogGenre = tags?.nullIfEmpty(),
                 ogStatus = status ?: 0,
+                ogSeriesName = seriesName?.trimOrNull(),
                 lastUpdate = manga.lastUpdate + 1,
             )
             (sourceManager.get(LocalMangaSource.ID) as LocalMangaSource).updateMangaInfo(
@@ -357,6 +359,7 @@ class MangaScreenModel(
                     description?.trimOrNull(),
                     genre,
                     status.takeUnless { it == state.manga.ogStatus },
+                    seriesName?.trimOrNull(),
                 ),
             )
             manga = manga.copy(lastUpdate = manga.lastUpdate + 1)

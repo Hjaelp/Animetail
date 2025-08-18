@@ -8,4 +8,5 @@ data class CustomAnimeInfo(
     val description: String? = null,
     val genre: List<String>? = null,
     val status: Long? = null,
+    val seriesName: String? = null,
 )

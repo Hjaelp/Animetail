@@ -30,6 +30,7 @@
     <string name="artist_hint">Artist: %1$s</string>
     <string name="custom_entry_info">Custom entry info</string>
     <string name="reset_info">Reset Info</string>
+    <string name="series_name_hint">Series: %1$s</string>
     <!-- Preferences -->
     <string name="pref_show_downloaded_episode_file_size">Show downloaded episode file size</string>
     <!-- Subsections -->

@@ -20,6 +20,7 @@ data class MangaUpdate(
     val description: String? = null,
     val genre: List<String>? = null,
     val status: Long? = null,
+    val seriesName: String? = null,
     val thumbnailUrl: String? = null,
     val updateStrategy: UpdateStrategy? = null,
     val initialized: Boolean? = null,

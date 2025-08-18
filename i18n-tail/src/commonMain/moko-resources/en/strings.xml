@@ -18,6 +18,7 @@
   <string name="artist_hint">Artist: %1$s</string>
   <string name="custom_entry_info">Custom entry info</string>
   <string name="reset_info">Reset Info</string>
+    <string name="series_name_hint">Series: %1$s</string>
   <string name="pref_category_cast" comment="pref_category_cast Cast">Cast Settings</string>
   <string name="pref_enable_cast">Enable or disable Cast</string>
   <string name="action_cast">Send to Cast</string>

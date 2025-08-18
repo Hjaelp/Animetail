@@ -77,6 +77,7 @@ class CustomMangaRepositoryImpl(context: Context) : CustomMangaRepository {
         val description: String? = null,
         val genre: List<String>? = null,
         val status: Long? = null,
+        val seriesName: String? = null,
     ) {
 
         fun toManga() = CustomMangaInfo(
@@ -87,6 +88,7 @@ class CustomMangaRepositoryImpl(context: Context) : CustomMangaRepository {
             description = this@MangaJson.description,
             genre = this@MangaJson.genre,
             status = this@MangaJson.status?.takeUnless { it == 0L },
+            seriesName = this@MangaJson.seriesName,
         )
     }
 
@@ -99,6 +101,7 @@ class CustomMangaRepositoryImpl(context: Context) : CustomMangaRepository {
             description,
             genre,
             status,
+            seriesName,
         )
     }
 }
