@@ -1,10 +1,8 @@
 package eu.kanade.presentation.library.components
 
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.AlertDialog
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.unit.Dp
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Text
@@ -73,7 +71,7 @@ fun MergedAnimeDialog(
                         onClickContinueWatching = null,
                         searchQuery = null,
                         onGlobalSearchClicked = {},
-                        onMergedItemClick = {},
+                        onMergedItemClick = null,
                         itemModifier = itemModifier,
                     )
                 }
@@ -89,7 +87,7 @@ fun MergedAnimeDialog(
                         onClickContinueWatching = null,
                         searchQuery = null,
                         onGlobalSearchClicked = {},
-                        onMergedItemClick = {},
+                        onMergedItemClick = null,
                         itemModifier = itemModifier,
                     )
                 }
@@ -104,7 +102,7 @@ fun MergedAnimeDialog(
                         onClickContinueWatching = null,
                         searchQuery = null,
                         onGlobalSearchClicked = {},
-                        onMergedItemClick = {},
+                        onMergedItemClick = null,
                         itemModifier = itemModifier,
                     )
                 }

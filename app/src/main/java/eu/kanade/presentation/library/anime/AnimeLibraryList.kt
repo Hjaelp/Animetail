@@ -31,7 +31,7 @@ internal fun AnimeLibraryList(
     onClickContinueWatching: ((LibraryAnime) -> Unit)?,
     searchQuery: String?,
     onGlobalSearchClicked: () -> Unit,
-    onMergedItemClick: (List<LibraryAnime>) -> Unit,
+    onMergedItemClick: ((List<LibraryAnime>) -> Unit)?,
     itemModifier: Modifier = Modifier,
 ) {
     FastScrollLazyColumn(
@@ -74,7 +74,7 @@ internal fun AnimeLibraryList(
                 },
                 onLongClick = { onLongClick(libraryItem.libraryAnime) },
                 onClick = {
-                    if (libraryItem.isMerged) {
+                    if (libraryItem.isMerged && onMergedItemClick != null) {
                         onMergedItemClick(libraryItem.mergedAnime!!)
                     } else {
                         onClick(libraryItem.libraryAnime)
@@ -88,7 +88,7 @@ internal fun AnimeLibraryList(
                 entries = entries,
                 containerHeight = containerHeight,
                 isMerged = libraryItem.isMerged,
-                mergedItemCount = libraryItem.mergedAnime?.size ?: 0,
+                mergedItemCount = if (onMergedItemClick != null && libraryItem.mergedAnime != null) libraryItem.mergedAnime.size else 0,
                 onMergedItemClick = onMergedItemClick,
             )
         }

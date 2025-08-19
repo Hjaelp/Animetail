@@ -83,7 +83,7 @@ fun EntryCompactGridItem(
     coverBadgeStart: @Composable (RowScope.() -> Unit)? = null,
     coverBadgeEnd: @Composable (RowScope.() -> Unit)? = null,
     mergedItemBadge: @Composable (RowScope.() -> Unit)? = null,
-    onMergedItemClick: (List<LibraryAnime>) -> Unit,
+    onMergedItemClick: ((List<LibraryAnime>) -> Unit)?,
 ) {
     GridItemSelectable(
         modifier = modifier,
@@ -357,7 +357,7 @@ fun EntryListItem(
     onClickContinueViewing: (() -> Unit)? = null,
     entries: Int = 0,
     containerHeight: Int = 0,
-    onMergedItemClick: (List<LibraryAnime>) -> Unit,
+    onMergedItemClick: ((List<LibraryAnime>) -> Unit)?,
     isMerged: Boolean = false,
     mergedItemCount: Int = 0,
 ) {

@@ -29,7 +29,7 @@ internal fun MangaLibraryComfortableGrid(
     onClickContinueReading: ((LibraryManga) -> Unit)?,
     searchQuery: String?,
     onGlobalSearchClicked: () -> Unit,
-    onMergedItemClick: (List<LibraryManga>) -> Unit,
+    onMergedItemClick: ((List<LibraryManga>) -> Unit)?,
     itemModifier: Modifier = Modifier,
 ) {
     LazyLibraryGrid(
@@ -65,14 +65,14 @@ internal fun MangaLibraryComfortableGrid(
                         sourceLanguage = libraryItem.sourceLanguage,
                     )
                 },
-                mergedItemBadge = if (libraryItem.isMerged && (libraryItem.mergedManga?.size ?: 0) > 1) {
+                mergedItemBadge = if (onMergedItemClick != null && libraryItem.isMerged && (libraryItem.mergedManga?.size ?: 0) > 1) {
                     { MergedItemCountBadge(count = libraryItem.mergedManga!!.size) }
                 } else {
                     null
                 },
                 onLongClick = { onLongClick(libraryItem.libraryManga) },
                 onClick = {
-                    if (libraryItem.isMerged) {
+                    if (libraryItem.isMerged && onMergedItemClick != null) {
                         onMergedItemClick(libraryItem.mergedManga!!)
                     } else {
                         onClick(libraryItem.libraryManga)

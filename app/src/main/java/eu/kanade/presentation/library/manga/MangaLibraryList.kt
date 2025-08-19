@@ -33,7 +33,7 @@ internal fun MangaLibraryList(
     onClickContinueReading: ((LibraryManga) -> Unit)?,
     searchQuery: String?,
     onGlobalSearchClicked: () -> Unit,
-    onMergedItemClick: (List<LibraryManga>) -> Unit,
+    onMergedItemClick: ((List<LibraryManga>) -> Unit)?,
     itemModifier: Modifier = Modifier,
 ) {
     FastScrollLazyColumn(
@@ -79,7 +79,7 @@ internal fun MangaLibraryList(
                 },
                 onLongClick = { onLongClick(libraryItem.libraryManga) },
                 onClick = {
-                    if (libraryItem.isMerged) {
+                    if (libraryItem.isMerged && onMergedItemClick != null) {
                         onMergedItemClick(libraryItem.mergedManga!!)
                     } else {
                         onClick(libraryItem.libraryManga)

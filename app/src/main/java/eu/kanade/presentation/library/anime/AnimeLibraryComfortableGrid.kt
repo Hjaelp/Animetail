@@ -28,7 +28,7 @@ internal fun AnimeLibraryComfortableGrid(
     onClickContinueWatching: ((LibraryAnime) -> Unit)?,
     searchQuery: String?,
     onGlobalSearchClicked: () -> Unit,
-    onMergedItemClick: (List<LibraryAnime>) -> Unit,
+    onMergedItemClick: ((List<LibraryAnime>) -> Unit)?,
     itemModifier: Modifier = Modifier,
 ) {
     LazyLibraryGrid(
@@ -64,14 +64,14 @@ internal fun AnimeLibraryComfortableGrid(
                         sourceLanguage = libraryItem.sourceLanguage,
                     )
                 },
-                mergedItemBadge = if (libraryItem.isMerged && (libraryItem.mergedAnime?.size ?: 0) > 1) {
+                mergedItemBadge = if (onMergedItemClick != null && libraryItem.isMerged && (libraryItem.mergedAnime?.size ?: 0) > 1) {
                     { MergedItemCountBadge(count = libraryItem.mergedAnime!!.size) }
                 } else {
                     null
                 },
                 onLongClick = { onLongClick(libraryItem.libraryAnime) },
                 onClick = {
-                    if (libraryItem.isMerged) {
+                    if (libraryItem.isMerged && onMergedItemClick != null) {
                         onMergedItemClick(libraryItem.mergedAnime!!)
                     } else {
                         onClick(libraryItem.libraryAnime)
