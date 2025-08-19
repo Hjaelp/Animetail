@@ -72,6 +72,7 @@ private const val GRID_SELECTED_COVER_ALPHA = 0.76f
  */
 @Composable
 fun EntryCompactGridItem(
+    modifier: Modifier = Modifier,
     coverData: EntryCoverModel,
     onClick: () -> Unit,
     onLongClick: () -> Unit,
@@ -85,6 +86,7 @@ fun EntryCompactGridItem(
     onMergedItemClick: (List<LibraryAnime>) -> Unit,
 ) {
     GridItemSelectable(
+        modifier = modifier,
         isSelected = isSelected,
         onClick = onClick,
         onLongClick = onLongClick,
@@ -182,6 +184,7 @@ private fun BoxScope.CoverTextOverlay(
  */
 @Composable
 fun EntryComfortableGridItem(
+    modifier: Modifier = Modifier,
     isSelected: Boolean = false,
     title: String,
     onClick: () -> Unit,
@@ -196,6 +199,7 @@ fun EntryComfortableGridItem(
     onMergedItemClick: (List<LibraryAnime>) -> Unit,
 ) {
     GridItemSelectable(
+        modifier = modifier,
         isSelected = isSelected,
         onClick = onClick,
         onLongClick = onLongClick,
@@ -342,6 +346,7 @@ private fun Modifier.selectedOutline(
  */
 @Composable
 fun EntryListItem(
+    modifier: Modifier = Modifier,
     isSelected: Boolean = false,
     title: String,
     coverData: EntryCoverModel,
@@ -357,7 +362,7 @@ fun EntryListItem(
     mergedItemCount: Int = 0,
 ) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .selectedBackground(isSelected)
             .height(
                 when (entries) {

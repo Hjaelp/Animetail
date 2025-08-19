@@ -19,10 +19,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import android.content.res.Configuration
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.util.fastAll
 import androidx.compose.ui.util.fastAny
 import cafe.adriel.voyager.core.model.rememberScreenModel
@@ -352,6 +354,10 @@ data object MangaLibraryTab : Tab {
             launch { requestSettingsSheetEvent.receiveAsFlow().collectLatest { screenModel.showSettingsDialog() } }
         }
 
+        val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
+        val displayMode by remember { screenModel.getDisplayMode() }
+        val columns by remember(isLandscape) { screenModel.getColumnsPreferenceForCurrentOrientation(isLandscape) }
+
         mergedMangaDialogState.value?.let { mergedMangaList ->
             MergedMangaDialog(
                 mergedManga = mergedMangaList,
@@ -360,6 +366,8 @@ data object MangaLibraryTab : Tab {
                     navigator.push(MangaScreen(manga.manga.id))
                     mergedMangaDialogState.value = null // Dismiss dialog after navigation
                 },
+                displayMode = displayMode,
+                columns = columns,
             )
         }
     }

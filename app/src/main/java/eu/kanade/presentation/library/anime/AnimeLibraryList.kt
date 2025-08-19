@@ -32,6 +32,7 @@ internal fun AnimeLibraryList(
     searchQuery: String?,
     onGlobalSearchClicked: () -> Unit,
     onMergedItemClick: (List<LibraryAnime>) -> Unit,
+    itemModifier: Modifier = Modifier,
 ) {
     FastScrollLazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -53,6 +54,7 @@ internal fun AnimeLibraryList(
         ) { libraryItem ->
             val anime = libraryItem.libraryAnime.anime
             EntryListItem(
+                modifier = itemModifier,
                 isSelected = selection.fastAny { it.id == libraryItem.libraryAnime.id },
                 title = anime.title,
                 coverData = AnimeCover(

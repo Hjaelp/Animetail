@@ -19,7 +19,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import android.content.res.Configuration
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalUriHandler
@@ -339,6 +341,10 @@ data object AnimeLibraryTab : Tab {
             launch { requestSettingsSheetEvent.receiveAsFlow().collectLatest { screenModel.showSettingsDialog() } }
         }
 
+        val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
+        val displayMode by remember { screenModel.getDisplayMode() }
+        val columns by remember(isLandscape) { screenModel.getColumnsPreferenceForCurrentOrientation(isLandscape) }
+
         mergedAnimeDialogState.value?.let { mergedAnimeList ->
             MergedAnimeDialog(
                 mergedAnime = mergedAnimeList,
@@ -347,6 +353,8 @@ data object AnimeLibraryTab : Tab {
                     navigator.push(AnimeScreen(anime.anime.id))
                     mergedAnimeDialogState.value = null // Dismiss dialog after navigation
                 },
+                displayMode = displayMode,
+                columns = columns,
             )
         }
     }

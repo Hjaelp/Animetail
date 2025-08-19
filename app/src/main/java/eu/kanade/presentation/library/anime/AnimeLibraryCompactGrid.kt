@@ -35,6 +35,7 @@ fun AnimeLibraryCompactGrid(
     searchQuery: String?,
     onGlobalSearchClicked: () -> Unit,
     onMergedItemClick: (List<LibraryAnime>) -> Unit,
+    itemModifier: Modifier = Modifier,
 ) {
     LazyLibraryGrid(
         modifier = Modifier.fillMaxSize(),
@@ -49,6 +50,7 @@ fun AnimeLibraryCompactGrid(
         ) { libraryItem ->
             val anime = libraryItem.libraryAnime.anime
             EntryCompactGridItem(
+                modifier = itemModifier,
                 isSelected = selection.fastAny { it.id == libraryItem.libraryAnime.id },
                 title = anime.title.takeIf { showTitle },
                 coverData = AnimeCover(

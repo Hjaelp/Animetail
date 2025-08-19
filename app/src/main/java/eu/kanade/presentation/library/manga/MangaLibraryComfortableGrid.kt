@@ -30,6 +30,7 @@ internal fun MangaLibraryComfortableGrid(
     searchQuery: String?,
     onGlobalSearchClicked: () -> Unit,
     onMergedItemClick: (List<LibraryManga>) -> Unit,
+    itemModifier: Modifier = Modifier,
 ) {
     LazyLibraryGrid(
         modifier = Modifier.fillMaxSize(),
@@ -44,6 +45,7 @@ internal fun MangaLibraryComfortableGrid(
         ) { libraryItem ->
             val manga = libraryItem.libraryManga.manga
             EntryComfortableGridItem(
+                modifier = itemModifier,
                 isSelected = selection.fastAny { it.id == libraryItem.libraryManga.id },
                 title = manga.title,
                 coverData = MangaCover(
