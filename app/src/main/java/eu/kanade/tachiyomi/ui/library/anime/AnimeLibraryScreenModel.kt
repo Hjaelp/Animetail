@@ -1043,10 +1043,12 @@ private fun mergeLibraryItemsBySeriesName(items: List<AnimeLibraryItem>): List<A
         .flatMap { (_, groupedItems) ->
             if (groupedItems.size > 1) {
                 val mainItem = groupedItems.first()
+                val totalUnseenCount = groupedItems.sumOf { it.unseenCount }
                 listOf(
                     mainItem.copy(
                         isMerged = true,
                         mergedAnime = groupedItems.map { it.libraryAnime },
+                        unseenCount = totalUnseenCount,
                         libraryAnime = mainItem.libraryAnime.copy(
                             anime = mainItem.libraryAnime.anime.copy(
                                 ogTitle = mainItem.libraryAnime.anime.seriesName?:
