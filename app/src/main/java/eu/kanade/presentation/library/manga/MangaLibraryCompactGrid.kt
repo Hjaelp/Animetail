@@ -16,6 +16,8 @@ import eu.kanade.tachiyomi.ui.library.manga.MangaLibraryItem
 import tachiyomi.domain.entries.manga.model.MangaCover
 import tachiyomi.domain.library.manga.LibraryManga
 
+import eu.kanade.presentation.library.components.MergedItemCountBadge
+
 @Composable
 internal fun MangaLibraryCompactGrid(
     items: List<MangaLibraryItem>,
@@ -28,6 +30,7 @@ internal fun MangaLibraryCompactGrid(
     onClickContinueReading: ((LibraryManga) -> Unit)?,
     searchQuery: String?,
     onGlobalSearchClicked: () -> Unit,
+    onMergedItemClick: (List<LibraryManga>) -> Unit,
 ) {
     LazyLibraryGrid(
         modifier = Modifier.fillMaxSize(),
@@ -61,13 +64,25 @@ internal fun MangaLibraryCompactGrid(
                         sourceLanguage = libraryItem.sourceLanguage,
                     )
                 },
+                mergedItemBadge = if (libraryItem.isMerged && (libraryItem.mergedManga?.size ?: 0) > 1) {
+                    { MergedItemCountBadge(count = libraryItem.mergedManga!!.size) }
+                } else {
+                    null
+                },
                 onLongClick = { onLongClick(libraryItem.libraryManga) },
-                onClick = { onClick(libraryItem.libraryManga) },
+                onClick = {
+                    if (libraryItem.isMerged) {
+                        onMergedItemClick(libraryItem.mergedManga!!)
+                    } else {
+                        onClick(libraryItem.libraryManga)
+                    }
+                },
                 onClickContinueViewing = if (onClickContinueReading != null && libraryItem.unreadCount > 0) {
                     { onClickContinueReading(libraryItem.libraryManga) }
                 } else {
                     null
                 },
+                onMergedItemClick = {},
             )
         }
     }

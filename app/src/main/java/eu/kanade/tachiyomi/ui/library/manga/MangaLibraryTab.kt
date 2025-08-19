@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
@@ -35,6 +36,7 @@ import eu.kanade.presentation.category.components.ChangeCategoryDialog
 import eu.kanade.presentation.entries.components.LibraryBottomActionMenu
 import eu.kanade.presentation.library.DeleteLibraryEntryDialog
 import eu.kanade.presentation.library.components.LibraryToolbar
+import eu.kanade.presentation.library.components.MergedMangaDialog
 import eu.kanade.presentation.library.manga.MangaLibraryContent
 import eu.kanade.presentation.library.manga.MangaLibrarySettingsDialog
 import eu.kanade.presentation.more.onboarding.GETTING_STARTED_URL
@@ -105,6 +107,8 @@ data object MangaLibraryTab : Tab {
         val state by screenModel.state.collectAsState()
 
         val snackbarHostState = remember { SnackbarHostState() }
+
+        val mergedMangaDialogState = remember { mutableStateOf<List<LibraryManga>?>(null) }
 
         val onClickRefresh: (Category?) -> Boolean = { category ->
             // SY -->
@@ -277,7 +281,9 @@ data object MangaLibraryTab : Tab {
                                 it,
                             )
                         },
-                    ) { state.getLibraryItemsByPage(it) }
+                        getLibraryForPage = { state.getLibraryItemsByPage(it) },
+                        onMergedItemClick = { mergedMangaDialogState.value = it },
+                    )
                 }
             }
         }
@@ -344,6 +350,17 @@ data object MangaLibraryTab : Tab {
         LaunchedEffect(Unit) {
             launch { queryEvent.receiveAsFlow().collect(screenModel::search) }
             launch { requestSettingsSheetEvent.receiveAsFlow().collectLatest { screenModel.showSettingsDialog() } }
+        }
+
+        mergedMangaDialogState.value?.let { mergedMangaList ->
+            MergedMangaDialog(
+                mergedManga = mergedMangaList,
+                onDismissRequest = { mergedMangaDialogState.value = null },
+                onMangaClick = { manga ->
+                    navigator.push(MangaScreen(manga.manga.id))
+                    mergedMangaDialogState.value = null // Dismiss dialog after navigation
+                },
+            )
         }
     }
 

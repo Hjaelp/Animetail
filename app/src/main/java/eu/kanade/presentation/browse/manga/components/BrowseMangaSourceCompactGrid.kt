@@ -77,5 +77,6 @@ private fun BrowseMangaSourceCompactGridItem(
         },
         onLongClick = onLongClick,
         onClick = onClick,
+        onMergedItemClick = {}
     )
 }

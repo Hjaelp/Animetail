@@ -78,5 +78,6 @@ private fun BrowseMangaSourceComfortableGridItem(
         },
         onLongClick = onLongClick,
         onClick = onClick,
+        onMergedItemClick = {}
     )
 }

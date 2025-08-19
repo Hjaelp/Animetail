@@ -43,6 +43,7 @@ fun AnimeLibraryPager(
     onClickAnime: (LibraryAnime) -> Unit,
     onLongClickAnime: (LibraryAnime) -> Unit,
     onClickContinueWatching: ((LibraryAnime) -> Unit)?,
+    onMergedItemClick: (List<LibraryAnime>) -> Unit,
 ) {
     var containerHeight by remember { mutableIntStateOf(0) }
     HorizontalPager(
@@ -88,6 +89,7 @@ fun AnimeLibraryPager(
                     onLongClick = onLongClickAnime,
                     searchQuery = searchQuery,
                     onGlobalSearchClicked = onGlobalSearchClicked,
+                    onMergedItemClick = onMergedItemClick,
                 )
             }
             LibraryDisplayMode.CompactGrid, LibraryDisplayMode.CoverOnlyGrid -> {
@@ -102,6 +104,7 @@ fun AnimeLibraryPager(
                     onLongClick = onLongClickAnime,
                     searchQuery = searchQuery,
                     onGlobalSearchClicked = onGlobalSearchClicked,
+                    onMergedItemClick = onMergedItemClick,
                 )
             }
             LibraryDisplayMode.ComfortableGrid -> {
@@ -115,6 +118,7 @@ fun AnimeLibraryPager(
                     onClickContinueWatching = onClickContinueWatching,
                     searchQuery = searchQuery,
                     onGlobalSearchClicked = onGlobalSearchClicked,
+                    onMergedItemClick = onMergedItemClick,
                 )
             }
             // KMK -->
@@ -129,6 +133,7 @@ fun AnimeLibraryPager(
                     onClickContinueWatching = onClickContinueWatching,
                     searchQuery = searchQuery,
                     onGlobalSearchClicked = onGlobalSearchClicked,
+                    onMergedItemClick = onMergedItemClick,
                 )
             }
             // KMK <--

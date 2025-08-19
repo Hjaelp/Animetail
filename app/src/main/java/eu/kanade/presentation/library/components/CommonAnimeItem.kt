@@ -79,6 +79,7 @@ fun AnimeCompactGridItem(
     coverAlpha: Float = 1f,
     coverBadgeStart: @Composable (RowScope.() -> Unit)? = null,
     coverBadgeEnd: @Composable (RowScope.() -> Unit)? = null,
+    mergedItemBadge: @Composable (RowScope.() -> Unit)? = null,
 ) {
     GridItemSelectable(
         isSelected = isSelected,
@@ -184,6 +185,7 @@ fun AnimeComfortableGridItem(
     coverAlpha: Float = 1f,
     coverBadgeStart: (@Composable RowScope.() -> Unit)? = null,
     coverBadgeEnd: (@Composable RowScope.() -> Unit)? = null,
+    mergedItemBadge: @Composable (RowScope.() -> Unit)? = null,
     onClickContinueWatching: (() -> Unit)? = null,
 ) {
     GridItemSelectable(
@@ -202,7 +204,10 @@ fun AnimeComfortableGridItem(
                     )
                 },
                 badgesStart = coverBadgeStart,
-                badgesEnd = coverBadgeEnd,
+                badgesEnd = {
+                    coverBadgeEnd?.invoke(this)
+                    mergedItemBadge?.invoke(this)
+                },
                 content = {
                     if (onClickContinueWatching != null) {
                         ContinueWatchingButton(
@@ -338,6 +343,8 @@ fun AnimeListItem(
     onClick: () -> Unit,
     badge: @Composable (RowScope.() -> Unit),
     onClickContinueWatching: (() -> Unit)? = null,
+    isMerged: Boolean = false, // New parameter
+    mergedItemCount: Int = 0,
 ) {
     Row(
         modifier = Modifier
@@ -365,7 +372,12 @@ fun AnimeListItem(
             overflow = TextOverflow.Ellipsis,
             style = MaterialTheme.typography.bodyMedium,
         )
-        BadgeGroup(content = badge)
+        BadgeGroup(content = {
+            if (isMerged && mergedItemCount > 1) {
+                MergedItemCountBadge(count = mergedItemCount)
+            }
+            badge()
+        })
         if (onClickContinueWatching != null) {
             ContinueWatchingButton(
                 size = ContinueWatchingButtonSizeSmall,
@@ -401,4 +413,20 @@ private fun ContinueWatchingButton(
             )
         }
     }
+}
+
+@Composable
+internal fun MergedItemCountBadge(count: Int) {
+    Text(
+        text = count.toString(),
+        color = MaterialTheme.colorScheme.onPrimary,
+        style = MaterialTheme.typography.labelSmall,
+        modifier = Modifier
+            .padding(start = 4.dp)
+            .background(
+                color = MaterialTheme.colorScheme.primary,
+                shape = MaterialTheme.shapes.small,
+            )
+            .padding(horizontal = 4.dp, vertical = 2.dp),
+    )
 }

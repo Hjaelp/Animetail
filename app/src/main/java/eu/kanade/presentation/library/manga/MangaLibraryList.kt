@@ -19,6 +19,8 @@ import tachiyomi.domain.library.manga.LibraryManga
 import tachiyomi.presentation.core.components.FastScrollLazyColumn
 import tachiyomi.presentation.core.util.plus
 
+import eu.kanade.presentation.library.components.MergedItemCountBadge
+
 @Composable
 internal fun MangaLibraryList(
     items: List<MangaLibraryItem>,
@@ -31,6 +33,7 @@ internal fun MangaLibraryList(
     onClickContinueReading: ((LibraryManga) -> Unit)?,
     searchQuery: String?,
     onGlobalSearchClicked: () -> Unit,
+    onMergedItemClick: (List<LibraryManga>) -> Unit,
 ) {
     FastScrollLazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -68,9 +71,18 @@ internal fun MangaLibraryList(
                         isLocal = libraryItem.isLocal,
                         sourceLanguage = libraryItem.sourceLanguage,
                     )
+                    if (libraryItem.isMerged && (libraryItem.mergedManga?.size ?: 0) > 1) {
+                        MergedItemCountBadge(count = libraryItem.mergedManga!!.size)
+                    }
                 },
                 onLongClick = { onLongClick(libraryItem.libraryManga) },
-                onClick = { onClick(libraryItem.libraryManga) },
+                onClick = {
+                    if (libraryItem.isMerged) {
+                        onMergedItemClick(libraryItem.mergedManga!!)
+                    } else {
+                        onClick(libraryItem.libraryManga)
+                    }
+                },
                 onClickContinueViewing = if (onClickContinueReading != null && libraryItem.unreadCount > 0) {
                     { onClickContinueReading(libraryItem.libraryManga) }
                 } else {
@@ -78,6 +90,7 @@ internal fun MangaLibraryList(
                 },
                 entries = entries,
                 containerHeight = containerHeight,
+                onMergedItemClick = {},
             )
         }
     }

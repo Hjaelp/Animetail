@@ -92,7 +92,8 @@ internal fun GlobalSearchContent(
                                 getAnime = getAnime,
                                 onClick = onClickItem,
                                 onLongClick = onLongClickItem,
-                            )
+                                onMergedItemClick = { },
+                                )
                         }
                         is AnimeSearchItemResult.Error -> {
                             GlobalSearchErrorResultItem(message = result.throwable.message)

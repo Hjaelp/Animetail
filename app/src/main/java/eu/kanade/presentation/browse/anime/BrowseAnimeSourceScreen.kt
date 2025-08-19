@@ -26,6 +26,7 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.StateFlow
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.domain.entries.anime.model.Anime
+import tachiyomi.domain.library.anime.LibraryAnime
 import tachiyomi.domain.library.model.LibraryDisplayMode
 import tachiyomi.domain.source.anime.model.StubAnimeSource
 import tachiyomi.i18n.MR
@@ -51,7 +52,8 @@ fun BrowseAnimeSourceContent(
     onLocalAnimeSourceHelpClick: () -> Unit,
     onAnimeClick: (Anime) -> Unit,
     onAnimeLongClick: (Anime) -> Unit,
-) {
+    onMergedItemClick: (List<LibraryAnime>) -> Unit,
+    ) {
     val context = LocalContext.current
 
     val errorState = animeList.loadState.refresh.takeIf { it is LoadState.Error }
@@ -126,6 +128,7 @@ fun BrowseAnimeSourceContent(
                 contentPadding = contentPadding,
                 onAnimeClick = onAnimeClick,
                 onAnimeLongClick = onAnimeLongClick,
+                onMergedItemClick = onMergedItemClick,
             )
         }
         // KMK -->
@@ -136,7 +139,8 @@ fun BrowseAnimeSourceContent(
                 contentPadding = contentPadding,
                 onAnimeClick = onAnimeClick,
                 onAnimeLongClick = onAnimeLongClick,
-            )
+                onMergedItemClick = onMergedItemClick,
+                )
         }
         // KMK <--
         LibraryDisplayMode.List -> {
@@ -147,7 +151,8 @@ fun BrowseAnimeSourceContent(
                 contentPadding = contentPadding,
                 onAnimeClick = onAnimeClick,
                 onAnimeLongClick = onAnimeLongClick,
-            )
+                onMergedItemClick = onMergedItemClick,
+                )
         }
         LibraryDisplayMode.CompactGrid, LibraryDisplayMode.CoverOnlyGrid -> {
             BrowseAnimeSourceCompactGrid(
@@ -156,7 +161,8 @@ fun BrowseAnimeSourceContent(
                 contentPadding = contentPadding,
                 onAnimeClick = onAnimeClick,
                 onAnimeLongClick = onAnimeLongClick,
-            )
+                onMergedItemClick = onMergedItemClick,
+                )
         }
     }
 }

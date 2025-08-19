@@ -20,6 +20,7 @@ import eu.kanade.presentation.library.components.EntryComfortableGridItem
 import tachiyomi.domain.entries.anime.model.Anime
 import tachiyomi.domain.entries.anime.model.AnimeCover
 import tachiyomi.domain.entries.anime.model.asAnimeCover
+import tachiyomi.domain.library.anime.LibraryAnime
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
@@ -30,6 +31,7 @@ fun GlobalAnimeSearchCardRow(
     getAnime: @Composable (Anime) -> State<Anime>,
     onClick: (Anime) -> Unit,
     onLongClick: (Anime) -> Unit,
+    onMergedItemClick: (List<LibraryAnime>) -> Unit,
 ) {
     if (titles.isEmpty()) {
         EmptyResultItem()
@@ -48,6 +50,7 @@ fun GlobalAnimeSearchCardRow(
                 isFavorite = title.favorite,
                 onClick = { onClick(title) },
                 onLongClick = { onLongClick(title) },
+                onMergedItemClick = onMergedItemClick,
             )
         }
     }
@@ -60,7 +63,8 @@ private fun AnimeItem(
     isFavorite: Boolean,
     onClick: () -> Unit,
     onLongClick: () -> Unit,
-) {
+    onMergedItemClick: (List<LibraryAnime>) -> Unit,
+    ) {
     Box(modifier = Modifier.width(96.dp)) {
         EntryComfortableGridItem(
             title = title,
@@ -72,6 +76,7 @@ private fun AnimeItem(
             coverAlpha = if (isFavorite) CommonEntryItemDefaults.BrowseFavoriteCoverAlpha else 1f,
             onClick = onClick,
             onLongClick = onLongClick,
+            onMergedItemClick = onMergedItemClick,
         )
     }
 }

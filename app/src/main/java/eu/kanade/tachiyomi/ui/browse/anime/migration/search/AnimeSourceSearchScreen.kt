@@ -110,6 +110,7 @@ data class AnimeSourceSearchScreen(
                 onLocalAnimeSourceHelpClick = { uriHandler.openUri(LocalAnimeSource.HELP_URL) },
                 onAnimeClick = openMigrateDialog,
                 onAnimeLongClick = { navigator.push(AnimeScreen(it.id, true)) },
+                onMergedItemClick = {},
             )
         }
 

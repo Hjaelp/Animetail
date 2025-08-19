@@ -18,6 +18,7 @@ import eu.kanade.presentation.library.components.EntryCompactGridItem
 import kotlinx.coroutines.flow.StateFlow
 import tachiyomi.domain.entries.anime.model.Anime
 import tachiyomi.domain.entries.anime.model.AnimeCover
+import tachiyomi.domain.library.anime.LibraryAnime
 import tachiyomi.presentation.core.util.plus
 
 @Composable
@@ -27,6 +28,7 @@ fun BrowseAnimeSourceCompactGrid(
     contentPadding: PaddingValues,
     onAnimeClick: (Anime) -> Unit,
     onAnimeLongClick: (Anime) -> Unit,
+    onMergedItemClick: (List<LibraryAnime>) -> Unit,
 ) {
     LazyVerticalGrid(
         columns = columns,
@@ -46,6 +48,7 @@ fun BrowseAnimeSourceCompactGrid(
                 anime = anime,
                 onClick = { onAnimeClick(anime) },
                 onLongClick = { onAnimeLongClick(anime) },
+                onMergedItemClick = onMergedItemClick,
             )
         }
 
@@ -63,6 +66,7 @@ fun BrowseAnimeSourceCompactGridItem(
     onClick: () -> Unit = {},
     onLongClick: () -> Unit = onClick,
     isSelected: Boolean = false,
+    onMergedItemClick: (List<LibraryAnime>) -> Unit,
 ) {
     EntryCompactGridItem(
         title = anime.title,
@@ -81,5 +85,6 @@ fun BrowseAnimeSourceCompactGridItem(
         },
         onLongClick = onLongClick,
         onClick = onClick,
+        onMergedItemClick = onMergedItemClick
     )
 }

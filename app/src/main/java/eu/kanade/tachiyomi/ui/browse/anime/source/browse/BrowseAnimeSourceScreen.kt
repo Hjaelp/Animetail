@@ -303,6 +303,7 @@ data class BrowseAnimeSourceScreen(
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     }
                 },
+                onMergedItemClick = {}
             )
         }
 

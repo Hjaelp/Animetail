@@ -99,6 +99,7 @@ fun RelatedAnimesList(
                         entries = entries,
                         containerHeight = containerHeight,
                         isSelected = selection.fastAny { selected -> selected.id == manga.id },
+                        onMergedItemClick = {},
                     )
                 }
             }

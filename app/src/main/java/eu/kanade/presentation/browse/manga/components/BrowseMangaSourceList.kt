@@ -88,5 +88,6 @@ private fun BrowseMangaSourceListItem(
         onClick = onClick,
         entries = entries,
         containerHeight = containerHeight,
+        onMergedItemClick = {},
     )
 }

@@ -12,6 +12,8 @@ data class AnimeLibraryItem(
     var unseenCount: Long = -1,
     var isLocal: Boolean = false,
     var sourceLanguage: String = "",
+    val mergedAnime: List<LibraryAnime>? = null,
+    val isMerged: Boolean = false,
     private val sourceManager: AnimeSourceManager = Injekt.get(),
 ) {
     /**

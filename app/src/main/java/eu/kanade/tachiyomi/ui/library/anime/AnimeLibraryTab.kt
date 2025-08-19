@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
@@ -31,6 +32,7 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
 import cafe.adriel.voyager.navigator.tab.TabOptions
 import eu.kanade.presentation.category.components.ChangeCategoryDialog
+import eu.kanade.presentation.library.components.MergedAnimeDialog
 import eu.kanade.presentation.entries.components.LibraryBottomActionMenu
 import eu.kanade.presentation.library.DeleteLibraryEntryDialog
 import eu.kanade.presentation.library.anime.AnimeLibraryContent
@@ -108,6 +110,8 @@ data object AnimeLibraryTab : Tab {
         val state by screenModel.state.collectAsState()
 
         val snackbarHostState = remember { SnackbarHostState() }
+
+        val mergedAnimeDialogState = remember { mutableStateOf<List<LibraryAnime>?>(null) }
 
         val onClickRefresh: (Category?) -> Boolean = { category ->
             // SY -->
@@ -262,7 +266,9 @@ data object AnimeLibraryTab : Tab {
                                 it,
                             )
                         },
-                    ) { state.getAnimelibItemsByPage(it) }
+                        getAnimeLibraryForPage = { state.getAnimelibItemsByPage(it) },
+                        onMergedItemClick = { mergedAnimeDialogState.value = it },
+                    )
                 }
             }
         }
@@ -331,6 +337,17 @@ data object AnimeLibraryTab : Tab {
         LaunchedEffect(Unit) {
             launch { queryEvent.receiveAsFlow().collect(screenModel::search) }
             launch { requestSettingsSheetEvent.receiveAsFlow().collectLatest { screenModel.showSettingsDialog() } }
+        }
+
+        mergedAnimeDialogState.value?.let { mergedAnimeList ->
+            MergedAnimeDialog(
+                mergedAnime = mergedAnimeList,
+                onDismissRequest = { mergedAnimeDialogState.value = null },
+                onAnimeClick = { anime ->
+                    navigator.push(AnimeScreen(anime.anime.id))
+                    mergedAnimeDialogState.value = null // Dismiss dialog after navigation
+                },
+            )
         }
     }
 

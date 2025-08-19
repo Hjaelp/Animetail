@@ -46,6 +46,7 @@ fun AnimeLibraryContent(
     getDisplayMode: (Int) -> PreferenceMutableState<LibraryDisplayMode>,
     getColumnsForOrientation: (Boolean) -> PreferenceMutableState<Int>,
     getAnimeLibraryForPage: (Int) -> List<AnimeLibraryItem>,
+    onMergedItemClick: (List<LibraryAnime>) -> Unit,
 ) {
     Column(
         modifier = Modifier.padding(
@@ -109,6 +110,7 @@ fun AnimeLibraryContent(
                 onClickAnime = onClickAnime,
                 onLongClickAnime = onToggleRangeSelection,
                 onClickContinueWatching = onContinueWatchingClicked,
+                onMergedItemClick = onMergedItemClick,
             )
         }
 

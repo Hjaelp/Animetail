@@ -8,6 +8,7 @@ import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.library.components.CommonEntryItemDefaults
 import eu.kanade.presentation.library.components.EntryComfortableGridItem
 import tachiyomi.domain.entries.EntryCover
+import tachiyomi.domain.library.anime.LibraryAnime
 
 @Composable
 fun GlobalSearchCard(
@@ -16,6 +17,7 @@ fun GlobalSearchCard(
     isFavorite: Boolean,
     onClick: () -> Unit,
     onLongClick: () -> Unit,
+    onMergedItemClick: (List<LibraryAnime>) -> Unit,
 ) {
     Box(modifier = Modifier.width(96.dp)) {
         EntryComfortableGridItem(
@@ -27,6 +29,7 @@ fun GlobalSearchCard(
             coverAlpha = if (isFavorite) CommonEntryItemDefaults.BrowseFavoriteCoverAlpha else 1f,
             onClick = onClick,
             onLongClick = onLongClick,
+            onMergedItemClick = onMergedItemClick
         )
     }
 }

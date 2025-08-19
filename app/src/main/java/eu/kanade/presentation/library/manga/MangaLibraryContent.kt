@@ -46,6 +46,7 @@ fun MangaLibraryContent(
     getDisplayMode: (Int) -> PreferenceMutableState<LibraryDisplayMode>,
     getColumnsForOrientation: (Boolean) -> PreferenceMutableState<Int>,
     getLibraryForPage: (Int) -> List<MangaLibraryItem>,
+    onMergedItemClick: (List<LibraryManga>) -> Unit,
 ) {
     Column(
         modifier = Modifier.padding(
@@ -109,7 +110,8 @@ fun MangaLibraryContent(
                 onClickManga = onClickManga,
                 onLongClickManga = onToggleRangeSelection,
                 onClickContinueReading = onContinueReadingClicked,
-            )
+                onMergedItemClick = onMergedItemClick,
+                )
         }
 
         LaunchedEffect(pagerState.currentPage) {

@@ -12,6 +12,8 @@ class MangaLibraryItem(
     var unreadCount: Long = -1,
     var isLocal: Boolean = false,
     var sourceLanguage: String = "",
+    val mergedManga: List<LibraryManga>? = null,
+    val isMerged: Boolean = false,
     private val sourceManager: MangaSourceManager = Injekt.get(),
 ) {
     /**

@@ -72,7 +72,8 @@ private fun MangaItem(
             coverAlpha = if (isFavorite) CommonEntryItemDefaults.BrowseFavoriteCoverAlpha else 1f,
             onClick = onClick,
             onLongClick = onLongClick,
-        )
+            onMergedItemClick = {},
+            )
     }
 }
 

@@ -43,6 +43,7 @@ fun MangaLibraryPager(
     onClickManga: (LibraryManga) -> Unit,
     onLongClickManga: (LibraryManga) -> Unit,
     onClickContinueReading: ((LibraryManga) -> Unit)?,
+    onMergedItemClick: (List<LibraryManga>) -> Unit,
 ) {
     var containerHeight by remember { mutableIntStateOf(0) }
     HorizontalPager(
@@ -88,6 +89,7 @@ fun MangaLibraryPager(
                     onClickContinueReading = onClickContinueReading,
                     searchQuery = searchQuery,
                     onGlobalSearchClicked = onGlobalSearchClicked,
+                    onMergedItemClick = onMergedItemClick,
                 )
             }
             LibraryDisplayMode.CompactGrid, LibraryDisplayMode.CoverOnlyGrid -> {
@@ -102,7 +104,8 @@ fun MangaLibraryPager(
                     onClickContinueReading = onClickContinueReading,
                     searchQuery = searchQuery,
                     onGlobalSearchClicked = onGlobalSearchClicked,
-                )
+                    onMergedItemClick = onMergedItemClick,
+                    )
             }
             LibraryDisplayMode.ComfortableGrid -> {
                 MangaLibraryComfortableGrid(
@@ -115,7 +118,8 @@ fun MangaLibraryPager(
                     onClickContinueReading = onClickContinueReading,
                     searchQuery = searchQuery,
                     onGlobalSearchClicked = onGlobalSearchClicked,
-                )
+                    onMergedItemClick = onMergedItemClick,
+                    )
             }
             LibraryDisplayMode.ComfortableGridPanorama -> {
                 MangaLibraryComfortableGrid(
@@ -128,7 +132,8 @@ fun MangaLibraryPager(
                     onClickContinueReading = onClickContinueReading,
                     searchQuery = searchQuery,
                     onGlobalSearchClicked = onGlobalSearchClicked,
-                )
+                    onMergedItemClick = onMergedItemClick,
+                    )
             }
         }
     }

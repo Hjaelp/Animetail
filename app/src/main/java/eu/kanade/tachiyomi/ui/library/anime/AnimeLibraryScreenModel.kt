@@ -443,6 +443,7 @@ class AnimeLibraryScreenModel(
                         },
                     )
                 }
+                .let { mergeLibraryItemsBySeriesName(it) }
                 .groupBy { it.libraryAnime.category }
         }
 
@@ -1035,4 +1036,27 @@ class AnimeLibraryScreenModel(
             return LibraryToolbarTitle(title, count)
         }
     }
+}
+
+private fun mergeLibraryItemsBySeriesName(items: List<AnimeLibraryItem>): List<AnimeLibraryItem> {
+    return items.groupBy { it.libraryAnime.anime.seriesName }
+        .flatMap { (_, groupedItems) ->
+            if (groupedItems.size > 1) {
+                val mainItem = groupedItems.first()
+                listOf(
+                    mainItem.copy(
+                        isMerged = true,
+                        mergedAnime = groupedItems.map { it.libraryAnime },
+                        libraryAnime = mainItem.libraryAnime.copy(
+                            anime = mainItem.libraryAnime.anime.copy(
+                                ogTitle = mainItem.libraryAnime.anime.seriesName?:
+                                mainItem.libraryAnime.anime.title,
+                            ),
+                        ),
+                    ),
+                )
+            } else {
+                groupedItems
+            }
+        }
 }

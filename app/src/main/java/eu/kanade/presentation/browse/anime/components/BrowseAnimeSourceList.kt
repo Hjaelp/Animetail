@@ -20,6 +20,7 @@ import eu.kanade.presentation.library.components.EntryListItem
 import kotlinx.coroutines.flow.StateFlow
 import tachiyomi.domain.entries.anime.model.Anime
 import tachiyomi.domain.entries.anime.model.AnimeCover
+import tachiyomi.domain.library.anime.LibraryAnime
 import tachiyomi.presentation.core.util.plus
 
 @Composable
@@ -30,6 +31,7 @@ fun BrowseAnimeSourceList(
     contentPadding: PaddingValues,
     onAnimeClick: (Anime) -> Unit,
     onAnimeLongClick: (Anime) -> Unit,
+    onMergedItemClick: (List<LibraryAnime>) -> Unit,
 ) {
     var containerHeight by remember { mutableIntStateOf(0) }
     LazyColumn(
@@ -53,6 +55,7 @@ fun BrowseAnimeSourceList(
                 onLongClick = { onAnimeLongClick(anime) },
                 entries = entries,
                 containerHeight = containerHeight,
+                onMergedItemClick = onMergedItemClick,
             )
         }
 
@@ -72,6 +75,7 @@ fun BrowseAnimeSourceListItem(
     isSelected: Boolean = false,
     entries: Int,
     containerHeight: Int,
+    onMergedItemClick: (List<LibraryAnime>) -> Unit,
 ) {
     EntryListItem(
         title = anime.title,
@@ -91,5 +95,6 @@ fun BrowseAnimeSourceListItem(
         onClick = onClick,
         entries = entries,
         containerHeight = containerHeight,
+        onMergedItemClick = onMergedItemClick,
     )
 }

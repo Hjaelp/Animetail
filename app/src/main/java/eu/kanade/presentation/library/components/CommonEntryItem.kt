@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import eu.kanade.presentation.entries.components.ItemCover
+import tachiyomi.domain.library.anime.LibraryAnime
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.BadgeGroup
 import tachiyomi.presentation.core.i18n.stringResource
@@ -80,6 +81,8 @@ fun EntryCompactGridItem(
     coverAlpha: Float = 1f,
     coverBadgeStart: @Composable (RowScope.() -> Unit)? = null,
     coverBadgeEnd: @Composable (RowScope.() -> Unit)? = null,
+    mergedItemBadge: @Composable (RowScope.() -> Unit)? = null,
+    onMergedItemClick: (List<LibraryAnime>) -> Unit,
 ) {
     GridItemSelectable(
         isSelected = isSelected,
@@ -96,7 +99,10 @@ fun EntryCompactGridItem(
                 )
             },
             badgesStart = coverBadgeStart,
-            badgesEnd = coverBadgeEnd,
+            badgesEnd = {
+                coverBadgeEnd?.invoke(this)
+                mergedItemBadge?.invoke(this)
+            },
             content = {
                 if (title != null) {
                     CoverTextOverlay(
@@ -185,7 +191,9 @@ fun EntryComfortableGridItem(
     coverAlpha: Float = 1f,
     coverBadgeStart: (@Composable RowScope.() -> Unit)? = null,
     coverBadgeEnd: (@Composable RowScope.() -> Unit)? = null,
+    mergedItemBadge: @Composable (RowScope.() -> Unit)? = null,
     onClickContinueViewing: (() -> Unit)? = null,
+    onMergedItemClick: (List<LibraryAnime>) -> Unit,
 ) {
     GridItemSelectable(
         isSelected = isSelected,
@@ -203,7 +211,10 @@ fun EntryComfortableGridItem(
                     )
                 },
                 badgesStart = coverBadgeStart,
-                badgesEnd = coverBadgeEnd,
+                badgesEnd = {
+                    coverBadgeEnd?.invoke(this)
+                    mergedItemBadge?.invoke(this)
+                },
                 content = {
                     if (onClickContinueViewing != null) {
                         ContinueViewingButton(
@@ -341,6 +352,9 @@ fun EntryListItem(
     onClickContinueViewing: (() -> Unit)? = null,
     entries: Int = 0,
     containerHeight: Int = 0,
+    onMergedItemClick: (List<LibraryAnime>) -> Unit,
+    isMerged: Boolean = false,
+    mergedItemCount: Int = 0,
 ) {
     Row(
         modifier = Modifier
@@ -375,7 +389,12 @@ fun EntryListItem(
             overflow = TextOverflow.Ellipsis,
             style = MaterialTheme.typography.bodyMedium,
         )
-        BadgeGroup(content = badge)
+        BadgeGroup(content = {
+            badge()
+            if (isMerged && mergedItemCount > 1) {
+                MergedItemCountBadge(count = mergedItemCount)
+            }
+        })
         if (onClickContinueViewing != null) {
             ContinueViewingButton(
                 size = ContinueViewingButtonSizeSmall,
