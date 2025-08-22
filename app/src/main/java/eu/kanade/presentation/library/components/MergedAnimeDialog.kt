@@ -28,17 +28,29 @@ fun MergedAnimeDialog(
     columns: Int,
 ) {
     val animeLibraryItems = remember(mergedAnime) {
-        mergedAnime.map { libraryAnime ->
-            AnimeLibraryItem(
-                libraryAnime = libraryAnime,
-                downloadCount = -1,
-                unseenCount = libraryAnime.unseenCount,
-                isLocal = libraryAnime.anime.isLocal(),
-                sourceLanguage = "",
-                mergedAnime = mergedAnime,
-                isMerged = true,
+        mergedAnime
+            .sortedWith(
+                Comparator { a, b ->
+                    val airingTimeComparison = a.latestUpload.compareTo(b.latestUpload)
+
+                    if (airingTimeComparison != 0) {
+                        airingTimeComparison
+                    } else {
+                        a.unseenCount.compareTo(b.unseenCount)
+                    }
+                },
             )
-        }
+            .map { libraryAnime ->
+                AnimeLibraryItem(
+                    libraryAnime = libraryAnime,
+                    downloadCount = -1,
+                    unseenCount = libraryAnime.unseenCount,
+                    isLocal = libraryAnime.anime.isLocal(),
+                    sourceLanguage = "",
+                    mergedAnime = mergedAnime,
+                    isMerged = true,
+                )
+            }
     }
 
     val configuration = LocalConfiguration.current
