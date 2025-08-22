@@ -20,6 +20,7 @@ import eu.kanade.presentation.more.settings.Preference
 import eu.kanade.presentation.more.settings.screen.SearchableSettings
 import eu.kanade.tachiyomi.ui.player.SingleActionGesture
 import eu.kanade.tachiyomi.ui.player.settings.GesturePreferences
+import eu.kanade.tachiyomi.ui.player.LongPressAction
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toImmutableList
@@ -45,6 +46,7 @@ object PlayerSettingsGesturesScreen : SearchableSettings {
         return listOf(
             getSlidersGroup(gesturePreferences = gesturePreferences),
             getSeekingGroup(gesturePreferences = gesturePreferences),
+            getLongPressGroup(gesturePreferences = gesturePreferences),
             getDoubleTapGroup(gesturePreferences = gesturePreferences),
             getMediaControlsGroup(gesturePreferences = gesturePreferences),
         )
@@ -217,6 +219,26 @@ object PlayerSettingsGesturesScreen : SearchableSettings {
                 ),
                 Preference.PreferenceItem.InfoPreference(
                     title = stringResource(AYMR.strings.pref_media_info),
+                ),
+            ),
+        )
+    }
+
+    @Composable
+    private fun getLongPressGroup(gesturePreferences: GesturePreferences): Preference.PreferenceGroup {
+        val longPressAction = gesturePreferences.longPressAction()
+
+        return Preference.PreferenceGroup(
+            title = stringResource(AYMR.strings.pref_long_press_action),
+            preferenceItems = persistentListOf(
+                Preference.PreferenceItem.ListPreference(
+                    preference = longPressAction,
+                    entries = listOf(
+                        LongPressAction.Screenshot,
+                        LongPressAction.TogglePlaybackSpeed,
+                        LongPressAction.TogglePlayPause,
+                    ).associateWith { stringResource(it.stringRes) }.toPersistentMap(),
+                    title = stringResource(AYMR.strings.pref_long_press_action),
                 ),
             ),
         )

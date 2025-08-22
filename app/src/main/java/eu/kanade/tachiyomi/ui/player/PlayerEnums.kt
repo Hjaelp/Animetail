@@ -61,6 +61,15 @@ enum class SingleActionGesture(val stringRes: StringResource) {
 }
 
 /**
+ * Action performed on long press gesture
+ */
+enum class LongPressAction(val stringRes: StringResource) {
+    Screenshot(stringRes = AYMR.strings.action_screenshot),
+    TogglePlaybackSpeed(stringRes = AYMR.strings.action_toggle_playback_speed),
+    TogglePlayPause(stringRes = AYMR.strings.action_toggle_play_pause),
+}
+
+/**
  * Key codes sent through the `Custom` option in gestures
  */
 enum class CustomKeyCodes(val keyCode: String) {

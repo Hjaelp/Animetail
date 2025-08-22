@@ -60,6 +60,7 @@ import eu.kanade.tachiyomi.ui.player.Panels
 import eu.kanade.tachiyomi.ui.player.PlayerUpdates
 import eu.kanade.tachiyomi.ui.player.PlayerViewModel
 import eu.kanade.tachiyomi.ui.player.Sheets
+import eu.kanade.tachiyomi.ui.player.LongPressAction
 import eu.kanade.tachiyomi.ui.player.controls.components.DoubleTapSeekTriangles
 import eu.kanade.tachiyomi.ui.player.settings.AudioPreferences
 import eu.kanade.tachiyomi.ui.player.settings.GesturePreferences
@@ -108,6 +109,7 @@ fun GestureHandler(
     val preciseSeeking by gesturePreferences.playerSmoothSeek().collectAsState()
     val showSeekbar by gesturePreferences.showSeekBar().collectAsState()
     var isLongPressing by remember { mutableStateOf(false) }
+    var originalSpeed by remember { mutableStateOf(1.0f) }
     val currentVolume by viewModel.currentVolume.collectAsState()
     val currentMPVVolume by viewModel.currentMPVVolume.collectAsState()
     val currentBrightness by viewModel.currentBrightness.collectAsState()
@@ -119,7 +121,6 @@ fun GestureHandler(
             .fillMaxSize()
             .windowInsetsPadding(WindowInsets.safeGestures)
             .pointerInput(Unit) {
-                val originalSpeed = viewModel.playbackSpeed.value
                 detectTapGestures(
                     onTap = {
                         if (controlsShown) viewModel.hideControls() else viewModel.showControls()
@@ -162,8 +163,10 @@ fun GestureHandler(
                         tryAwaitRelease()
                         if (isLongPressing) {
                             isLongPressing = false
-                            MPVLib.setPropertyDouble("speed", originalSpeed.toDouble())
-                            viewModel.playerUpdate.update { PlayerUpdates.None }
+                            if (gesturePreferences.longPressAction().get() == LongPressAction.TogglePlaybackSpeed) {
+                                MPVLib.setPropertyDouble("speed", originalSpeed.toDouble())
+                                viewModel.playerUpdate.update { PlayerUpdates.None }
+                            }
                         }
                         interactionSource.emit(PressInteraction.Release(press))
                     },
@@ -172,8 +175,20 @@ fun GestureHandler(
                         if (!isLongPressing) {
                             haptics.performHapticFeedback(HapticFeedbackType.LongPress)
                             isLongPressing = true
-                            viewModel.pause()
-                            viewModel.sheetShown.update { Sheets.Screenshot }
+                            when (gesturePreferences.longPressAction().get()) {
+                                LongPressAction.Screenshot -> {
+                                    viewModel.pause()
+                                    viewModel.sheetShown.update { Sheets.Screenshot }
+                                }
+                                LongPressAction.TogglePlaybackSpeed -> {
+                                    originalSpeed = viewModel.playbackSpeed.value
+                                    MPVLib.setPropertyDouble("speed", 2.0)
+                                    viewModel.playerUpdate.update { PlayerUpdates.DoubleSpeed }
+                                }
+                                LongPressAction.TogglePlayPause -> {
+                                    viewModel.pauseUnpause()
+                                }
+                            }
                         }
                     },
                 )
