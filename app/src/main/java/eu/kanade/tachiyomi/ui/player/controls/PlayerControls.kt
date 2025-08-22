@@ -507,6 +507,7 @@ fun PlayerControls(
                                     VideoAspect.Stretch -> VideoAspect.Crop
                                     VideoAspect.Crop -> VideoAspect.Fit
                                 },
+                                showToast = true,
                             )
                         },
                     )

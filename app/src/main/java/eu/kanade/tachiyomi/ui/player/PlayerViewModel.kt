@@ -325,6 +325,8 @@ class PlayerViewModel @JvmOverloads constructor(
                 _customButtons.update { _ -> CustomButtonFetchState.Error(e.message ?: "Unable to fetch buttons") }
             }
         }
+
+        changeVideoAspect(playerPreferences.aspectState().get(), showToast = false)
     }
 
     /**
@@ -741,7 +743,7 @@ class PlayerViewModel @JvmOverloads constructor(
     }
 
     @Suppress("DEPRECATION")
-    fun changeVideoAspect(aspect: VideoAspect) {
+    fun changeVideoAspect(aspect: VideoAspect, showToast: Boolean = true) {
         var ratio = -1.0
         var pan = 1.0
         when (aspect) {
@@ -764,7 +766,8 @@ class PlayerViewModel @JvmOverloads constructor(
         MPVLib.setPropertyDouble("panscan", pan)
         MPVLib.setPropertyDouble("video-aspect-override", ratio)
         playerPreferences.aspectState().set(aspect)
-        playerUpdate.update { PlayerUpdates.AspectRatio }
+
+        if (showToast) playerUpdate.update { PlayerUpdates.AspectRatio }
     }
 
     fun cycleScreenRotations() {
