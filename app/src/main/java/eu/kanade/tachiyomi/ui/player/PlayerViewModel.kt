@@ -749,11 +749,15 @@ class PlayerViewModel @JvmOverloads constructor(
         when (aspect) {
             VideoAspect.Crop -> {
                 pan = 1.0
+                MPVLib.setOptionString("sub-use-margins", "yes")
+                MPVLib.setOptionString("sub-ass-force-margins", "yes")
             }
 
             VideoAspect.Fit -> {
                 pan = 0.0
                 MPVLib.setPropertyDouble("panscan", 0.0)
+                MPVLib.setOptionString("sub-use-margins", "no")
+                MPVLib.setOptionString("sub-ass-force-margins", "no")
             }
 
             VideoAspect.Stretch -> {
@@ -761,6 +765,8 @@ class PlayerViewModel @JvmOverloads constructor(
                 activity.windowManager.defaultDisplay.getRealMetrics(dm)
                 ratio = dm.widthPixels / dm.heightPixels.toDouble()
                 pan = 0.0
+                MPVLib.setOptionString("sub-use-margins", "no")
+                MPVLib.setOptionString("sub-ass-force-margins", "no")
             }
         }
         MPVLib.setPropertyDouble("panscan", pan)

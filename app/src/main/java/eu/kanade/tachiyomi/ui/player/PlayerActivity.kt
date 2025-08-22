@@ -467,9 +467,6 @@ class PlayerActivity : BaseActivity() {
         copyAssets(mpvDir)
         copyFontsDirectory(mpvDir)
 
-        MPVLib.setOptionString("sub-ass-force-margins", "yes")
-        MPVLib.setOptionString("sub-use-margins", "yes")
-
         player.initialize(
             configDir = mpvDir.filePath!!,
             cacheDir = applicationContext.cacheDir.path,
