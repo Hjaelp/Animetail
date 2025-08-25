@@ -1,22 +1,18 @@
 package eu.kanade.tachiyomi.ui.player.controls
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.Crossfade
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
-import androidx.compose.animation.graphics.res.animatedVectorResource
-import androidx.compose.animation.graphics.res.rememberAnimatedVectorPainter
-import androidx.compose.animation.graphics.vector.AnimatedImageVector
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.SkipNext
-import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -25,17 +21,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.ui.player.controls.components.ControlsButton
+
 import `is`.xyz.mpv.Utils
 import tachiyomi.i18n.aniyomi.AYMR
 import tachiyomi.presentation.core.components.material.padding
+import tachiyomi.presentation.core.components.material.DISABLED_ALPHA
 import tachiyomi.presentation.core.i18n.stringResource
 import kotlin.math.abs
 
@@ -74,16 +73,23 @@ fun MiddlePlayerControls(
             exit = exit,
         ) {
             if (gestureSeekAmount == null) {
-                ControlsButton(
-                    Icons.Filled.SkipPrevious,
-                    onClick = onSkipPrevious,
-                    iconSize = 48.dp,
-                    enabled = hasPrevious,
+                Image(
+                    painter = painterResource(R.drawable.ic_skip_previous),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(CircleShape)
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = ripple(),
+                            enabled = hasPrevious,
+                            onClick = onSkipPrevious,
+                        )
+                        .alpha(if (hasPrevious) 1f else DISABLED_ALPHA),
                 )
             }
         }
 
-        val icon = AnimatedImageVector.animatedVectorResource(R.drawable.anim_play_to_pause)
         val interaction = remember { MutableInteractionSource() }
         when {
             gestureSeekAmount != null -> {
@@ -109,8 +115,8 @@ fun MiddlePlayerControls(
                     enter = enter,
                     exit = exit,
                 ) {
-                    Image(
-                        painter = rememberAnimatedVectorPainter(icon, !paused),
+                    Crossfade(
+                        targetState = paused,
                         modifier = Modifier
                             .size(96.dp)
                             .clip(CircleShape)
@@ -118,10 +124,18 @@ fun MiddlePlayerControls(
                                 interaction,
                                 ripple(),
                                 onClick = onPlayPauseClick,
-                            )
-                            .padding(MaterialTheme.padding.medium),
-                        contentDescription = null,
-                    )
+                            ),
+                    ) { isPaused ->
+                        Image(
+                            painter = painterResource(
+                                if (isPaused) R.drawable.ic_play_outline else R.drawable.ic_pause_outline,
+                            ),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .padding(MaterialTheme.padding.medium)
+                                .fillMaxSize(),
+                        )
+                    }
                 }
             }
         }
@@ -132,11 +146,19 @@ fun MiddlePlayerControls(
             exit = exit,
         ) {
             if (gestureSeekAmount == null) {
-                ControlsButton(
-                    Icons.Filled.SkipNext,
-                    onClick = onSkipNext,
-                    iconSize = 48.dp,
-                    enabled = hasNext,
+                Image(
+                    painter = painterResource(R.drawable.ic_skip_next),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(CircleShape)
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = ripple(),
+                            enabled = hasNext,
+                            onClick = onSkipNext,
+                        )
+                        .alpha(if (hasNext) 1f else DISABLED_ALPHA),
                 )
             }
         }
