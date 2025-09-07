@@ -43,6 +43,7 @@ import tachiyomi.core.common.storage.AndroidStorageFolderProvider
 import tachiyomi.data.AnimeUpdateStrategyColumnAdapter
 import tachiyomi.data.Database
 import tachiyomi.data.DateColumnAdapter
+import tachiyomi.data.FetchTypeColumnAdapter
 import tachiyomi.data.MangaUpdateStrategyColumnAdapter
 import tachiyomi.data.StringListColumnAdapter
 import tachiyomi.data.handlers.anime.AndroidAnimeDatabaseHandler
@@ -53,6 +54,7 @@ import tachiyomi.domain.source.anime.service.AnimeSourceManager
 import tachiyomi.domain.source.manga.service.MangaSourceManager
 import tachiyomi.domain.storage.service.StorageManager
 import tachiyomi.mi.data.AnimeDatabase
+import tachiyomi.source.local.entries.anime.LocalAnimeFetchTypeManager
 import tachiyomi.source.local.image.anime.LocalAnimeCoverManager
 import tachiyomi.source.local.image.manga.LocalMangaCoverManager
 import tachiyomi.source.local.io.anime.LocalAnimeSourceFileSystem
@@ -140,6 +142,7 @@ class AppModule(val app: Application) : InjektModule {
                 animesAdapter = Animes.Adapter(
                     genreAdapter = StringListColumnAdapter,
                     update_strategyAdapter = AnimeUpdateStrategyColumnAdapter,
+                    fetch_typeAdapter = FetchTypeColumnAdapter,
                 ),
             )
         }
@@ -214,6 +217,7 @@ class AppModule(val app: Application) : InjektModule {
 
         addSingletonFactory { LocalAnimeSourceFileSystem(get()) }
         addSingletonFactory { LocalAnimeCoverManager(app, get()) }
+        addSingletonFactory { LocalAnimeFetchTypeManager(app, get()) }
 
         addSingletonFactory { StorageManager(app, get()) }
 
