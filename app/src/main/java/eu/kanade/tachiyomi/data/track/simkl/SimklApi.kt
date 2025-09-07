@@ -218,9 +218,8 @@ class SimklApi(private val client: OkHttpClient, interceptor: SimklInterceptor) 
             val type = track.remoteUrl
                 .substringAfter("/")
                 .substringBefore("/")
-            Log.d("SimklApi", "Fetching metadata for track: $type")
             val url = "$API_URL/$type/${track.remoteId}?extended=full&client_id=$CLIENT_ID"
-            Log.d("SimklApi", "Requesting URL: $url")
+
             with(json) {
                 authClient.newCall(GET(url))
                     .awaitSuccess()

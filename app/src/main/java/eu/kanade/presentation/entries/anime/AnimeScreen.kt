@@ -600,12 +600,19 @@ private fun AnimeScreenSmallImpl(
                 ) {
                     if (expandRelatedAnimes) {
                         if (state.relatedAnimesSorted?.isNotEmpty() != false) {
-                            item { HorizontalDivider() }
+                            item(
+                                key = "divider_related_animes_top",
+                                span = { GridItemSpan(maxLineSpan) },
+                            ) { HorizontalDivider() }
                             item(
                                 key = EntryScreenItem.RELATED_ANIMES,
                                 contentType = EntryScreenItem.RELATED_ANIMES,
+                                span = { GridItemSpan(maxLineSpan) },
                             ) {
-                                Column {
+                                Column(
+                                    modifier = Modifier
+                                        .ignorePadding(offsetGridPaddingPx),
+                                ) {
                                     RelatedAnimeTitle(
                                         title = stringResource(TLMR.strings.pref_source_related_mangas),
                                         subtitle = null,
@@ -622,17 +629,22 @@ private fun AnimeScreenSmallImpl(
                                     )
                                 }
                             }
-                            item { HorizontalDivider() }
+                            item(
+                                key = "divider_related_animes_bottom",
+                                span = { GridItemSpan(maxLineSpan) },
+                            ) { HorizontalDivider() }
                         }
                     } else if (!showRelatedAnimesInOverflow) {
                         item(
                             key = EntryScreenItem.RELATED_ANIMES,
                             contentType = EntryScreenItem.RELATED_ANIMES,
+                            span = { GridItemSpan(maxLineSpan) },
                         ) {
                             OutlinedButtonWithArrow(
                                 text = stringResource(TLMR.strings.pref_source_related_mangas)
                                     .uppercase(),
                                 onClick = onRelatedAnimesScreenClick,
+                                modifier = Modifier.ignorePadding(offsetGridPaddingPx),
                             )
                         }
                     }
@@ -1001,8 +1013,11 @@ fun AnimeScreenLargeImpl(
                                     item(
                                         key = EntryScreenItem.RELATED_ANIMES,
                                         contentType = EntryScreenItem.RELATED_ANIMES,
+                                        span = { GridItemSpan(maxLineSpan) },
                                     ) {
-                                        Column {
+                                        Column(
+                                            modifier = Modifier.ignorePadding(offsetGridPaddingPx),
+                                        ) {
                                             RelatedAnimeTitle(
                                                 title = stringResource(TLMR.strings.pref_source_related_mangas)
                                                     .uppercase(),
@@ -1020,16 +1035,21 @@ fun AnimeScreenLargeImpl(
                                             )
                                         }
                                     }
-                                    item { HorizontalDivider() }
+                                    item(
+                                        key = "divider_related_animes_large",
+                                        span = { GridItemSpan(maxLineSpan) },
+                                    ) { HorizontalDivider() }
                                 }
                             } else if (!showRelatedAnimesInOverflow) {
                                 item(
                                     key = EntryScreenItem.RELATED_ANIMES,
                                     contentType = EntryScreenItem.RELATED_ANIMES,
+                                    span = { GridItemSpan(maxLineSpan) },
                                 ) {
                                     OutlinedButtonWithArrow(
                                         text = stringResource(TLMR.strings.pref_source_related_mangas),
                                         onClick = onRelatedAnimesScreenClick,
+                                        modifier = Modifier.ignorePadding(offsetGridPaddingPx),
                                     )
                                 }
                             }

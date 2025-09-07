@@ -264,26 +264,6 @@ class AnimeLibraryUpdateJob(private val context: Context, workerParams: WorkerPa
             }
         }
 
-        val includeSeasons = libraryPreferences.updateSeasonOnLibraryUpdate().get()
-        val lastToUpdateWithSeasons = listToUpdate.flatMap { libAnime ->
-            when (libAnime.anime.fetchType) {
-                FetchType.Unknown -> emptyList()
-                FetchType.Seasons -> {
-                    if (includeSeasons) {
-                        val seasons = getAnimeSeasonsByParentId.await(libAnime.anime.id)
-                        seasons
-                            .filter { s ->
-                                s.anime.fetchType == FetchType.Episodes && !s.anime.favorite
-                            }
-                            .map { it.toLibraryAnime() }
-                    } else {
-                        emptyList()
-                    }
-                }
-                FetchType.Episodes -> listOf(libAnime)
-            }
-        }
-
         val restrictions = libraryPreferences.autoUpdateItemRestrictions().get()
         val skippedUpdates = mutableListOf<Pair<Anime, String?>>()
         val (_, fetchWindowUpperBound) = animeFetchInterval.getWindow(ZonedDateTime.now())
