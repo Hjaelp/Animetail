@@ -1,4 +1,4 @@
-package tachiyomi.domain.items.episode.service
+package tachiyomi.domain.items.service
 
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
@@ -8,6 +8,7 @@ import tachiyomi.domain.items.chapter.model.Chapter
 import tachiyomi.domain.items.chapter.service.calculateChapterGap
 import tachiyomi.domain.items.chapter.service.missingChaptersCount
 import tachiyomi.domain.items.episode.model.Episode
+import tachiyomi.domain.items.episode.service.calculateEpisodeGap
 
 @Execution(ExecutionMode.CONCURRENT)
 class MissingItemsTest {
