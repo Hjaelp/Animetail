@@ -106,8 +106,8 @@ import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.source.anime.model.StubAnimeSource
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.aniyomi.AYMR
-import tachiyomi.presentation.core.components.FastScrollLazyVerticalGrid
 import tachiyomi.i18n.tail.TLMR
+import tachiyomi.presentation.core.components.FastScrollLazyVerticalGrid
 import tachiyomi.presentation.core.components.TwoPanelBox
 import tachiyomi.presentation.core.components.material.ExtendedFloatingActionButton
 import tachiyomi.presentation.core.components.material.PullRefresh
@@ -594,50 +594,50 @@ private fun AnimeScreenSmallImpl(
                         modifier = Modifier.ignorePadding(offsetGridPaddingPx),
                     )
                 }
-                    // KMK -->
-                    if (state.source !is StubAnimeSource &&
-                        relatedAnimesEnabled
-                    ) {
-                        if (expandRelatedAnimes) {
-                            if (state.relatedAnimesSorted?.isNotEmpty() != false) {
-                                item { HorizontalDivider() }
-                                item(
-                                    key = EntryScreenItem.RELATED_ANIMES,
-                                    contentType = EntryScreenItem.RELATED_ANIMES,
-                                ) {
-                                    Column {
-                                        RelatedAnimeTitle(
-                                            title = stringResource(TLMR.strings.pref_source_related_mangas),
-                                            subtitle = null,
-                                            onClick = onRelatedAnimesScreenClick,
-                                            onLongClick = null,
-                                            modifier = Modifier
-                                                .padding(horizontal = MaterialTheme.padding.medium),
-                                        )
-                                        RelatedAnimesRow(
-                                            relatedAnimes = state.relatedAnimesSorted,
-                                            getAnimeState = getAnimeState,
-                                            onAnimeClick = onRelatedAnimeClick,
-                                            onAnimeLongClick = onRelatedAnimeLongClick,
-                                        )
-                                    }
-                                }
-                                item { HorizontalDivider() }
-                            }
-                        } else if (!showRelatedAnimesInOverflow) {
+                // KMK -->
+                if (state.source !is StubAnimeSource &&
+                    relatedAnimesEnabled
+                ) {
+                    if (expandRelatedAnimes) {
+                        if (state.relatedAnimesSorted?.isNotEmpty() != false) {
+                            item { HorizontalDivider() }
                             item(
                                 key = EntryScreenItem.RELATED_ANIMES,
                                 contentType = EntryScreenItem.RELATED_ANIMES,
                             ) {
-                                OutlinedButtonWithArrow(
-                                    text = stringResource(TLMR.strings.pref_source_related_mangas)
-                                        .uppercase(),
-                                    onClick = onRelatedAnimesScreenClick,
-                                )
+                                Column {
+                                    RelatedAnimeTitle(
+                                        title = stringResource(TLMR.strings.pref_source_related_mangas),
+                                        subtitle = null,
+                                        onClick = onRelatedAnimesScreenClick,
+                                        onLongClick = null,
+                                        modifier = Modifier
+                                            .padding(horizontal = MaterialTheme.padding.medium),
+                                    )
+                                    RelatedAnimesRow(
+                                        relatedAnimes = state.relatedAnimesSorted,
+                                        getAnimeState = getAnimeState,
+                                        onAnimeClick = onRelatedAnimeClick,
+                                        onAnimeLongClick = onRelatedAnimeLongClick,
+                                    )
+                                }
                             }
+                            item { HorizontalDivider() }
+                        }
+                    } else if (!showRelatedAnimesInOverflow) {
+                        item(
+                            key = EntryScreenItem.RELATED_ANIMES,
+                            contentType = EntryScreenItem.RELATED_ANIMES,
+                        ) {
+                            OutlinedButtonWithArrow(
+                                text = stringResource(TLMR.strings.pref_source_related_mangas)
+                                    .uppercase(),
+                                onClick = onRelatedAnimesScreenClick,
+                            )
                         }
                     }
-                    // KMK <--
+                }
+                // KMK <--
 
                 item(
                     key = EntryScreenItem.ITEM_HEADER,
@@ -709,10 +709,10 @@ private fun AnimeScreenSmallImpl(
                         sharedEpisodeItems(
                             anime = state.anime,
                             // AM (FILE_SIZE) -->
-                        source = state.source,
-                        showFileSize = showFileSize,
-                        // <-- AM (FILE_SIZE)
-                        episodes = listItem,
+                            source = state.source,
+                            showFileSize = showFileSize,
+                            // <-- AM (FILE_SIZE)
+                            episodes = listItem,
                             isAnyEpisodeSelected = episodes.fastAny { it.selected },
                             episodeSwipeStartAction = episodeSwipeStartAction,
                             episodeSwipeEndAction = episodeSwipeEndAction,
@@ -992,49 +992,49 @@ fun AnimeScreenLargeImpl(
                             bottom = contentPadding.calculateBottomPadding(),
                         ),
                     ) {
-                            // KMK -->
-                            if (state.source !is StubAnimeSource &&
-                                relatedAnimesEnabled
-                            ) {
-                                if (expandRelatedAnimes) {
-                                    if (state.relatedAnimesSorted?.isNotEmpty() != false) {
-                                        item(
-                                            key = EntryScreenItem.RELATED_ANIMES,
-                                            contentType = EntryScreenItem.RELATED_ANIMES,
-                                        ) {
-                                            Column {
-                                                RelatedAnimeTitle(
-                                                    title = stringResource(TLMR.strings.pref_source_related_mangas)
-                                                        .uppercase(),
-                                                    subtitle = null,
-                                                    onClick = onRelatedAnimesScreenClick,
-                                                    onLongClick = null,
-                                                    modifier = Modifier
-                                                        .padding(horizontal = MaterialTheme.padding.medium),
-                                                )
-                                                RelatedAnimesRow(
-                                                    relatedAnimes = state.relatedAnimesSorted,
-                                                    getAnimeState = getAnimeState,
-                                                    onAnimeClick = onRelatedAnimeClick,
-                                                    onAnimeLongClick = onRelatedAnimeLongClick,
-                                                )
-                                            }
-                                        }
-                                        item { HorizontalDivider() }
-                                    }
-                                } else if (!showRelatedAnimesInOverflow) {
+                        // KMK -->
+                        if (state.source !is StubAnimeSource &&
+                            relatedAnimesEnabled
+                        ) {
+                            if (expandRelatedAnimes) {
+                                if (state.relatedAnimesSorted?.isNotEmpty() != false) {
                                     item(
                                         key = EntryScreenItem.RELATED_ANIMES,
                                         contentType = EntryScreenItem.RELATED_ANIMES,
                                     ) {
-                                        OutlinedButtonWithArrow(
-                                            text = stringResource(TLMR.strings.pref_source_related_mangas),
-                                            onClick = onRelatedAnimesScreenClick,
-                                        )
+                                        Column {
+                                            RelatedAnimeTitle(
+                                                title = stringResource(TLMR.strings.pref_source_related_mangas)
+                                                    .uppercase(),
+                                                subtitle = null,
+                                                onClick = onRelatedAnimesScreenClick,
+                                                onLongClick = null,
+                                                modifier = Modifier
+                                                    .padding(horizontal = MaterialTheme.padding.medium),
+                                            )
+                                            RelatedAnimesRow(
+                                                relatedAnimes = state.relatedAnimesSorted,
+                                                getAnimeState = getAnimeState,
+                                                onAnimeClick = onRelatedAnimeClick,
+                                                onAnimeLongClick = onRelatedAnimeLongClick,
+                                            )
+                                        }
                                     }
+                                    item { HorizontalDivider() }
+                                }
+                            } else if (!showRelatedAnimesInOverflow) {
+                                item(
+                                    key = EntryScreenItem.RELATED_ANIMES,
+                                    contentType = EntryScreenItem.RELATED_ANIMES,
+                                ) {
+                                    OutlinedButtonWithArrow(
+                                        text = stringResource(TLMR.strings.pref_source_related_mangas),
+                                        onClick = onRelatedAnimesScreenClick,
+                                    )
                                 }
                             }
-                            // KMK <--
+                        }
+                        // KMK <--
 
                         item(
                             key = EntryScreenItem.ITEM_HEADER,
@@ -1107,10 +1107,10 @@ fun AnimeScreenLargeImpl(
                                 sharedEpisodeItems(
                                     anime = state.anime,
                                     // AM (FILE_SIZE) -->
-                                source = state.source,
-                                showFileSize = showFileSize,
-                                // <-- AM (FILE_SIZE)
-                                episodes = listItem,
+                                    source = state.source,
+                                    showFileSize = showFileSize,
+                                    // <-- AM (FILE_SIZE)
+                                    episodes = listItem,
                                     isAnyEpisodeSelected = episodes.fastAny { it.selected },
                                     episodeSwipeStartAction = episodeSwipeStartAction,
                                     episodeSwipeEndAction = episodeSwipeEndAction,
