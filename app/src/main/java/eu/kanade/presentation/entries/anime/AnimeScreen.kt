@@ -396,7 +396,6 @@ private fun AnimeScreenSmallImpl(
         when (state.anime.fetchType) {
             FetchType.Seasons -> state.anime.seasonsFiltered()
             FetchType.Episodes -> state.anime.episodesFiltered()
-            FetchType.Unknown -> false
         }
     }
 
@@ -665,7 +664,6 @@ private fun AnimeScreenSmallImpl(
                     ItemHeader(
                         enabled = !isAnySelected,
                         itemCount = when (state.anime.fetchType) {
-                            FetchType.Unknown -> 0
                             FetchType.Seasons -> seasons.size
                             FetchType.Episodes -> episodes.size
                         },
@@ -735,7 +733,6 @@ private fun AnimeScreenSmallImpl(
                             modifier = Modifier.ignorePadding(offsetGridPaddingPx),
                         )
                     }
-                    FetchType.Unknown -> {}
                 }
             }
         }
@@ -837,7 +834,6 @@ fun AnimeScreenLargeImpl(
         when (state.anime.fetchType) {
             FetchType.Seasons -> state.anime.seasonsFiltered()
             FetchType.Episodes -> state.anime.episodesFiltered()
-            FetchType.Unknown -> false
         }
     }
 
@@ -1070,7 +1066,6 @@ fun AnimeScreenLargeImpl(
                             ItemHeader(
                                 enabled = !isAnySelected,
                                 itemCount = when (state.anime.fetchType) {
-                                    FetchType.Unknown -> 0
                                     FetchType.Seasons -> seasons.size
                                     FetchType.Episodes -> episodes.size
                                 },
@@ -1141,7 +1136,6 @@ fun AnimeScreenLargeImpl(
                                     modifier = Modifier.ignorePadding(offsetGridPaddingPx),
                                 )
                             }
-                            FetchType.Unknown -> {}
                         }
                     }
                 },
