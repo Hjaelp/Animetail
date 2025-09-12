@@ -30,6 +30,8 @@ data class Anime(
     val ogArtist: String?,
     val ogAuthor: String?,
     val ogDescription: String?,
+    val metadataProvider: Long,
+    val metadataProviderAnimeId: String?,
     val ogGenre: List<String>?,
     val ogStatus: Long,
     // SY <--
@@ -304,6 +306,8 @@ data class Anime(
             ogStatus = 0L,
             // SY <--
             thumbnailUrl = null,
+            metadataProvider = 0,
+            metadataProviderAnimeId = null,
             updateStrategy = AnimeUpdateStrategy.ALWAYS_UPDATE,
             initialized = false,
             lastModifiedAt = 0L,

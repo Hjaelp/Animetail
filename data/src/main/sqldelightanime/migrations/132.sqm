@@ -1,6 +1,11 @@
-UPDATE animes
-SET fetch_type = CASE fetch_type
-    WHEN 2 THEN 1
-    WHEN 1 THEN 0
-    WHEN 0 THEN 1
-END;
+ALTER TABLE episodes ADD COLUMN series_number INTEGER;
+ALTER TABLE episodes ADD COLUMN air_date INTEGER;
+ALTER TABLE episodes ADD COLUMN title TEXT;
+ALTER TABLE episodes ADD COLUMN runtime INTEGER;
+ALTER TABLE episodes ADD COLUMN content_rating TEXT;
+ALTER TABLE episodes ADD COLUMN overview TEXT;
+ALTER TABLE episodes ADD COLUMN thumbnail_url TEXT;
+ALTER TABLE episodes ADD COLUMN chapter_bookmarks TEXT;
+
+ALTER TABLE animes ADD COLUMN metadataProvider INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE animes ADD COLUMN metadataProviderAnimeId TEXT;

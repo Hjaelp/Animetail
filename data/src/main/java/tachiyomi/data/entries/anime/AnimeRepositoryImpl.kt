@@ -128,6 +128,8 @@ class AnimeRepositoryImpl(
                 seasonFlags = anime.seasonFlags,
                 seasonNumber = anime.seasonNumber,
                 seasonSourceOrder = anime.seasonSourceOrder,
+                metadataProvider = anime.metadataProvider,
+                metadataProviderAnimeId = anime.metadataProviderAnimeId,
             )
             animesQueries.selectLastInsertedRowId()
         }
@@ -212,6 +214,8 @@ class AnimeRepositoryImpl(
                     seasonFlags = value.seasonFlags,
                     seasonNumber = value.seasonNumber,
                     seasonSourceOrder = value.seasonSourceOrder,
+                    metadataProvider = value.metadataProvider,
+                    metadataProviderAnimeId = value.metadataProviderAnimeId,
                 )
             }
         }

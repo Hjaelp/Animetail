@@ -11,6 +11,14 @@ CREATE TABLE episodes(
     last_second_seen INTEGER NOT NULL,
     total_seconds INTEGER NOT NULL,
     episode_number REAL NOT NULL,
+    series_number INTEGER,
+    air_date INTEGER,
+    title TEXT,
+    runtime INTEGER,
+    content_rating TEXT,
+    overview TEXT,
+    thumbnail_url TEXT,
+    chapter_bookmarks TEXT,
     source_order INTEGER NOT NULL,
     date_fetch INTEGER NOT NULL,
     date_upload INTEGER NOT NULL,
@@ -87,8 +95,8 @@ SET is_syncing = 0
 WHERE is_syncing = 1;
 
 insert:
-INSERT INTO episodes(anime_id, url, name, scanlator, seen, bookmark, last_second_seen, total_seconds, episode_number, source_order, date_fetch, date_upload, last_modified_at, version, is_syncing)
-VALUES (:animeId, :url, :name, :scanlator, :seen, :bookmark, :lastSecondSeen, :totalSeconds, :episodeNumber, :sourceOrder, :dateFetch, :dateUpload, 0, :version, 0);
+INSERT INTO episodes(anime_id, url, name, scanlator, seen, bookmark, last_second_seen, total_seconds, episode_number, series_number, air_date, title, runtime, content_rating, overview, thumbnail_url, chapter_bookmarks, source_order, date_fetch, date_upload, last_modified_at, version, is_syncing)
+VALUES (:animeId, :url, :name, :scanlator, :seen, :bookmark, :lastSecondSeen, :totalSeconds, :episodeNumber, :seriesNumber, :airDate, :title, :runtime, :contentRating, :overview, :thumbnailUrl, :chapterBookmarks, :sourceOrder, :dateFetch, :dateUpload, 0, :version, 0);
 
 update:
 UPDATE episodes
@@ -101,6 +109,14 @@ SET anime_id = coalesce(:animeId, anime_id),
     last_second_seen = coalesce(:lastSecondSeen, last_second_seen),
     total_seconds = coalesce(:totalSeconds, total_seconds),
     episode_number = coalesce(:episodeNumber, episode_number),
+    series_number = coalesce(:seriesNumber, series_number),
+    air_date = coalesce(:airDate, air_date),
+    title = coalesce(:title, title),
+    runtime = coalesce(:runtime, runtime),
+    content_rating = coalesce(:contentRating, content_rating),
+    overview = coalesce(:overview, overview),
+    thumbnail_url = coalesce(:thumbnailUrl, thumbnail_url),
+    chapter_bookmarks = coalesce(:chapterBookmarks, chapter_bookmarks),
     source_order = coalesce(:sourceOrder, source_order),
     date_fetch = coalesce(:dateFetch, date_fetch),
     date_upload = coalesce(:dateUpload, date_upload),

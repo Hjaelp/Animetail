@@ -38,6 +38,8 @@ object AnimeMapper {
         seasonFlags: Long,
         seasonNumber: Double,
         seasonSourceOrder: Long,
+        metadataProvider: Long,
+        metadataProviderAnimeId: String?,
     ): Anime = Anime(
         id = id,
         source = source,
@@ -69,6 +71,8 @@ object AnimeMapper {
         seasonFlags = seasonFlags,
         seasonNumber = seasonNumber,
         seasonSourceOrder = seasonSourceOrder,
+        metadataProvider = metadataProvider,
+        metadataProviderAnimeId = metadataProviderAnimeId,
     )
 
     fun mapLibraryAnime(
@@ -101,6 +105,8 @@ object AnimeMapper {
         seasonFlags: Long,
         seasonNumber: Double,
         seasonSourceOrder: Long,
+        metadataProvider: Long,
+        metadataProviderAnimeId: String?,
         totalCount: Long,
         seenCount: Double,
         latestUpload: Long,
@@ -139,6 +145,8 @@ object AnimeMapper {
             seasonFlags,
             seasonNumber,
             seasonSourceOrder,
+            metadataProvider,
+            metadataProviderAnimeId,
         ),
         category = category,
         totalCount = totalCount,
@@ -179,6 +187,8 @@ object AnimeMapper {
         seasonFlags: Long,
         seasonNumber: Double,
         seasonSourceOrder: Long,
+        metadataProvider: Long,
+        metadataProviderAnimeId: String?,
         totalCount: Long,
         seenCount: Double,
         latestUpload: Long,
@@ -216,6 +226,8 @@ object AnimeMapper {
             seasonFlags,
             seasonNumber,
             seasonSourceOrder,
+            metadataProvider,
+            metadataProviderAnimeId,
         ),
         totalCount = totalCount,
         seenCount = seenCount.toLong(),

@@ -29,7 +29,7 @@ android {
 
         applicationId = "com.dark.animetailv2"
 
-        versionCode = 130
+        versionCode = 133
         versionName = "0.18.0.4"
 
         buildConfigField("String", "COMMIT_COUNT", "\"${getCommitCount()}\"")
@@ -269,6 +269,7 @@ dependencies {
     // SY <--
 
     // Image loading
+    implementation("io.coil-kt:coil-compose:2.7.0")
     implementation(platform(libs.coil.bom))
     implementation(libs.bundles.coil)
     implementation(libs.subsamplingscaleimageview) {

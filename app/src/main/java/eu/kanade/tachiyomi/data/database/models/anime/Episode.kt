@@ -27,6 +27,22 @@ interface Episode : SEpisode, Serializable {
     var last_modified: Long
 
     var version: Long
+
+    var series_number: Long?
+
+    var air_date: Long?
+
+    var title: String?
+
+    var runtime: Long?
+
+    var content_rating: String?
+
+    var overview: String?
+
+    var thumbnail_url: String?
+
+    var chapter_bookmarks: String?
 }
 
 val Episode.isRecognizedNumber: Boolean
@@ -48,7 +64,17 @@ fun Episode.toDomainEpisode(): DomainEpisode? {
         dateUpload = date_upload,
         episodeNumber = episode_number.toDouble(),
         scanlator = scanlator,
+        description = overview,
+        season = -1L,
+        thumbnailUrl = thumbnail_url,
         lastModifiedAt = last_modified,
         version = version,
+        seriesNumber = series_number,
+        airDate = air_date,
+        title = title,
+        runtime = runtime,
+        contentRating = content_rating,
+        overview = overview,
+        chapterBookmarks = chapter_bookmarks,
     )
 }
