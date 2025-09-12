@@ -7,6 +7,7 @@ import eu.kanade.tachiyomi.data.backup.models.BackupAnimeTracking
 import eu.kanade.tachiyomi.data.backup.models.BackupCategory
 import eu.kanade.tachiyomi.data.backup.models.BackupEpisode
 import tachiyomi.data.AnimeUpdateStrategyColumnAdapter
+import tachiyomi.data.FetchTypeColumnAdapter
 import tachiyomi.data.handlers.anime.AnimeDatabaseHandler
 import tachiyomi.domain.category.anime.interactor.GetAnimeCategories
 import tachiyomi.domain.entries.anime.interactor.AnimeFetchInterval
@@ -57,6 +58,7 @@ class AnimeRestorer(
     suspend fun restore(
         backupAnime: BackupAnime,
         backupCategories: List<BackupCategory>,
+        backupSeasons: List<BackupAnime>,
     ) {
         handler.await(inTransaction = true) {
             val dbAnime = findExistingAnime(backupAnime)
@@ -65,6 +67,18 @@ class AnimeRestorer(
                 restoreNewAnime(anime)
             } else {
                 restoreExistingAnime(anime, dbAnime)
+            }
+
+            backupSeasons.forEach { bs ->
+                val dbAnime = findExistingAnime(bs)
+                val anime = bs.getAnimeImpl().copy(
+                    parentId = restoredAnime.id,
+                )
+                if (dbAnime == null) {
+                    restoreNewAnime(anime)
+                } else {
+                    restoreExistingAnime(anime, dbAnime)
+                }
             }
 
             restoreAnimeDetails(
@@ -89,9 +103,9 @@ class AnimeRestorer(
 
     private suspend fun restoreExistingAnime(anime: Anime, dbAnime: Anime): Anime {
         return if (anime.version > dbAnime.version) {
-            updateAnime(dbAnime.copyFrom(anime).copy(id = dbAnime.id))
+            updateAnime(dbAnime.copyFrom(anime).copy(id = dbAnime.id, parentId = anime.parentId))
         } else {
-            updateAnime(anime.copyFrom(dbAnime).copy(id = dbAnime.id))
+            updateAnime(anime.copyFrom(dbAnime).copy(id = dbAnime.id, parentId = anime.parentId))
         }
     }
 
@@ -106,6 +120,8 @@ class AnimeRestorer(
             ogStatus = newer.status,
             initialized = this.initialized || newer.initialized,
             version = newer.version,
+            fetchType = newer.fetchType,
+            parentId = newer.parentId,
         )
     }
 
@@ -134,6 +150,11 @@ class AnimeRestorer(
                 updateStrategy = anime.updateStrategy.let(AnimeUpdateStrategyColumnAdapter::encode),
                 version = anime.version,
                 isSyncing = 1,
+                fetchType = anime.fetchType.let(FetchTypeColumnAdapter::encode),
+                parentId = anime.parentId,
+                seasonFlags = anime.seasonFlags,
+                seasonNumber = anime.seasonNumber,
+                seasonSourceOrder = anime.seasonSourceOrder,
             )
         }
         return anime
@@ -269,6 +290,11 @@ class AnimeRestorer(
                 dateAdded = anime.dateAdded,
                 updateStrategy = anime.updateStrategy,
                 version = anime.version,
+                fetchType = anime.fetchType,
+                parentId = anime.parentId,
+                seasonFlags = anime.seasonFlags,
+                seasonNumber = anime.seasonNumber,
+                seasonSourceOrder = anime.seasonSourceOrder,
             )
             animesQueries.selectLastInsertedRowId()
         }
