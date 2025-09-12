@@ -36,6 +36,7 @@ import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Done
 import androidx.compose.material.icons.outlined.DoneAll
 import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Pause
 import androidx.compose.material.icons.outlined.Public
 import androidx.compose.material.icons.outlined.Schedule
@@ -171,6 +172,7 @@ fun AnimeActionRow(
     onTrackingClicked: (() -> Unit)?,
     onEditIntervalClicked: (() -> Unit)?,
     onEditCategory: (() -> Unit)?,
+    onMetadataProviderClicked: (() -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
     val defaultActionButtonColor = MaterialTheme.colorScheme.onSurface.copy(alpha = DISABLED_ALPHA)
@@ -221,6 +223,15 @@ fun AnimeActionRow(
                 icon = if (trackingCount == 0) Icons.Outlined.Sync else Icons.Outlined.Done,
                 color = if (trackingCount == 0) defaultActionButtonColor else MaterialTheme.colorScheme.primary,
                 onClick = onTrackingClicked,
+            )
+        }
+
+        if (onMetadataProviderClicked != null) {
+            AnimeActionButton(
+                title = stringResource(MR.strings.action_metadata_provider),
+                icon = Icons.Outlined.Info,
+                color = defaultActionButtonColor,
+                onClick = onMetadataProviderClicked,
             )
         }
 

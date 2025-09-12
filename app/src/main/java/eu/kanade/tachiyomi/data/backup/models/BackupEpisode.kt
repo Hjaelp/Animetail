@@ -23,6 +23,14 @@ data class BackupEpisode(
     @ProtoNumber(10) var sourceOrder: Long = 0,
     @ProtoNumber(11) var lastModifiedAt: Long = 0,
     @ProtoNumber(12) var version: Long = 0,
+    @ProtoNumber(901) var seriesNumber: Long? = null,
+    @ProtoNumber(902) var airDate: Long? = null,
+    @ProtoNumber(903) var title: String? = null,
+    @ProtoNumber(904) var runtime: Long? = null,
+    @ProtoNumber(905) var contentRating: String? = null,
+    @ProtoNumber(906) var overview: String? = null,
+    @ProtoNumber(907) var thumbnailUrl: String? = null,
+    @ProtoNumber(908) var chapterBookmarks: String? = null,
 ) {
     fun toEpisodeImpl(): Episode {
         return Episode.create().copy(
@@ -39,6 +47,14 @@ data class BackupEpisode(
             sourceOrder = this@BackupEpisode.sourceOrder,
             lastModifiedAt = this@BackupEpisode.lastModifiedAt,
             version = this@BackupEpisode.version,
+            seriesNumber = this@BackupEpisode.seriesNumber,
+            airDate = this@BackupEpisode.airDate,
+            title = this@BackupEpisode.title,
+            runtime = this@BackupEpisode.runtime,
+            contentRating = this@BackupEpisode.contentRating,
+            overview = this@BackupEpisode.overview,
+            thumbnailUrl = this@BackupEpisode.thumbnailUrl,
+            chapterBookmarks = this@BackupEpisode.chapterBookmarks,
         )
     }
 }
@@ -54,6 +70,14 @@ val backupEpisodeMapper = {
         lastSecondSeen: Long,
         totalSeconds: Long,
         episodeNumber: Double,
+        seriesNumber: Long?,
+        airDate: Long?,
+        title: String?,
+        runtime: Long?,
+        contentRating: String?,
+        overview: String?,
+        thumbnailUrl: String?,
+        chapterBookmarks: String?,
         sourceOrder: Long,
         dateFetch: Long,
         dateUpload: Long,
@@ -75,5 +99,13 @@ val backupEpisodeMapper = {
         sourceOrder = sourceOrder,
         lastModifiedAt = lastModifiedAt,
         version = version,
+        seriesNumber = seriesNumber,
+        airDate = airDate,
+        title = title,
+        runtime = runtime,
+        contentRating = contentRating,
+        overview = overview,
+        thumbnailUrl = thumbnailUrl,
+        chapterBookmarks = chapterBookmarks,
     )
 }

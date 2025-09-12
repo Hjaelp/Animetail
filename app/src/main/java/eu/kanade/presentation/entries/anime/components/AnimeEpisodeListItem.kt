@@ -6,8 +6,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Circle
@@ -40,6 +42,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import eu.kanade.presentation.entries.components.DotSeparatorText
+import coil.compose.AsyncImage
 import eu.kanade.tachiyomi.data.download.anime.model.AnimeDownload
 import me.saket.swipe.SwipeableActionsBox
 import tachiyomi.domain.library.service.LibraryPreferences
@@ -49,6 +52,11 @@ import tachiyomi.presentation.core.components.material.DISABLED_ALPHA
 import tachiyomi.presentation.core.components.material.SECONDARY_ALPHA
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.selectedBackground
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.painter.ColorPainter
+import eu.kanade.presentation.util.rememberResourceBitmapPainter
+import eu.kanade.tachiyomi.R
 
 @Composable
 fun AnimeEpisodeListItem(
@@ -56,6 +64,7 @@ fun AnimeEpisodeListItem(
     date: String?,
     watchProgress: String?,
     scanlator: String?,
+    description: String?,
     seen: Boolean,
     bookmark: Boolean,
     selected: Boolean,
@@ -71,6 +80,10 @@ fun AnimeEpisodeListItem(
     // AM (FILE_SIZE) -->
     fileSize: Long?,
     // <-- AM (FILE_SIZE)
+    runtime: String?,
+    thumbnailUrl: String?,
+    episodeNumber: Double?,
+    seriesNumber: Long?,
     modifier: Modifier = Modifier,
 ) {
     val start = getSwipeAction(
@@ -105,7 +118,19 @@ fun AnimeEpisodeListItem(
                     onLongClick = onLongClick,
                 )
                 .padding(start = 16.dp, top = 12.dp, end = 8.dp, bottom = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
+            if (thumbnailUrl != null) {
+                AsyncImage(
+                    model = thumbnailUrl,
+                    contentDescription = "",
+                    placeholder = ColorPainter(Color(0x1F888888)),
+                    error = rememberResourceBitmapPainter(id = R.drawable.cover_error),
+                    modifier = Modifier
+                        .sizeIn(maxHeight = 90.dp, maxWidth = 130.dp)
+                )
+                Spacer(modifier = Modifier.padding(start = 8.dp))
+            }
             Column(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(6.dp),
@@ -134,8 +159,22 @@ fun AnimeEpisodeListItem(
                             tint = MaterialTheme.colorScheme.primary,
                         )
                     }
+                    val formattedTitle = if (!title.matches(Regex("^(Episode|Season|Ep\\.)\\s*\\d+$", RegexOption.IGNORE_CASE))) {
+                        if (seriesNumber == null || seriesNumber == -1L) {
+                            val e = String.format("%02d", episodeNumber?.toInt() ?: 0)
+                            "Episode $e - $title"
+                        } else if (seriesNumber != null && episodeNumber != null) {
+                            val s = String.format("%02d", seriesNumber)
+                            val e = String.format("%02d", episodeNumber.toInt())
+                            "S${s}E${e} - $title"
+                        } else {
+                            title
+                        }
+                    } else {
+                        title
+                    }
                     Text(
-                        text = title,
+                        text = formattedTitle,
                         style = MaterialTheme.typography.bodyMedium,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
@@ -144,35 +183,48 @@ fun AnimeEpisodeListItem(
                     )
                 }
 
-                Row {
-                    val subtitleStyle = MaterialTheme.typography.bodySmall
-                        .merge(
-                            color = LocalContentColor.current
-                                .copy(alpha = if (seen) DISABLED_ALPHA else SECONDARY_ALPHA),
-                        )
+                val subtitleStyle = MaterialTheme.typography.bodySmall
+                    .merge(
+                        color = LocalContentColor.current
+                            .copy(alpha = if (seen) DISABLED_ALPHA else SECONDARY_ALPHA),
+                    )
+
+                if (description != null) {
                     ProvideTextStyle(value = subtitleStyle) {
+                        Text(
+                            text = description,
+                            maxLines = 3,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+                }
+
+                ProvideTextStyle(value = subtitleStyle) {
+                    Row {
                         if (date != null) {
                             Text(
-                                text = date,
+                                text = "Airdate: $date",
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
+                                color = LocalContentColor.current.copy(alpha = DISABLED_ALPHA)
                             )
-                            if (watchProgress != null || scanlator != null) DotSeparatorText()
+                            if (watchProgress != null || runtime != null) DotSeparatorText()
                         }
                         if (watchProgress != null) {
                             Text(
                                 text = watchProgress,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
-                                color = LocalContentColor.current.copy(alpha = DISABLED_ALPHA),
+                                color = LocalContentColor.current.copy(alpha = DISABLED_ALPHA)
                             )
-                            if (scanlator != null) DotSeparatorText()
+                            if (runtime != null) DotSeparatorText()
                         }
-                        if (scanlator != null) {
+                        if (runtime != null) {
                             Text(
-                                text = scanlator,
+                                text = "Runtime: $runtime",
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
+                                color = LocalContentColor.current.copy(alpha = DISABLED_ALPHA)
                             )
                         }
                     }

@@ -62,6 +62,9 @@ data class BackupAnime(
     // skipping 803 due to using duplicate value in previous builds
     @ProtoNumber(804) var customDescription: String? = null,
     @ProtoNumber(805) var customGenre: List<String>? = null,
+
+    @ProtoNumber(901) var metadataProvider: Long = 0,
+    @ProtoNumber(902) var metadataProviderAnimeId: String? = null,
 ) {
     fun getAnimeImpl(): Anime {
         return Anime.create().copy(
@@ -89,6 +92,8 @@ data class BackupAnime(
             seasonFlags = this@BackupAnime.seasonFlags,
             seasonNumber = this@BackupAnime.seasonNumber,
             seasonSourceOrder = this@BackupAnime.seasonSourceOrder,
+            metadataProvider = this@BackupAnime.metadataProvider,
+            metadataProviderAnimeId = this@BackupAnime.metadataProviderAnimeId,
         )
     }
 

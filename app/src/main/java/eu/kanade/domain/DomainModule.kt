@@ -6,6 +6,9 @@ import eu.kanade.domain.entries.anime.interactor.SetAnimeViewerFlags
 import eu.kanade.domain.entries.anime.interactor.SyncSeasonsWithSource
 import eu.kanade.domain.entries.anime.interactor.UpdateAnime
 import eu.kanade.domain.entries.manga.interactor.GetExcludedScanlators
+import tachiyomi.domain.metadata.anime.interactor.UpdateAnimeMetadata
+import tachiyomi.domain.metadata.anime.repository.AnimeMetadataRepository
+import tachiyomi.domain.entries.anime.interactor.RemoveAnimeMetadataProviderDetails
 import eu.kanade.domain.entries.manga.interactor.SetExcludedScanlators
 import eu.kanade.domain.entries.manga.interactor.SetMangaViewerFlags
 import eu.kanade.domain.entries.manga.interactor.UpdateManga
@@ -79,6 +82,7 @@ import tachiyomi.data.history.anime.AnimeHistoryRepositoryImpl
 import tachiyomi.data.history.manga.MangaHistoryRepositoryImpl
 import tachiyomi.data.items.chapter.ChapterRepositoryImpl
 import tachiyomi.data.items.episode.EpisodeRepositoryImpl
+import tachiyomi.data.metadata.anime.AnimeMetadataRepositoryImpl
 import tachiyomi.data.release.ReleaseServiceImpl
 import tachiyomi.data.source.anime.AnimeSourceRepositoryImpl
 import tachiyomi.data.source.anime.AnimeStubSourceRepositoryImpl
@@ -174,6 +178,7 @@ import tachiyomi.domain.items.episode.repository.EpisodeRepository
 import tachiyomi.domain.items.season.interactor.GetAnimeSeasonsByParentId
 import tachiyomi.domain.items.season.interactor.SetAnimeDefaultSeasonFlags
 import tachiyomi.domain.items.season.interactor.ShouldUpdateDbSeason
+import tachiyomi.domain.metadata.anime.interactor.GetAnimeMetadata
 import tachiyomi.domain.release.interactor.GetApplicationRelease
 import tachiyomi.domain.release.service.ReleaseService
 import tachiyomi.domain.source.anime.interactor.CountFeedSavedSearchBySourceId
@@ -269,6 +274,13 @@ class DomainModule : InjektModule {
         addFactory { SetAnimeCategories(get()) }
         addFactory { ShouldUpdateDbSeason() }
         addFactory { SyncSeasonsWithSource(get(), get(), get(), get(), get()) }
+
+        addSingletonFactory<List<tachiyomi.domain.metadata.anime.repository.AnimeMetadataSource>> { get<eu.kanade.tachiyomi.data.metadata.MetadataManager>().animeSources }
+        addSingletonFactory<AnimeMetadataRepository> { AnimeMetadataRepositoryImpl(get()) }
+        addFactory { UpdateAnimeMetadata(get(), get(), get()) }
+        addFactory { RemoveAnimeMetadataProviderDetails(get()) }
+
+        addFactory { GetAnimeMetadata(get()) }
 
         addSingletonFactory<MangaRepository> { MangaRepositoryImpl(get()) }
         addFactory { GetDuplicateLibraryManga(get()) }

@@ -95,9 +95,11 @@ import tachiyomi.domain.entries.anime.interactor.GetAnime
 import tachiyomi.domain.entries.anime.interactor.GetAnimeWithEpisodesAndSeasons
 import tachiyomi.domain.entries.anime.interactor.GetDuplicateLibraryAnime
 import tachiyomi.domain.entries.anime.interactor.NetworkToLocalAnime
+import tachiyomi.domain.entries.anime.interactor.RemoveAnimeMetadataProviderDetails
 import tachiyomi.domain.entries.anime.interactor.SetAnimeEpisodeFlags
 import tachiyomi.domain.entries.anime.interactor.SetAnimeSeasonFlags
 import tachiyomi.domain.entries.anime.interactor.SetCustomAnimeInfo
+import tachiyomi.domain.metadata.anime.interactor.UpdateAnimeMetadata
 import tachiyomi.domain.entries.anime.model.Anime
 import tachiyomi.domain.entries.anime.model.AnimeUpdate
 import tachiyomi.domain.entries.anime.model.CustomAnimeInfo
@@ -171,7 +173,9 @@ class AnimeScreenModel(
     private val animeRepository: AnimeRepository = Injekt.get(),
     private val getEpisodesByAnimeId: GetEpisodesByAnimeId = Injekt.get(),
     private val filterEpisodesForDownload: FilterEpisodesForDownload = Injekt.get(),
+    private val removeAnimeMetadataProviderDetails: RemoveAnimeMetadataProviderDetails = Injekt.get(),
     internal val setAnimeViewerFlags: SetAnimeViewerFlags = Injekt.get(),
+    private val updateAnimeMetadata: UpdateAnimeMetadata = Injekt.get(),
     val snackbarHostState: SnackbarHostState = SnackbarHostState(),
     // AM (FILE_SIZE) -->
     private val storagePreferences: StoragePreferences = Injekt.get(),
@@ -332,6 +336,9 @@ class AnimeScreenModel(
                 async { fetchEpisodesAndSeasonsFromSource(manualFetch) },
             )
             fetchFromSourceTasks.awaitAll()
+            successState?.let { state ->
+                updateAnimeMetadata.await(state.anime, state.anime.metadataProvider, state.anime.metadataProviderAnimeId)
+            }
             updateSuccessState { it.copy(isRefreshingData = false) }
             successState?.let { updateAiringTime(it.anime, it.trackItems, manualFetch) }
         }
@@ -1666,6 +1673,7 @@ class AnimeScreenModel(
         data object EpisodeSettingsSheet : Dialog
         data object SeasonSettingsSheet : Dialog
         data object TrackSheet : Dialog
+        data class ShowMetadataProviderDialog(val animeId: Long, val animeTitle: String) : Dialog
         data object FullCover : Dialog
     }
 
@@ -1690,8 +1698,19 @@ class AnimeScreenModel(
         updateSuccessState { it.copy(dialog = Dialog.TrackSheet) }
     }
 
+    fun showMetadataProviderDialog() {
+        val anime = successState?.anime ?: return
+        updateSuccessState { it.copy(dialog = Dialog.ShowMetadataProviderDialog(anime.id, anime.title)) }
+    }
+
     fun showCoverDialog() {
         updateSuccessState { it.copy(dialog = Dialog.FullCover) }
+    }
+
+    fun removeAnimeMetadataProviderDetails(animeId: Long) {
+        screenModelScope.launchIO {
+            removeAnimeMetadataProviderDetails.await(animeId)
+        }
     }
 
     // SY -->

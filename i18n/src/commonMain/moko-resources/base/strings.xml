@@ -114,6 +114,7 @@
     <!-- Do not translate "WebView" -->
     <string name="action_open_in_web_view">Open in WebView</string>
     <string name="action_web_view" translatable="false">WebView</string>
+    <string name="action_metadata_provider">Metadata</string>
     <string name="action_migrate">Migrate</string>
     <string name="action_display_mode">Display mode</string>
     <string name="action_display">Display</string>
