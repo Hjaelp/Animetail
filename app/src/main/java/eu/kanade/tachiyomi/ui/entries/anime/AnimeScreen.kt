@@ -64,6 +64,7 @@ import eu.kanade.tachiyomi.ui.entries.anime.track.AnimeTrackInfoDialogHomeScreen
 import eu.kanade.tachiyomi.ui.home.HomeScreen
 import eu.kanade.tachiyomi.ui.library.anime.AnimeLibraryTab
 import eu.kanade.tachiyomi.ui.main.MainActivity
+import eu.kanade.tachiyomi.ui.metadata.AnimeMetadataInfoDialogHomeScreen
 import eu.kanade.tachiyomi.ui.setting.SettingsScreen
 import eu.kanade.tachiyomi.ui.webview.WebViewScreen
 import eu.kanade.tachiyomi.util.system.copyToClipboard
@@ -303,6 +304,7 @@ class AnimeScreen(
                     val manga = screenModel.networkToLocalAnime.getLocal(it)
                 }
             },
+            onMetadataProviderClicked = screenModel::showMetadataProviderDialog,
         )
 
         val onDismissRequest = {
@@ -394,6 +396,27 @@ class AnimeScreen(
                         sourceId = successState.source.id,
                     ),
                     enableSwipeDismiss = { it.lastItem is AnimeTrackInfoDialogHomeScreen },
+                    onDismissRequest = onDismissRequest,
+                )
+            }
+            is AnimeScreenModel.Dialog.ShowMetadataProviderDialog -> {
+                val onDismissRequest = {
+                    screenModel.dismissDialog()
+                }
+                NavigatorAdaptiveSheet(
+                    screen = AnimeMetadataInfoDialogHomeScreen(
+                        animeId = dialog.animeId,
+                        animeTitle = dialog.animeTitle,
+                        onDismissRequest = onDismissRequest,
+                        onRemoveMetadataProvider = {
+                            scope.launchIO {
+                                screenModel.removeAnimeMetadataProviderDetails(dialog.animeId)
+                                screenModel.fetchAllFromSource()
+                                onDismissRequest()
+                            }
+                        },
+                    ),
+                    enableSwipeDismiss = { it.lastItem is AnimeMetadataInfoDialogHomeScreen },
                     onDismissRequest = onDismissRequest,
                 )
             }

@@ -34,6 +34,22 @@ class EpisodeImpl : Episode {
 
     override var version: Long = 0
 
+    override var series_number: Long? = null
+
+    override var air_date: Long? = null
+
+    override var title: String? = null
+
+    override var runtime: Long? = null
+
+    override var content_rating: String? = null
+
+    override var overview: String? = null
+
+    override var thumbnail_url: String? = null
+
+    override var chapter_bookmarks: String? = null
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other == null || javaClass != other.javaClass) return false

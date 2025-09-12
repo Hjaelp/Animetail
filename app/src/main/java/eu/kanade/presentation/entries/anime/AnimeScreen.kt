@@ -144,6 +144,7 @@ fun AnimeScreen(
     onWebViewClicked: (() -> Unit)?,
     onWebViewLongClicked: (() -> Unit)?,
     onTrackingClicked: (() -> Unit)?,
+    onMetadataProviderClicked: (() -> Unit)?,
 
     // For tags menu
     onTagSearch: (String) -> Unit,
@@ -223,6 +224,7 @@ fun AnimeScreen(
             onWebViewClicked = onWebViewClicked,
             onWebViewLongClicked = onWebViewLongClicked,
             onTrackingClicked = onTrackingClicked,
+            onMetadataProviderClicked = onMetadataProviderClicked,
             onTagSearch = onTagSearch,
             onCopyTagToClipboard = onCopyTagToClipboard,
             onFilterClicked = onFilterButtonClicked,
@@ -276,6 +278,7 @@ fun AnimeScreen(
             onWebViewClicked = onWebViewClicked,
             onWebViewLongClicked = onWebViewLongClicked,
             onTrackingClicked = onTrackingClicked,
+            onMetadataProviderClicked = onMetadataProviderClicked,
             onTagSearch = onTagSearch,
             onCopyTagToClipboard = onCopyTagToClipboard,
             onFilterButtonClicked = onFilterButtonClicked,
@@ -335,6 +338,7 @@ private fun AnimeScreenSmallImpl(
     onWebViewLongClicked: (() -> Unit)?,
     onTrackingClicked: (() -> Unit)?,
 
+    onMetadataProviderClicked: (() -> Unit)?,
     // For tags menu
     onTagSearch: (String) -> Unit,
     onCopyTagToClipboard: (tag: String) -> Unit,
@@ -576,6 +580,7 @@ private fun AnimeScreenSmallImpl(
                         onEditIntervalClicked = onEditIntervalClicked,
                         onEditCategory = onEditCategoryClicked,
                         modifier = Modifier.ignorePadding(offsetGridPaddingPx),
+                        onMetadataProviderClicked = onMetadataProviderClicked,
                     )
                 }
 
@@ -761,6 +766,7 @@ fun AnimeScreenLargeImpl(
     onWebViewLongClicked: (() -> Unit)?,
     onTrackingClicked: (() -> Unit)?,
 
+    onMetadataProviderClicked: (() -> Unit)?,
     // For tags menu
     onTagSearch: (String) -> Unit,
     onCopyTagToClipboard: (tag: String) -> Unit,
@@ -972,6 +978,7 @@ fun AnimeScreenLargeImpl(
                             onWebViewClicked = onWebViewClicked,
                             onWebViewLongClicked = onWebViewLongClicked,
                             onTrackingClicked = onTrackingClicked,
+                            onMetadataProviderClicked = onMetadataProviderClicked,
                             onEditIntervalClicked = onEditIntervalClicked,
                             onEditCategory = onEditCategoryClicked,
                         )
@@ -1294,6 +1301,8 @@ private fun LazyGridScope.sharedEpisodeItems(
                             )
                         },
                     scanlator = episodeItem.episode.scanlator.takeIf { !it.isNullOrBlank() },
+                    description = episodeItem.episode.description,
+                    thumbnailUrl = episodeItem.episode.thumbnailUrl,
                     seen = episodeItem.episode.seen,
                     bookmark = episodeItem.episode.bookmark,
                     selected = episodeItem.selected,
@@ -1326,6 +1335,9 @@ private fun LazyGridScope.sharedEpisodeItems(
                     // AM (FILE_SIZE) -->
                     fileSize = fileSizeAsync,
                     // <-- AM (FILE_SIZE)
+                    runtime = episodeItem.episode.runtime.takeIf { (it?:0) > 0 }?.let { formatRuntime(it) },
+                    episodeNumber = episodeItem.episode.episodeNumber,
+                    seriesNumber = episodeItem.episode.seriesNumber,
                 )
             }
         }
@@ -1373,6 +1385,18 @@ private fun formatTime(milliseconds: Long, useDayFormat: Boolean = false): Strin
             TimeUnit.MILLISECONDS.toSeconds(milliseconds) -
                 TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(milliseconds)),
         )
+    }
+}
+
+private fun formatRuntime(milliseconds: Long): String {
+    val totalMinutes = TimeUnit.MILLISECONDS.toMinutes(milliseconds)
+    val hours = totalMinutes / 60
+    val minutes = totalMinutes % 60
+
+    return if (hours > 0) {
+        String.format("%dh %02dm", hours, minutes)
+    } else {
+        String.format("%dm", minutes)
     }
 }
 

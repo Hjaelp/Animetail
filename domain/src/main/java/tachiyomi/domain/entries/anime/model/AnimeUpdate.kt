@@ -31,6 +31,8 @@ data class AnimeUpdate(
     val seasonFlags: Long? = null,
     val seasonNumber: Double? = null,
     val seasonSourceOrder: Long? = null,
+    val metadataProvider: Long? = null,
+    val metadataProviderAnimeId: String? = null,
 )
 
 fun Anime.toAnimeUpdate(): AnimeUpdate {
@@ -62,5 +64,7 @@ fun Anime.toAnimeUpdate(): AnimeUpdate {
         seasonFlags = seasonFlags,
         seasonNumber = seasonNumber,
         seasonSourceOrder = seasonSourceOrder,
+        metadataProvider = metadataProvider,
+        metadataProviderAnimeId = metadataProviderAnimeId,
     )
 }

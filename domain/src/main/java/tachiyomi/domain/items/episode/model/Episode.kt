@@ -14,8 +14,18 @@ data class Episode(
     val dateUpload: Long,
     val episodeNumber: Double,
     val scanlator: String?,
+    val description: String?,
+    val season: Long,
+    val thumbnailUrl: String?,
     val lastModifiedAt: Long,
     val version: Long,
+    val seriesNumber: Long?,
+    val airDate: Long?,
+    val title: String?,
+    val runtime: Long?,
+    val contentRating: String?,
+    val overview: String?,
+    val chapterBookmarks: String?,
 ) {
     val isRecognizedNumber: Boolean
         get() = episodeNumber >= 0f
@@ -27,6 +37,16 @@ data class Episode(
             dateUpload = other.dateUpload,
             episodeNumber = other.episodeNumber,
             scanlator = other.scanlator?.ifBlank { null },
+            description = other.description,
+            season = other.season,
+            thumbnailUrl = other.thumbnailUrl,
+            seriesNumber = other.seriesNumber,
+            airDate = other.airDate,
+            title = other.title,
+            runtime = other.runtime,
+            contentRating = other.contentRating,
+            overview = other.overview,
+            chapterBookmarks = other.chapterBookmarks,
         )
     }
 
@@ -45,8 +65,18 @@ data class Episode(
             dateUpload = -1,
             episodeNumber = -1.0,
             scanlator = null,
+            description = null,
+            season = -1L,
+            thumbnailUrl = null,
             lastModifiedAt = 0,
             version = 1,
+            seriesNumber = null,
+            airDate = null,
+            title = null,
+            runtime = null,
+            contentRating = null,
+            overview = null,
+            chapterBookmarks = null,
         )
     }
 }
