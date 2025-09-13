@@ -269,7 +269,6 @@ dependencies {
     // SY <--
 
     // Image loading
-    implementation("io.coil-kt:coil-compose:2.7.0")
     implementation(platform(libs.coil.bom))
     implementation(libs.bundles.coil)
     implementation(libs.subsamplingscaleimageview) {
