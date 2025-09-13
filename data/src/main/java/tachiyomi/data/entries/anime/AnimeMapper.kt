@@ -53,7 +53,7 @@ object AnimeMapper {
         coverLastModified = coverLastModified,
         url = url,
         // SY -->
-        ogSeriesName = title,
+        ogSeriesName = title.replace(Regex("(Season|Part|Specials|O[NV]A|Movie)[\\s\\d.]*$"), "").trim(),
         ogTitle = title,
         ogArtist = artist,
         ogAuthor = author,
