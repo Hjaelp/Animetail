@@ -138,6 +138,8 @@ fun AnimeEpisodeListItem(
                     downloadStateProvider = downloadStateProvider,
                     downloadProgressProvider = downloadProgressProvider,
                     onDownloadClick = onDownloadClick,
+                    fileSize = fileSize ?: 0L, // AM (FILE_SIZE
+
                 )
                 return@Row
             }
@@ -173,6 +175,7 @@ fun AnimeEpisodeListItem(
                                     downloadStateProvider = downloadStateProvider,
                                     downloadProgressProvider = downloadProgressProvider,
                                     onDownloadClick = onDownloadClick,
+                                    fileSize = fileSize ?: 0L, // AM (FILE_SIZE
                                 )
                             }
                         }
@@ -205,6 +208,7 @@ fun AnimeEpisodeListItem(
                             downloadStateProvider = downloadStateProvider,
                             downloadProgressProvider = downloadProgressProvider,
                             onDownloadClick = onDownloadClick,
+                            fileSize = fileSize ?: 0L, // AM (FILE_SIZE
                         )
                     }
                 }
@@ -226,6 +230,7 @@ private fun RowScope.SimpleEpisodeListItemImpl(
     downloadStateProvider: () -> AnimeDownload.State,
     downloadProgressProvider: () -> Int,
     onDownloadClick: ((EpisodeDownloadAction) -> Unit)?,
+    fileSize : Long?, // AM (FILE_SIZE
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -255,9 +260,7 @@ private fun RowScope.SimpleEpisodeListItemImpl(
         downloadStateProvider = downloadStateProvider,
         downloadProgressProvider = downloadProgressProvider,
         onDownloadClick = onDownloadClick,
-          // AM (FILE_SIZE) -->
-                fileSize = fileSize,
-                // <-- AM (FILE_SIZE)
+        fileSize = fileSize  ?: 0L, // AM (FILE_SIZE
     )
 }
 
@@ -473,6 +476,7 @@ private fun BookmarkDownloadIcons(
     downloadStateProvider: () -> AnimeDownload.State,
     downloadProgressProvider: () -> Int,
     onDownloadClick: ((EpisodeDownloadAction) -> Unit)?,
+    fileSize : Long, // AM (FILE_SIZE
 ) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         if (bookmark) {
@@ -493,6 +497,10 @@ private fun BookmarkDownloadIcons(
             downloadStateProvider = downloadStateProvider,
             downloadProgressProvider = downloadProgressProvider,
             onClick = { onDownloadClick?.invoke(it) },
+            // AM (FILE_SIZE) -->
+            fileSize = fileSize,
+            // <-- AM (FILE_SIZE)
+
         )
     }
 }
@@ -522,5 +530,6 @@ fun AnimeEpisodeListItemPreview() {
         onClick = {},
         onDownloadClick = {},
         onEpisodeSwipe = {},
+        fileSize = 0L, // AM (FILE_SIZE
     )
 }

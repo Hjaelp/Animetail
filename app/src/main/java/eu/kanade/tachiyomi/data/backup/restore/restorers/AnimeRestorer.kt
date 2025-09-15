@@ -36,6 +36,7 @@ class AnimeRestorer(
     private val insertTrack: InsertAnimeTrack = Injekt.get(),
     fetchInterval: AnimeFetchInterval = Injekt.get(),
 ) {
+
     private var now = ZonedDateTime.now()
     private var currentFetchWindow = fetchInterval.getWindow(now)
 
@@ -125,7 +126,7 @@ class AnimeRestorer(
         )
     }
 
-    suspend fun updateAnime(anime: Anime): Anime {
+     suspend fun updateAnime(anime: Anime): Anime {
         handler.await(true) {
             animesQueries.update(
                 source = anime.source,
@@ -177,8 +178,8 @@ class AnimeRestorer(
             .associateBy { it.url }
 
         val (existingEpisodes, newEpisodes) = backupEpisodes
-            .mapNotNull { backupEpisode ->
-                val episode = backupEpisode.toEpisodeImpl().copy(animeId = anime.id)
+            .mapNotNull {
+                val episode = it.toEpisodeImpl().copy(animeId = anime.id)
 
                 val dbEpisode = dbEpisodesByUrl[episode.url]
                     ?: // New episode
@@ -207,6 +208,7 @@ class AnimeRestorer(
                         lastSecondSeen = dbEpisode.lastSecondSeen,
                     )
                 }
+                updatedEpisode
             }
             .partition { it.id > 0 }
 
