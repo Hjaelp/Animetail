@@ -126,7 +126,7 @@ class AnimeRestorer(
         )
     }
 
-     suspend fun updateAnime(anime: Anime): Anime {
+    suspend fun updateAnime(anime: Anime): Anime {
         handler.await(true) {
             animesQueries.update(
                 source = anime.source,
