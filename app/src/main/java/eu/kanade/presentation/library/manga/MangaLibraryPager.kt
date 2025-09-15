@@ -118,6 +118,19 @@ fun MangaLibraryPager(
                     )
                 }
             }
+            LibraryDisplayMode.ComfortableGridPanorama -> {
+                MangaLibraryComfortableGrid(
+                    items = library,
+                    columns = columns,
+                    contentPadding = contentPadding,
+                    selection = selectedManga,
+                    onClick = onClickManga,
+                    onLongClick = onLongClickManga,
+                    onClickContinueReading = onClickContinueReading,
+                    searchQuery = searchQuery,
+                    onGlobalSearchClicked = onGlobalSearchClicked,
+                )
+            }
         }
     }
 }
