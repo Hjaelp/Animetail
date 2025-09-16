@@ -138,7 +138,6 @@ class AnimeRestorer(
                 title = anime.title,
                 status = anime.status,
                 thumbnailUrl = anime.thumbnailUrl,
-                backgroundUrl = anime.backgroundUrl,
                 favorite = anime.favorite,
                 lastUpdate = anime.lastUpdate,
                 nextUpdate = null,
@@ -147,7 +146,6 @@ class AnimeRestorer(
                 viewer = anime.viewerFlags,
                 episodeFlags = anime.episodeFlags,
                 coverLastModified = anime.coverLastModified,
-                backgroundLastModified = anime.backgroundLastModified,
                 dateAdded = anime.dateAdded,
                 animeId = anime.id,
                 updateStrategy = anime.updateStrategy.let(AnimeUpdateStrategyColumnAdapter::encode),
@@ -158,6 +156,8 @@ class AnimeRestorer(
                 seasonFlags = anime.seasonFlags,
                 seasonNumber = anime.seasonNumber,
                 seasonSourceOrder = anime.seasonSourceOrder,
+                backgroundUrl = anime.backgroundUrl,
+                backgroundLastModified = anime.backgroundLastModified,
             )
         }
         return anime
@@ -248,11 +248,8 @@ class AnimeRestorer(
                     episode.url,
                     episode.name,
                     episode.scanlator,
-                    episode.summary,
-                    episode.previewUrl,
                     episode.seen,
                     episode.bookmark,
-                    episode.fillermark,
                     episode.lastSecondSeen,
                     episode.totalSeconds,
                     episode.episodeNumber,
@@ -260,6 +257,9 @@ class AnimeRestorer(
                     episode.dateFetch,
                     episode.dateUpload,
                     episode.version,
+                    episode.summary,
+                    episode.previewUrl,
+                    episode.fillermark,
                 )
             }
         }
@@ -309,7 +309,6 @@ class AnimeRestorer(
                 title = anime.title,
                 status = anime.status,
                 thumbnailUrl = anime.thumbnailUrl,
-                backgroundUrl = anime.backgroundUrl,
                 favorite = anime.favorite,
                 lastUpdate = anime.lastUpdate,
                 nextUpdate = 0L,
@@ -318,7 +317,6 @@ class AnimeRestorer(
                 viewerFlags = anime.viewerFlags,
                 episodeFlags = anime.episodeFlags,
                 coverLastModified = anime.coverLastModified,
-                backgroundLastModified = anime.backgroundLastModified,
                 dateAdded = anime.dateAdded,
                 updateStrategy = anime.updateStrategy,
                 version = anime.version,
@@ -327,6 +325,8 @@ class AnimeRestorer(
                 seasonFlags = anime.seasonFlags,
                 seasonNumber = anime.seasonNumber,
                 seasonSourceOrder = anime.seasonSourceOrder,
+                backgroundUrl = anime.backgroundUrl,
+                backgroundLastModified = anime.backgroundLastModified,
             )
             animesQueries.selectLastInsertedRowId()
         }
