@@ -2,6 +2,7 @@ package eu.kanade.domain.entries.anime.model
 
 import eu.kanade.domain.base.BasePreferences
 import eu.kanade.tachiyomi.animesource.model.SAnime
+import eu.kanade.tachiyomi.data.cache.AnimeBackgroundCache
 import eu.kanade.tachiyomi.data.cache.AnimeCoverCache
 import tachiyomi.core.common.preference.TriState
 import tachiyomi.domain.entries.anime.model.Anime
@@ -39,8 +40,9 @@ fun Anime.seasonsFiltered(): Boolean {
     return seasonDownloadedFilter != TriState.DISABLED ||
         seasonUnseenFilter != TriState.DISABLED ||
         seasonStartedFilter != TriState.DISABLED ||
+        seasonCompletedFilter != TriState.DISABLED ||
         seasonBookmarkedFilter != TriState.DISABLED ||
-        seasonCompletedFilter != TriState.DISABLED
+        seasonFillermarkedFilter != TriState.DISABLED
 }
 
 fun Anime.toSAnime(): SAnime = SAnime.create().also {
@@ -52,6 +54,7 @@ fun Anime.toSAnime(): SAnime = SAnime.create().also {
     it.genre = genre.orEmpty().joinToString()
     it.status = status.toInt()
     it.thumbnail_url = thumbnailUrl
+    it.background_url = backgroundUrl
     it.fetch_type = fetchType
     it.season_number = seasonNumber
     it.initialized = initialized
@@ -69,6 +72,7 @@ fun Anime.copyFrom(other: SAnime): Anime {
     }
     // SY <--
     val thumbnailUrl = other.thumbnail_url ?: thumbnailUrl
+    val backgroundUrl = other.background_url ?: backgroundUrl
     return this.copy(
         // SY -->
         ogAuthor = author,
@@ -77,6 +81,7 @@ fun Anime.copyFrom(other: SAnime): Anime {
         ogGenre = genres,
         // SY <--
         thumbnailUrl = thumbnailUrl,
+        backgroundUrl = backgroundUrl,
         // SY -->
         ogStatus = other.status.toLong(),
         // SY <--
@@ -99,6 +104,7 @@ fun SAnime.toDomainAnime(sourceId: Long): Anime {
         ogStatus = status.toLong(),
         // SY <--
         thumbnailUrl = thumbnail_url,
+        backgroundUrl = background_url,
         updateStrategy = update_strategy,
         fetchType = fetch_type,
         seasonNumber = season_number,
@@ -109,4 +115,8 @@ fun SAnime.toDomainAnime(sourceId: Long): Anime {
 
 fun Anime.hasCustomCover(coverCache: AnimeCoverCache = Injekt.get()): Boolean {
     return coverCache.getCustomCoverFile(id).exists()
+}
+
+fun Anime.hasCustomBackground(backgroundCache: AnimeBackgroundCache = Injekt.get()): Boolean {
+    return backgroundCache.getCustomBackgroundFile(id).exists()
 }

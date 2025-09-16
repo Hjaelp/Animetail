@@ -36,6 +36,7 @@ class AnimeRestorer(
     private val insertTrack: InsertAnimeTrack = Injekt.get(),
     fetchInterval: AnimeFetchInterval = Injekt.get(),
 ) {
+
     private var now = ZonedDateTime.now()
     private var currentFetchWindow = fetchInterval.getWindow(now)
 
@@ -155,6 +156,8 @@ class AnimeRestorer(
                 seasonFlags = anime.seasonFlags,
                 seasonNumber = anime.seasonNumber,
                 seasonSourceOrder = anime.seasonSourceOrder,
+                backgroundUrl = anime.backgroundUrl,
+                backgroundLastModified = anime.backgroundLastModified,
             )
         }
         return anime
@@ -175,16 +178,37 @@ class AnimeRestorer(
             .associateBy { it.url }
 
         val (existingEpisodes, newEpisodes) = backupEpisodes
-            .mapNotNull { backupEpisode ->
-                val episode = backupEpisode.toEpisodeImpl().copy(animeId = anime.id)
+            .mapNotNull {
+                val episode = it.toEpisodeImpl().copy(animeId = anime.id)
 
                 val dbEpisode = dbEpisodesByUrl[episode.url]
+                    ?: // New episode
+                    return@mapNotNull episode
 
-                when {
-                    dbEpisode == null -> episode // New episode
-                    episode.forComparison() == dbEpisode.forComparison() -> null // Same state; skip
-                    else -> updateEpisodeBasedOnSyncState(episode, dbEpisode)
+                if (episode.forComparison() == dbEpisode.forComparison()) {
+                    // Same state; skip
+                    return@mapNotNull null
                 }
+
+                // Update to an existing episode
+                var updatedEpisode = episode
+                    .copyFrom(dbEpisode)
+                    .copy(
+                        id = dbEpisode.id,
+                        bookmark = episode.bookmark || dbEpisode.bookmark,
+                        fillermark = episode.fillermark || dbEpisode.fillermark,
+                    )
+                if (dbEpisode.seen && !updatedEpisode.seen) {
+                    updatedEpisode = updatedEpisode.copy(
+                        seen = true,
+                        lastSecondSeen = dbEpisode.lastSecondSeen,
+                    )
+                } else if (updatedEpisode.lastSecondSeen == 0L && dbEpisode.lastSecondSeen != 0L) {
+                    updatedEpisode = updatedEpisode.copy(
+                        lastSecondSeen = dbEpisode.lastSecondSeen,
+                    )
+                }
+                updatedEpisode
             }
             .partition { it.id > 0 }
 
@@ -233,6 +257,9 @@ class AnimeRestorer(
                     episode.dateFetch,
                     episode.dateUpload,
                     episode.version,
+                    episode.summary,
+                    episode.previewUrl,
+                    episode.fillermark,
                 )
             }
         }
@@ -246,8 +273,11 @@ class AnimeRestorer(
                     url = null,
                     name = null,
                     scanlator = null,
+                    summary = null,
+                    previewUrl = null,
                     seen = episode.seen,
                     bookmark = episode.bookmark,
+                    fillermark = episode.fillermark,
                     lastSecondSeen = episode.lastSecondSeen,
                     totalSeconds = episode.totalSeconds,
                     episodeNumber = null,
@@ -295,6 +325,8 @@ class AnimeRestorer(
                 seasonFlags = anime.seasonFlags,
                 seasonNumber = anime.seasonNumber,
                 seasonSourceOrder = anime.seasonSourceOrder,
+                backgroundUrl = anime.backgroundUrl,
+                backgroundLastModified = anime.backgroundLastModified,
             )
             animesQueries.selectLastInsertedRowId()
         }

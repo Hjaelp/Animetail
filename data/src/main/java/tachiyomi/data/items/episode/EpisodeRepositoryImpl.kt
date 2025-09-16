@@ -4,7 +4,6 @@ import kotlinx.coroutines.flow.Flow
 import logcat.LogPriority
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.data.handlers.anime.AnimeDatabaseHandler
-import tachiyomi.data.items.episode.EpisodeMapper.mapEpisode
 import tachiyomi.domain.items.episode.model.Episode
 import tachiyomi.domain.items.episode.model.EpisodeUpdate
 import tachiyomi.domain.items.episode.repository.EpisodeRepository
@@ -31,6 +30,9 @@ class EpisodeRepositoryImpl(
                         episode.dateFetch,
                         episode.dateUpload,
                         episode.version,
+                        episode.summary,
+                        episode.previewUrl,
+                        episode.fillermark,
                     )
                     val lastInsertId = episodesQueries.selectLastInsertedRowId().executeAsOne()
                     episode.copy(id = lastInsertId)
@@ -69,6 +71,9 @@ class EpisodeRepositoryImpl(
                     episodeId = episodeUpdate.id,
                     version = episodeUpdate.version,
                     isSyncing = 0,
+                    summary = episodeUpdate.summary,
+                    previewUrl = episodeUpdate.previewUrl,
+                    fillermark = episodeUpdate.fillermark,
                 )
             }
         }
@@ -136,11 +141,15 @@ class EpisodeRepositoryImpl(
         version: Long,
         @Suppress("UNUSED_PARAMETER")
         isSyncing: Long,
+        summary: String?,
+        previewUrl: String?,
+        fillermark: Boolean,
     ): Episode = Episode(
         id = id,
         animeId = animeId,
         seen = seen,
         bookmark = bookmark,
+        fillermark = fillermark,
         lastSecondSeen = lastSecondSeen,
         totalSeconds = totalSeconds,
         dateFetch = dateFetch,
@@ -150,6 +159,8 @@ class EpisodeRepositoryImpl(
         dateUpload = dateUpload,
         episodeNumber = episodeNumber,
         scanlator = scanlator,
+        summary = summary,
+        previewUrl = previewUrl,
         lastModifiedAt = lastModifiedAt,
         version = version,
     )
