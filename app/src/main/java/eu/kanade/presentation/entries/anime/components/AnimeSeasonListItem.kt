@@ -1,8 +1,6 @@
 package eu.kanade.presentation.entries.anime.components
 
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.unit.dp
 import aniyomi.domain.anime.SeasonAnime
 import aniyomi.domain.anime.SeasonDisplayMode
 import eu.kanade.presentation.library.components.DownloadsBadge
@@ -124,7 +122,6 @@ fun AnimeSeasonListItem(
                 },
                 entries = anime.seasonDisplayGridSize,
                 containerHeight = containerHeight,
-                contentPadding = PaddingValues(horizontal = 3.dp, vertical = 3.dp),
                 onMergedItemClick = { }
             )
         }

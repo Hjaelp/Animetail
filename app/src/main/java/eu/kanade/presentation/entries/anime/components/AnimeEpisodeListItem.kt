@@ -53,6 +53,8 @@ import tachiyomi.presentation.core.components.material.SECONDARY_ALPHA
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.selectedBackground
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.automirrored.outlined.LabelOff
+import androidx.compose.material.icons.outlined.NewLabel
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.painter.ColorPainter
 import eu.kanade.presentation.util.rememberResourceBitmapPainter
@@ -65,9 +67,13 @@ fun AnimeEpisodeListItem(
     watchProgress: String?,
     scanlator: String?,
     description: String?,
+    summary: String?,
+    previewUrl: String?,
     seen: Boolean,
     bookmark: Boolean,
+    fillermark: Boolean,
     selected: Boolean,
+    isAnyEpisodeSelected: Boolean,
     downloadIndicatorEnabled: Boolean,
     downloadStateProvider: () -> AnimeDownload.State,
     downloadProgressProvider: () -> Int,
@@ -90,6 +96,7 @@ fun AnimeEpisodeListItem(
         action = episodeSwipeStartAction,
         seen = seen,
         bookmark = bookmark,
+        fillermark = fillermark,
         downloadState = downloadStateProvider(),
         background = MaterialTheme.colorScheme.primaryContainer,
         onSwipe = { onEpisodeSwipe(episodeSwipeStartAction) },
@@ -98,6 +105,7 @@ fun AnimeEpisodeListItem(
         action = episodeSwipeEndAction,
         seen = seen,
         bookmark = bookmark,
+        fillermark = fillermark,
         downloadState = downloadStateProvider(),
         background = MaterialTheme.colorScheme.primaryContainer,
         onSwipe = { onEpisodeSwipe(episodeSwipeEndAction) },
@@ -117,7 +125,7 @@ fun AnimeEpisodeListItem(
                     onClick = onClick,
                     onLongClick = onLongClick,
                 )
-                .padding(start = 16.dp, top = 12.dp, end = 8.dp, bottom = 12.dp),
+                .padding(start = 16.dp, top = 8.dp, end = 8.dp, bottom = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             if (thumbnailUrl != null) {
@@ -127,7 +135,7 @@ fun AnimeEpisodeListItem(
                     placeholder = ColorPainter(Color(0x1F888888)),
                     error = rememberResourceBitmapPainter(id = R.drawable.cover_error),
                     modifier = Modifier
-                        .sizeIn(maxHeight = 90.dp, maxWidth = 130.dp)
+                        .sizeIn(maxHeight = 100.dp, maxWidth = 130.dp)
                 )
                 Spacer(modifier = Modifier.padding(start = 8.dp))
             }
@@ -249,6 +257,7 @@ private fun getSwipeAction(
     action: LibraryPreferences.EpisodeSwipeAction,
     seen: Boolean,
     bookmark: Boolean,
+    fillermark: Boolean,
     downloadState: AnimeDownload.State,
     background: Color,
     onSwipe: () -> Unit,
@@ -264,6 +273,12 @@ private fun getSwipeAction(
             icon = if (!bookmark) Icons.Outlined.BookmarkAdd else Icons.Outlined.BookmarkRemove,
             background = background,
             isUndo = bookmark,
+            onSwipe = onSwipe,
+        )
+        LibraryPreferences.EpisodeSwipeAction.ToggleFillermark -> swipeAction(
+            icon = if (!fillermark) Icons.Outlined.NewLabel else Icons.AutoMirrored.Outlined.LabelOff,
+            background = background,
+            isUndo = fillermark,
             onSwipe = onSwipe,
         )
         LibraryPreferences.EpisodeSwipeAction.Download -> swipeAction(

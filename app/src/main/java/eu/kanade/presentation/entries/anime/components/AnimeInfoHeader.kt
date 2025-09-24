@@ -83,6 +83,7 @@ import eu.kanade.presentation.entries.components.DotSeparatorText
 import eu.kanade.presentation.entries.components.ItemCover
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.animesource.model.SAnime
+import eu.kanade.tachiyomi.data.coil.useBackground
 import eu.kanade.tachiyomi.util.system.copyToClipboard
 import tachiyomi.domain.entries.anime.model.Anime
 import tachiyomi.i18n.MR
@@ -119,6 +120,7 @@ fun AnimeInfoBox(
         AsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
                 .data(anime)
+                .useBackground(true)
                 .crossfade(true)
                 .build(),
             contentDescription = null,

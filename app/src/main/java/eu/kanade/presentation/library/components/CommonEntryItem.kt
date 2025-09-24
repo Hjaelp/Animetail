@@ -361,7 +361,6 @@ fun EntryListItem(
     onMergedItemClick: ((List<LibraryAnime>) -> Unit)?,
     isMerged: Boolean = false,
     mergedItemCount: Int = 0,
-    contentPadding: PaddingValues = PaddingValues(horizontal = 16.dp, vertical = 3.dp),
 ) {
     Row(
         modifier = modifier
@@ -379,7 +378,7 @@ fun EntryListItem(
                 onClick = onClick,
                 onLongClick = onLongClick,
             )
-            .padding(contentPadding),
+            .padding(horizontal = 16.dp, vertical = 3.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         ItemCover.Book(

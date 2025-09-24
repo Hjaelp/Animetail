@@ -64,14 +64,6 @@ internal fun AnimeLibraryList(
                     url = anime.thumbnailUrl,
                     lastModified = anime.coverLastModified,
                 ),
-                badge = {
-                    DownloadsBadge(count = libraryItem.downloadCount)
-                    UnviewedBadge(count = libraryItem.unseenCount)
-                    LanguageBadge(
-                        isLocal = libraryItem.isLocal,
-                        sourceLanguage = libraryItem.sourceLanguage,
-                    )
-                },
                 onLongClick = { onLongClick(libraryItem.libraryAnime) },
                 onClick = {
                     if (libraryItem.isMerged && onMergedItemClick != null) {
@@ -80,6 +72,14 @@ internal fun AnimeLibraryList(
                         onClick(libraryItem.libraryAnime)
                     }
                 },
+                badge = {
+                    DownloadsBadge(count = libraryItem.downloadCount)
+                    UnviewedBadge(count = libraryItem.unseenCount)
+                    LanguageBadge(
+                        isLocal = libraryItem.isLocal,
+                        sourceLanguage = libraryItem.sourceLanguage,
+                    )
+                },
                 onClickContinueViewing = if (onClickContinueWatching != null && libraryItem.unseenCount > 0) {
                     { onClickContinueWatching(libraryItem.libraryAnime) }
                 } else {
@@ -87,9 +87,9 @@ internal fun AnimeLibraryList(
                 },
                 entries = entries,
                 containerHeight = containerHeight,
+                onMergedItemClick = onMergedItemClick,
                 isMerged = libraryItem.isMerged,
                 mergedItemCount = if (onMergedItemClick != null && libraryItem.mergedAnime != null) libraryItem.mergedAnime.size else 0,
-                onMergedItemClick = onMergedItemClick,
             )
         }
     }
