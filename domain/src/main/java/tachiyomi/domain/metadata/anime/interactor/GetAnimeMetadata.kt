@@ -14,4 +14,8 @@ class GetAnimeMetadata(
     suspend fun searchAnime(query: String, providerId: Long): List<AnimeMetadataSearchResult> {
         return animeMetadataRepository.searchAnime(query, providerId)
     }
+
+    suspend fun searchAnimeSeasons(query: String, providerId: Long, parentId: String): List<AnimeMetadataSearchResult> {
+        return animeMetadataRepository.searchAnimeSeasons(query, providerId, parentId)
+    }
 }

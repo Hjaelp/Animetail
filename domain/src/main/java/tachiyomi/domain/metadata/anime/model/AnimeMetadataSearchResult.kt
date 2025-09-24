@@ -5,4 +5,5 @@ data class AnimeMetadataSearchResult(
     val title: String,
     val cover_url: String?,
     val description: String?,
+    val type: String?,
 )

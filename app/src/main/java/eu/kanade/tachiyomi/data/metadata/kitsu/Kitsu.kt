@@ -15,12 +15,17 @@ import tachiyomi.domain.metadata.anime.repository.AnimeMetadataSource
 class Kitsu : BaseMetadataProvider(), AnimeMetadataSource {
     override val id: Long = 1L
     override val name: String = "Kitsu"
+    override val supportsSeasonSearch: Boolean = false
 
     private val json: Json by injectLazy()
     private val kitsuApi: KitsuApi = KitsuApi(client, json)
 
     override suspend fun searchAnime(query: String): List<AnimeMetadataSearchResult> {
         return kitsuApi.searchAnime(query).data.map { it.toAnimeMetadataSearchResult() }
+    }
+
+    override suspend fun searchAnimeSeasons(query: String, parentId: String): List<AnimeMetadataSearchResult> {
+        return emptyList()
     }
 
     override suspend fun getAnimeDetails(id: String): AnimeMetadata? {
@@ -35,6 +40,7 @@ class Kitsu : BaseMetadataProvider(), AnimeMetadataSource {
             title = this.attributes.canonicalTitle,
             cover_url = this.attributes.posterImage?.original,
             description = this.attributes.synopsis,
+            type = "Anime"
         )
     }
 
@@ -57,6 +63,7 @@ class Kitsu : BaseMetadataProvider(), AnimeMetadataSource {
             synopsis = this.attributes.synopsis,
             thumbnail = this.attributes.thumbnail?.original,
             runtime = this.attributes.length,
+            seriesNumber = -1
         )
     }
 }

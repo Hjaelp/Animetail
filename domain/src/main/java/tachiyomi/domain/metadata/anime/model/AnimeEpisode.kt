@@ -2,6 +2,7 @@ package tachiyomi.domain.metadata.anime.model
 
 data class AnimeEpisode(
     val id: String,
+    val seriesNumber: Long,
     val number: Int,
     val title: String? = null,
     val synopsis: String? = null,

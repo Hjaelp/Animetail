@@ -15,4 +15,8 @@ class AnimeMetadataRepositoryImpl(
     override suspend fun searchAnime(query: String, providerId: Long): List<AnimeMetadataSearchResult> {
         return metadataSources.firstOrNull { it.id == providerId }?.searchAnime(query) ?: emptyList()
     }
+
+    override suspend fun searchAnimeSeasons(query: String, providerId: Long, parentId: String): List<AnimeMetadataSearchResult> {
+        return metadataSources.firstOrNull { it.id == providerId }?.searchAnimeSeasons(query, parentId) ?: emptyList()
+    }
 }

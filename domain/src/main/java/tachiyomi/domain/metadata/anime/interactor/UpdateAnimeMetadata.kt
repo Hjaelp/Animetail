@@ -33,7 +33,7 @@ class UpdateAnimeMetadata(
                         dateUpload = networkEpisode.airDate ?: localEpisode.dateUpload,
                         episodeNumber = networkEpisodeNumber,
                         description = networkEpisode.synopsis ?: localEpisode.description,
-                        seriesNumber = -1L,
+                        seriesNumber = networkEpisode.seriesNumber ?: -1,
                         thumbnailUrl = networkEpisode.thumbnail ?: localEpisode.thumbnailUrl,
                         runtime = networkEpisode.runtime?.toLong()?.times(60 * 1000L) ?: localEpisode.runtime,
                         airDate = networkEpisode.airDate ?: localEpisode.airDate,

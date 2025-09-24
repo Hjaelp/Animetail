@@ -18,8 +18,12 @@ import tachiyomi.domain.entries.anime.interactor.GetAnime
 import tachiyomi.domain.metadata.anime.interactor.UpdateAnimeMetadata
 import tachiyomi.domain.metadata.anime.interactor.GetAnimeMetadata
 import tachiyomi.domain.metadata.anime.model.AnimeMetadataSearchResult
+import eu.kanade.tachiyomi.data.metadata.MetadataManager
+import eu.kanade.tachiyomi.data.metadata.jellyfin.Jellyfin
+import tachiyomi.domain.metadata.anime.repository.AnimeMetadataSource
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
+import kotlin.text.get
 
 class MetadataSearchScreen(
     private val animeId: Long,
@@ -41,7 +45,7 @@ class MetadataSearchScreen(
             selected = state.selected,
             onSelectedChange = screenModel::updateSelection,
             onConfirmSelection = {
-                screenModel.confirmSelection(onDismissRequest)
+                screenModel.confirmSelection(textFieldState.text.toString(), onDismissRequest)
             },
             onDismissRequest = { navigator.pop() },
             isLoading = state.isLoading,
@@ -50,16 +54,25 @@ class MetadataSearchScreen(
 
     private class Model(
         private val animeId: Long,
-        initialQuery: String,
+        private val initialQuery: String,
         private val providerId: Long,
         private val getAnime: GetAnime = Injekt.get(),
         private val updateAnimeMetadata: UpdateAnimeMetadata = Injekt.get(),
         private val getAnimeMetadata: GetAnimeMetadata = Injekt.get(),
+        private val metadataManager: MetadataManager = Injekt.get(),
     ) : StateScreenModel<Model.State>(State()) {
 
         init {
             if (initialQuery.isNotBlank()) {
-                search(initialQuery, providerId)
+                val source = metadataManager.get(providerId)
+                if (source?.supportsSeasonSearch ?: false) {
+                    val seasonRegex = Regex("Season [\\d.]+", RegexOption.IGNORE_CASE)
+                    val newQuery = initialQuery.replace(seasonRegex, "").trim()
+                    search(newQuery, providerId)
+                }
+                else {
+                    search(initialQuery, providerId)
+                }
             }
         }
 
@@ -75,18 +88,35 @@ class MetadataSearchScreen(
             }
         }
 
+        fun searchSeasons(query: String, providerId: Long, seasonSearchId: String) {
+            screenModelScope.launch {
+                mutableState.value = state.value.copy(isLoading = true)
+                try {
+                    val results = getAnimeMetadata.searchAnimeSeasons(query, providerId, seasonSearchId)
+                    mutableState.value = state.value.copy(results = results, isLoading = false)
+                } catch (e: Exception) {
+                    logcat(LogPriority.ERROR, e)
+                }
+            }
+        }
+
         fun updateSelection(selected: AnimeMetadataSearchResult) {
             mutableState.value = state.value.copy(selected = selected)
         }
 
-        fun confirmSelection(onSuccess: () -> Unit) {
+        fun confirmSelection(currentQuery: String, onSuccess: () -> Unit) {
             val selected = state.value.selected ?: return
             screenModelScope.launch {
                 try {
                     val anime = getAnime.await(animeId)
                     if (anime != null) {
                         updateAnimeMetadata.await(anime, providerId, selected.id)
-                        onSuccess()
+                        val source = metadataManager.get(providerId)
+                        if (selected.type == "Series" && source is Jellyfin) {
+                            searchSeasons(currentQuery, providerId, selected.id)
+                        } else {
+                            onSuccess()
+                        }
                     }
                 } catch (e: Exception) {
                     logcat(LogPriority.ERROR, e)

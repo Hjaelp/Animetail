@@ -6,4 +6,5 @@ import tachiyomi.domain.metadata.anime.model.AnimeMetadataSearchResult
 interface AnimeMetadataRepository {
     suspend fun getAnimeDetails(id: String, providerId: Long): AnimeMetadata?
     suspend fun searchAnime(query: String, providerId: Long): List<AnimeMetadataSearchResult>
+    suspend fun searchAnimeSeasons(query: String, providerId: Long, parentId: String): List<AnimeMetadataSearchResult>
 }
