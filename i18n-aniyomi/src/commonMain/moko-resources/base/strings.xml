@@ -623,4 +623,12 @@
     <string name="pref_download_fillermarked_items">Allow downloading of fillermarked episodes</string>
     <string name="show_episode_previews">Episode thumbnails</string>
     <string name="show_episode_summaries">Episode summaries</string>
+
+    <!-- Extra -->
+    <string name="player_sheets_bookmarks_title">Custom Bookmarks</string>
+    <string name="action_add_bookmark">Add Bookmark</string>
+    <string name="action_edit_bookmark">Edit Bookmark</string>
+    <string name="action_remove_bookmark">Remove Bookmark</string>
+    <string name="label_na">N/A</string>
+    <string name="label_bookmark_description">Bookmark Description</string>
 </resources>

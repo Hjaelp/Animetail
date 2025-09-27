@@ -17,12 +17,19 @@
 
 package eu.kanade.tachiyomi.ui.player.controls.components
 
+import eu.kanade.tachiyomi.ui.player.CustomBookmark
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material3.MaterialTheme
@@ -73,6 +80,7 @@ fun SeekbarWithTimers(
     positionTimerOnClick: () -> Unit,
     durationTimerOnCLick: () -> Unit,
     chapters: ImmutableList<Segment>,
+    bookmarks: ImmutableList<CustomBookmark> = persistentListOf(),
     modifier: Modifier = Modifier,
 ) {
     val clickEvent = LocalPlayerButtonsClickEvent.current
@@ -90,30 +98,40 @@ fun SeekbarWithTimers(
             },
             modifier = Modifier.width(92.dp),
         )
-        Seeker(
-            value = position.coerceIn(0f, duration),
-            range = 0f..duration,
-            onValueChange = onValueChange,
-            onValueChangeFinished = onValueChangeFinished,
-            readAheadValue = readAheadValue,
-            segments = chapters
-                .filter { it.start in 0f..duration }
-                .let {
-                    // add an extra segment at 0 if it doesn't exist.
-                    if (it.isNotEmpty() && it[0].start != 0f) {
-                        persistentListOf(Segment("", 0f)) + it
-                    } else {
-                        it
-                    } + it
-                },
+        Box(
             modifier = Modifier.weight(1f),
-            colors = SeekerDefaults.seekerColors(
-                progressColor = MaterialTheme.colorScheme.primary,
-                thumbColor = MaterialTheme.colorScheme.primary,
-                trackColor = MaterialTheme.colorScheme.background,
-                readAheadColor = MaterialTheme.colorScheme.inversePrimary,
-            ),
-        )
+            contentAlignment = Alignment.Center,
+        ) {
+            BookmarkIndicators(
+                bookmarks = bookmarks,
+                duration = duration,
+                modifier = Modifier.fillMaxWidth().padding(bottom = 11.dp).align(Alignment.Center),
+            )
+            Seeker(
+                value = position.coerceIn(0f, duration),
+                range = 0f..duration,
+                onValueChange = onValueChange,
+                onValueChangeFinished = onValueChangeFinished,
+                readAheadValue = readAheadValue,
+                segments = chapters
+                    .filter { it.start in 0f..duration }
+                    .let {
+                        // add an extra segment at 0 if it doesn't exist.
+                        if (it.isNotEmpty() && it.first().start != 0f) {
+                            persistentListOf(Segment("", 0f)) + it
+                        } else {
+                            it
+                        }
+                    },
+                modifier = Modifier.fillMaxWidth(),
+                colors = SeekerDefaults.seekerColors(
+                    progressColor = MaterialTheme.colorScheme.primary,
+                    thumbColor = MaterialTheme.colorScheme.primary,
+                    trackColor = MaterialTheme.colorScheme.background,
+                    readAheadColor = MaterialTheme.colorScheme.inversePrimary,
+                ),
+            )
+        }
         VideoTimer(
             value = if (timersInverted.second) position - duration else duration,
             isInverted = timersInverted.second,
@@ -149,6 +167,30 @@ fun VideoTimer(
     )
 }
 
+@Composable
+private fun BookmarkIndicators(
+    bookmarks: ImmutableList<CustomBookmark>,
+    duration: Float,
+    modifier: Modifier = Modifier,
+) {
+    if (duration == 0f) return
+
+    BoxWithConstraints(modifier = modifier.height(8.dp)) {
+        bookmarks.forEach { bookmark ->
+            val position = bookmark.position.toFloat() / duration
+            if (position in 0f..1f) {
+                Box(
+                    modifier = Modifier
+                        .offset(x = 6.dp + (this.maxWidth - 18.dp) * position) // Fix later, not very precise
+                        .width(2.dp)
+                        .fillMaxHeight()
+                        .background(Color(0xFFe6e6e6)),
+                )
+            }
+        }
+    }
+}
+
 @Preview
 @Composable
 private fun PreviewSeekBar() {
@@ -161,6 +203,7 @@ private fun PreviewSeekBar() {
         Pair(false, true),
         {},
         {},
+        persistentListOf(),
         persistentListOf(),
     )
 }

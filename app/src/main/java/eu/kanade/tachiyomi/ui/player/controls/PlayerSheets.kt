@@ -23,11 +23,13 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import dev.vivvvek.seeker.Segment
 import eu.kanade.tachiyomi.ui.player.ArtType
+import eu.kanade.tachiyomi.ui.player.CustomBookmark
 import eu.kanade.tachiyomi.ui.player.Decoder
 import eu.kanade.tachiyomi.ui.player.Panels
 import eu.kanade.tachiyomi.ui.player.PlayerViewModel.VideoTrack
 import eu.kanade.tachiyomi.ui.player.Sheets
 import eu.kanade.tachiyomi.ui.player.controls.components.sheets.AudioTracksSheet
+import eu.kanade.tachiyomi.ui.player.controls.components.sheets.CustomBookmarksSheet
 import eu.kanade.tachiyomi.ui.player.controls.components.sheets.ChaptersSheet
 import eu.kanade.tachiyomi.ui.player.controls.components.sheets.HosterState
 import eu.kanade.tachiyomi.ui.player.controls.components.sheets.MoreSheet
@@ -38,6 +40,7 @@ import eu.kanade.tachiyomi.ui.player.controls.components.sheets.SubtitlesSheet
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import tachiyomi.domain.custombuttons.model.CustomButton
+import tachiyomi.presentation.core.components.material.FabPosition
 import java.io.InputStream
 
 @Composable
@@ -69,6 +72,14 @@ fun PlayerSheets(
     chapter: Segment?,
     chapters: ImmutableList<Segment>,
     onSeekToChapter: (Int) -> Unit,
+
+    // custom bookmarks sheet
+    customBookmarks: List<CustomBookmark>,
+    onAddBookmark: (String?, Int) -> Unit,
+    onRemoveBookmark: (CustomBookmark) -> Unit,
+    onSeekToBookmark: (CustomBookmark) -> Unit,
+    onEditBookmark: (CustomBookmark, String?) -> Unit,
+    currentPosition: Int,
 
     // Decoders sheet
     decoder: Decoder,
@@ -157,6 +168,19 @@ fun PlayerSheets(
                 onClick = { onSeekToChapter(chapters.indexOf(it)) },
                 onDismissRequest = onDismissRequest,
                 dismissSheet = dismissSheet,
+            )
+        }
+
+        Sheets.CustomBookmarks -> {
+            CustomBookmarksSheet(
+                customBookmarks = customBookmarks,
+                onAddBookmark = onAddBookmark,
+                onRemoveBookmark = onRemoveBookmark,
+                onSeekToBookmark = onSeekToBookmark,
+                onEditBookmark = onEditBookmark,
+                onDismissRequest = onDismissRequest,
+                dismissSheet = dismissSheet,
+                currentPosition = currentPosition,
             )
         }
 

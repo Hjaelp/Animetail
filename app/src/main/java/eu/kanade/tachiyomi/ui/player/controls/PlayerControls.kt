@@ -66,6 +66,7 @@ import eu.kanade.tachiyomi.ui.player.PlayerViewModel
 import eu.kanade.tachiyomi.ui.player.Sheets
 import eu.kanade.tachiyomi.ui.player.VideoAspect
 import eu.kanade.tachiyomi.ui.player.cast.components.CastSheet
+import eu.kanade.tachiyomi.ui.player.CustomBookmark
 import eu.kanade.tachiyomi.ui.player.controls.components.BrightnessOverlay
 import eu.kanade.tachiyomi.ui.player.controls.components.BrightnessSlider
 import eu.kanade.tachiyomi.ui.player.controls.components.ControlsButton
@@ -79,6 +80,7 @@ import eu.kanade.tachiyomi.ui.player.settings.PlayerPreferences
 import eu.kanade.tachiyomi.ui.player.settings.SubtitlePreferences
 import `is`.xyz.mpv.MPVLib
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
 import tachiyomi.presentation.core.components.material.padding
@@ -120,6 +122,7 @@ fun PlayerControls(
     val seekText by viewModel.seekText.collectAsState()
     val currentChapter by viewModel.currentChapter.collectAsState()
     val chapters by viewModel.chapters.collectAsState()
+    val customBookmarksList by viewModel.customBookmarks.collectAsState()
     val currentBrightness by viewModel.currentBrightness.collectAsState()
 
     val playerTimeToDisappear by playerPreferences.playerTimeToDisappear().collectAsState()
@@ -397,6 +400,7 @@ fun PlayerControls(
                         durationTimerOnCLick = { playerPreferences.invertDuration().set(!invertDuration) },
                         positionTimerOnClick = {},
                         chapters = chapters.map { it.toSegment() }.toImmutableList(),
+                        bookmarks = customBookmarksList.toImmutableList(),
                     )
                 }
                 val mediaTitle by viewModel.mediaTitle.collectAsState()
@@ -567,6 +571,7 @@ fun PlayerControls(
         val currentSource by viewModel.currentSource.collectAsState()
         val showFailedHosters by playerPreferences.showFailedHosters().collectAsState()
         val emptyHosters by playerPreferences.showEmptyHosters().collectAsState()
+        val customBookmarks by viewModel.customBookmarks.collectAsState()
 
         PlayerSheets(
             sheetShown = sheetShown,
@@ -618,7 +623,14 @@ fun PlayerControls(
             onOpenPanel = viewModel::showPanel,
             onDismissRequest = { viewModel.showSheet(Sheets.None) },
             dismissSheet = dismissSheet,
+            customBookmarks = customBookmarks,
+            onAddBookmark = viewModel::addCustomBookmark,
+            onRemoveBookmark = viewModel::removeCustomBookmark,
+            onEditBookmark = viewModel::editCustomBookmark,
+            onSeekToBookmark = viewModel::seekToBookmark,
+            currentPosition = viewModel.pos.value.toInt()
         )
+
         val panel by viewModel.panelShown.collectAsState()
         PlayerPanels(
             panelShown = panel,

@@ -50,4 +50,5 @@ fun Episode.toDbEpisode(): DbEpisode = EpisodeImpl().also {
     it.episode_number = episodeNumber.toFloat()
     it.source_order = sourceOrder.toInt()
     it.last_modified = lastModifiedAt
+    it.chapter_bookmarks = chapterBookmarks
 }

@@ -22,6 +22,7 @@ import eu.kanade.tachiyomi.ui.player.settings.DecoderPreferences
 import tachiyomi.core.common.preference.Preference
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.aniyomi.AYMR
+import kotlinx.serialization.Serializable
 
 /**
  * Results of the set as art feature.
@@ -112,9 +113,16 @@ enum class Sheets {
     AudioTracks,
     QualityTracks,
     Chapters,
+    CustomBookmarks,
     More,
     Screenshot,
 }
+
+@Serializable
+data class CustomBookmark(
+    val description: String? = null,
+    val position: Int,
+)
 
 enum class Panels {
     None,

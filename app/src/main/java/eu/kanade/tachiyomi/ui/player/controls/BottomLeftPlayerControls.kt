@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material.icons.filled.ScreenRotation
+import androidx.compose.material.icons.filled.BookmarkAdd
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -82,5 +83,9 @@ fun BottomLeftPlayerControls(
                 onClick = { onOpenSheet(Sheets.Chapters) },
             )
         }
+        ControlsButton(
+            icon = Icons.Default.BookmarkAdd,
+            onClick = { onOpenSheet(Sheets.CustomBookmarks) },
+        )
     }
 }

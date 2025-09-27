@@ -31,6 +31,9 @@ import android.provider.Settings
 import android.util.DisplayMetrics
 import android.view.inputmethod.InputMethodManager
 import androidx.compose.runtime.Immutable
+import kotlinx.collections.immutable.toImmutableList
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.builtins.ListSerializer
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -169,6 +172,7 @@ class PlayerViewModel @JvmOverloads constructor(
     private val trackSelect: TrackSelect = Injekt.get(),
     private val getIncognitoState: GetAnimeIncognitoState = Injekt.get(),
     private val libraryPreferences: LibraryPreferences = Injekt.get(),
+    private val json: Json = Injekt.get(),
     uiPreferences: UiPreferences = Injekt.get(),
 ) : ViewModel() {
 
@@ -183,6 +187,9 @@ class PlayerViewModel @JvmOverloads constructor(
 
     private val _currentEpisode = MutableStateFlow<Episode?>(null)
     val currentEpisode = _currentEpisode.asStateFlow()
+
+    private val _customBookmarks = MutableStateFlow<List<CustomBookmark>>(emptyList())
+    val customBookmarks = _customBookmarks.asStateFlow()
 
     private val _currentAnime = MutableStateFlow<Anime?>(null)
     val currentAnime = _currentAnime.asStateFlow()
@@ -645,6 +652,8 @@ class PlayerViewModel @JvmOverloads constructor(
         if (sheet == Sheets.None) {
             resetDismissSheet()
             showControls()
+        } else if (sheet == Sheets.CustomBookmarks) {
+            pause()
         } else {
             hideControls()
             panelShown.update { Panels.None }
@@ -1223,6 +1232,7 @@ class PlayerViewModel @JvmOverloads constructor(
                 val source = sourceManager.getOrStub(anime.source)
 
                 _currentEpisode.update { _ -> episode }
+                _customBookmarks.update { _ -> episode.chapter_bookmarks?.let { json.decodeFromString<List<CustomBookmark>>(it) } ?: emptyList() }
                 _currentSource.update { _ -> source }
 
                 updateEpisode(episode)
@@ -1534,6 +1544,7 @@ class PlayerViewModel @JvmOverloads constructor(
         val chosenEpisode = currentPlaylist.value.firstOrNull { ep -> ep.id == episodeId } ?: return null
 
         _currentEpisode.update { _ -> chosenEpisode }
+        _customBookmarks.update { _ -> chosenEpisode.chapter_bookmarks?.let { json.decodeFromString<List<CustomBookmark>>(it) } ?: emptyList() }
         updateEpisode(chosenEpisode)
 
         return withIOContext {
@@ -1706,6 +1717,49 @@ class PlayerViewModel @JvmOverloads constructor(
                 AnimeHistoryUpdate(episodeId, seenAt),
             )
         }
+    }
+
+    private fun updateBookmarks(update: (List<CustomBookmark>) -> List<CustomBookmark>) {
+        viewModelScope.launchNonCancellable {
+            val episode = currentEpisode.value ?: return@launchNonCancellable
+
+            val newBookmarks = update(_customBookmarks.value)
+            val newBookmarksString = json.encodeToString(ListSerializer(CustomBookmark.serializer()), newBookmarks)
+
+            episode.chapter_bookmarks = newBookmarksString
+
+            updateEpisode.await(
+                EpisodeUpdate(
+                    id = episode.id!!,
+                    chapterBookmarks = newBookmarksString,
+                ),
+            )
+            _customBookmarks.update { newBookmarks }
+        }
+    }
+
+    fun addCustomBookmark(description: String?, position: Int) {
+        updateBookmarks { it + CustomBookmark(description, position) }
+    }
+
+    fun removeCustomBookmark(chapterBookmark: CustomBookmark) {
+        updateBookmarks { it - chapterBookmark }
+    }
+
+    fun editCustomBookmark(customBookmark: CustomBookmark, newDesc: String?) {
+        updateBookmarks { currentBookmarks ->
+            currentBookmarks.map {
+                if (it == customBookmark) {
+                    it.copy(description = newDesc)
+                } else {
+                    it
+                }
+            }
+        }
+    }
+
+    fun seekToBookmark(chapterBookmark: CustomBookmark) {
+        seekTo(chapterBookmark.position.toInt())
     }
 
     /**
