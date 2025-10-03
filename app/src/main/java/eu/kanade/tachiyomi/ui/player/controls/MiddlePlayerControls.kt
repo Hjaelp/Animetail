@@ -51,7 +51,7 @@ fun MiddlePlayerControls(
     areControlsLocked: Boolean,
     showLoadingCircle: Boolean,
     paused: Boolean,
-    gestureSeekAmount: Pair<Int, Int>?,
+    gestureSeekAmount: Pair<Float, Float>?,
     onPlayPauseClick: () -> Unit,
 
     // next
@@ -97,8 +97,8 @@ fun MiddlePlayerControls(
                     stringResource(
                         AYMR.strings.player_gesture_seek_indicator,
                         if (gestureSeekAmount.second >= 0) '+' else '-',
-                        Utils.prettyTime(abs(gestureSeekAmount.second)),
-                        Utils.prettyTime(gestureSeekAmount.first + gestureSeekAmount.second),
+                        Utils.prettyTime(abs(gestureSeekAmount.second).toInt()),
+                        Utils.prettyTime((gestureSeekAmount.first + gestureSeekAmount.second).toInt()),
                     ),
                     style = MaterialTheme.typography.headlineMedium.copy(
                         shadow = Shadow(Color.Black, blurRadius = 5f),

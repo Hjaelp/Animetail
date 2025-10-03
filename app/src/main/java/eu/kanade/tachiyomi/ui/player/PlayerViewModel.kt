@@ -283,7 +283,7 @@ class PlayerViewModel @JvmOverloads constructor(
     var volumeBoostCap: Int = MPVLib.getPropertyInt("volume-max")
 
     // Pair(startingPosition, seekAmount)
-    val gestureSeekAmount = MutableStateFlow<Pair<Int, Int>?>(null)
+    val gestureSeekAmount = MutableStateFlow<Pair<Float, Float>?>(null)
 
     val sheetShown = MutableStateFlow(Sheets.None)
     val panelShown = MutableStateFlow(Panels.None)
@@ -689,6 +689,11 @@ class PlayerViewModel @JvmOverloads constructor(
 
     fun seekTo(position: Int, precise: Boolean = true) {
         if (position !in 0..(activity.player.duration ?: 0)) return
+        MPVLib.command(arrayOf("seek", position.toString(), if (precise) "absolute" else "absolute+keyframes"))
+    }
+
+    fun seekTo(position: Float, precise: Boolean = true) {
+        if (position !in 0f..(activity.player.duration?.toFloat() ?: 0f)) return
         MPVLib.command(arrayOf("seek", position.toString(), if (precise) "absolute" else "absolute+keyframes"))
     }
 

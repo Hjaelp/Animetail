@@ -195,12 +195,12 @@ fun GestureHandler(
             }
             .pointerInput(areControlsLocked) {
                 if (!seekGesture || areControlsLocked) return@pointerInput
-                var startingPosition = position.toInt()
+                var startingPosition = position
                 var startingX = 0f
                 var wasPlayerAlreadyPause = false
                 detectHorizontalDragGestures(
                     onDragStart = {
-                        startingPosition = position.toInt()
+                        startingPosition = position
                         startingX = it.x
                         wasPlayerAlreadyPause = viewModel.paused.value
                         viewModel.pause()
@@ -218,10 +218,10 @@ fun GestureHandler(
                             Pair(
                                 startingPosition,
                                 (it - startingPosition)
-                                    .coerceIn(0 - startingPosition, (duration - startingPosition).toInt()),
+                                    .coerceIn(0f - startingPosition, duration - startingPosition),
                             )
                         }
-                        viewModel.seekTo(it.coerceIn(0, duration.toInt()), preciseSeeking)
+                        viewModel.seekTo(it.coerceIn(0f, duration), preciseSeeking)
                     }
 
                     if (showSeekbar) viewModel.showSeekBar()
