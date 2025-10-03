@@ -73,6 +73,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -88,6 +89,8 @@ import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.category.anime.interactor.GetAnimeCategories
+import tachiyomi.domain.entries.anime.interactor.GetLibraryAnime
+import tachiyomi.domain.library.anime.LibraryAnime
 import tachiyomi.domain.category.anime.interactor.SetAnimeCategories
 import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.download.service.DownloadPreferences
@@ -167,6 +170,7 @@ class AnimeScreenModel(
     private val syncEpisodesWithSource: SyncEpisodesWithSource = Injekt.get(),
     private val syncSeasonsWithSource: SyncSeasonsWithSource = Injekt.get(),
     private val getCategories: GetAnimeCategories = Injekt.get(),
+    private val getLibraryAnime: GetLibraryAnime = Injekt.get(),
     private val getTracks: GetAnimeTracks = Injekt.get(),
     private val addTracks: AddAnimeTracks = Injekt.get(),
     private val setAnimeCategories: SetAnimeCategories = Injekt.get(),
@@ -325,6 +329,7 @@ class AnimeScreenModel(
                 // KMK -->
                 launch { fetchRelatedMangasFromSource() }
                 // KMK <--
+                launch { fetchMergedAnimesFromLibrary() }
             }
 
             // Initial loading finished
@@ -368,6 +373,31 @@ class AnimeScreenModel(
             screenModelScope.launch {
                 snackbarHostState.showSnackbar(message = with(context) { e.formattedMessage })
             }
+        }
+    }
+
+    internal suspend fun fetchMergedAnimesFromLibrary() {
+        updateSuccessState { it.copy(isMergedAnimesFetched = false) }
+        try {
+            successState?.let { state ->
+                if (!state.anime.seriesName.isNullOrBlank()) {
+                    val libraryAnimes = getLibraryAnime.subscribe().first()
+                    val mergedAnimes = libraryAnimes
+                        .filter { it.anime.seriesName == state.anime.seriesName }
+                        .sortedWith(
+                            compareBy<LibraryAnime> { it.latestUpload }
+                                .thenBy { it.unseenCount },
+                        )
+                        .map { it.anime }
+                    updateSuccessState { success ->
+                        success.copy(mergedAnimes = mergedAnimes)
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            logcat(LogPriority.ERROR, e)
+        } finally {
+            updateSuccessState { it.copy(isMergedAnimesFetched = true) }
         }
     }
 
@@ -1858,7 +1888,13 @@ class AnimeScreenModel(
              */
             val relatedAnimeCollection: List<RelatedAnime>? = null,
             // KMK <--
+            val mergedAnimes: List<Anime>? = null,
+            val isMergedAnimesFetched: Boolean? = null,
         ) : State {
+
+            val mergedAnimesSorted by lazy {
+                mergedAnimes?.filter { it.id != anime.id }
+            }
 
             val processedSeasons by lazy {
                 seasons.applySeasonFilters(anime).toList()

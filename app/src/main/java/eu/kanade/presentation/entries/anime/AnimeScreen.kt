@@ -76,6 +76,8 @@ import eu.kanade.presentation.entries.anime.components.AnimeInfoBox
 import eu.kanade.presentation.entries.anime.components.AnimeSeasonListItem
 import eu.kanade.presentation.entries.anime.components.EpisodeDownloadAction
 import eu.kanade.presentation.entries.anime.components.ExpandableAnimeDescription
+import eu.kanade.presentation.entries.anime.components.MergedAnimesRow
+import eu.kanade.presentation.entries.anime.components.MergedAnimeTitle
 import eu.kanade.presentation.entries.anime.components.NextEpisodeAiringListItem
 import eu.kanade.presentation.entries.anime.components.OutlinedButtonWithArrow
 import eu.kanade.presentation.entries.anime.components.RelatedAnimesRow
@@ -192,6 +194,9 @@ fun AnimeScreen(
     onRelatedAnimeClick: (Anime) -> Unit,
     onRelatedAnimeLongClick: (Anime) -> Unit,
     // KMK <--
+    onMergedAnimesScreenClick: () -> Unit,
+    onMergedAnimeClick: (Anime) -> Unit,
+    onMergedAnimeLongClick: (Anime) -> Unit,
 
 ) {
     val context = LocalContext.current
@@ -260,6 +265,9 @@ fun AnimeScreen(
             onRelatedAnimeClick = onRelatedAnimeClick,
             onRelatedAnimeLongClick = onRelatedAnimeLongClick,
             // KMK <--
+            onMergedAnimesScreenClick = onMergedAnimesScreenClick,
+            onMergedAnimeClick = onMergedAnimeClick,
+            onMergedAnimeLongClick = onMergedAnimeLongClick,
         )
     } else {
         AnimeScreenLargeImpl(
@@ -315,6 +323,9 @@ fun AnimeScreen(
             onRelatedAnimeClick = onRelatedAnimeClick,
             onRelatedAnimeLongClick = onRelatedAnimeLongClick,
             // KMK <--
+            onMergedAnimesScreenClick = onMergedAnimesScreenClick,
+            onMergedAnimeClick = onMergedAnimeClick,
+            onMergedAnimeLongClick = onMergedAnimeLongClick,
         )
     }
 }
@@ -390,6 +401,9 @@ private fun AnimeScreenSmallImpl(
     onRelatedAnimeClick: (Anime) -> Unit,
     onRelatedAnimeLongClick: (Anime) -> Unit,
     // KMK <--
+    onMergedAnimesScreenClick: () -> Unit,
+    onMergedAnimeClick: (Anime) -> Unit,
+    onMergedAnimeLongClick: (Anime) -> Unit,
 ) {
     val density = LocalDensity.current
     val offsetGridPaddingPx = with(density) { GRID_PADDING.roundToPx() }
@@ -601,6 +615,42 @@ private fun AnimeScreenSmallImpl(
                             modifier = Modifier.ignorePadding(offsetGridPaddingPx),
                         )
                     }
+                    if (state.mergedAnimesSorted?.isNotEmpty() == true) {
+                        item(
+                            key = "divider_merged_animes_top",
+                            span = { GridItemSpan(maxLineSpan) },
+                        ) { HorizontalDivider() }
+                        item(
+                            key = "merged_animes",
+                            contentType = "merged_animes",
+                            span = { GridItemSpan(maxLineSpan) },
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .ignorePadding(offsetGridPaddingPx),
+                            ) {
+                                /*MergedAnimeTitle(
+                                    title = "Merged Series",
+                                    subtitle = null,
+                                    onClick = onMergedAnimesScreenClick,
+                                    onLongClick = null,
+                                    modifier = Modifier
+                                        .padding(horizontal = MaterialTheme.padding.medium),
+                                )*/
+                                MergedAnimesRow(
+                                    mergedAnimes = state.mergedAnimesSorted!!,
+                                    getAnimeState = getAnimeState,
+                                    onAnimeClick = onMergedAnimeClick,
+                                    onAnimeLongClick = onMergedAnimeLongClick,
+                                )
+                            }
+                        }
+                        item(
+                            key = "divider_merged_animes_bottom",
+                            span = { GridItemSpan(maxLineSpan) },
+                        ) { HorizontalDivider() }
+                    }
+
                     // KMK -->
                     if (state.source !is StubAnimeSource &&
                         relatedAnimesEnabled
@@ -822,6 +872,9 @@ fun AnimeScreenLargeImpl(
     onRelatedAnimesScreenClick: () -> Unit,
     onRelatedAnimeClick: (Anime) -> Unit,
     onRelatedAnimeLongClick: (Anime) -> Unit,
+    onMergedAnimesScreenClick: () -> Unit,
+    onMergedAnimeClick: (Anime) -> Unit,
+    onMergedAnimeLongClick: (Anime) -> Unit,
 ) {
     val layoutDirection = LocalLayoutDirection.current
     val density = LocalDensity.current
@@ -1015,6 +1068,42 @@ fun AnimeScreenLargeImpl(
                                 bottom = contentPadding.calculateBottomPadding(),
                             ),
                         ) {
+
+                            if (state.mergedAnimesSorted?.isNotEmpty() == true) {
+                                item(
+                                    key = "divider_merged_animes_top_large",
+                                    span = { GridItemSpan(maxLineSpan) },
+                                ) { HorizontalDivider() }
+                                item(
+                                    key = "merged_animes_large",
+                                    contentType = "merged_animes_large",
+                                    span = { GridItemSpan(maxLineSpan) },
+                                ) {
+                                    Column(
+                                        modifier = Modifier.ignorePadding(offsetGridPaddingPx),
+                                    ) {
+                                        /*MergedAnimeTitle(
+                                            title = "Merged Series",
+                                            subtitle = null,
+                                            onClick = onMergedAnimesScreenClick,
+                                            onLongClick = null,
+                                            modifier = Modifier
+                                                .padding(horizontal = MaterialTheme.padding.medium),
+                                        )*/
+                                        MergedAnimesRow(
+                                            mergedAnimes = state.mergedAnimesSorted!!,
+                                            getAnimeState = getAnimeState,
+                                            onAnimeClick = onMergedAnimeClick,
+                                            onAnimeLongClick = onMergedAnimeLongClick,
+                                        )
+                                    }
+                                }
+                                item(
+                                    key = "divider_merged_animes_bottom_large",
+                                    span = { GridItemSpan(maxLineSpan) },
+                                ) { HorizontalDivider() }
+                            }
+
                             // KMK -->
                             if (state.source !is StubAnimeSource &&
                                 relatedAnimesEnabled

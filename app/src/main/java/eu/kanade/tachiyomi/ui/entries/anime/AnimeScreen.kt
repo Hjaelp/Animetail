@@ -312,6 +312,14 @@ class AnimeScreen(
                 }
             },
             onMetadataProviderClicked = screenModel::showMetadataProviderDialog,
+            onMergedAnimesScreenClick = { /* */ },
+            onMergedAnimeClick = { anime ->
+                scope.launchIO {
+                    val localAnime = screenModel.networkToLocalAnime.getLocal(anime)
+                    navigator.push(AnimeScreen(localAnime.id, true))
+                }
+            },
+            onMergedAnimeLongClick = { /* */ },
         )
 
         val onDismissRequest = {
