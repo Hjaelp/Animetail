@@ -7,6 +7,7 @@ import eu.kanade.tachiyomi.data.backup.models.BackupAnimeTracking
 import eu.kanade.tachiyomi.data.backup.models.BackupCategory
 import eu.kanade.tachiyomi.data.backup.models.BackupEpisode
 import tachiyomi.data.AnimeUpdateStrategyColumnAdapter
+import tachiyomi.data.CastColumnAdapter
 import tachiyomi.data.FetchTypeColumnAdapter
 import tachiyomi.data.handlers.anime.AnimeDatabaseHandler
 import tachiyomi.domain.category.anime.interactor.GetAnimeCategories
@@ -158,6 +159,7 @@ class AnimeRestorer(
                 seasonFlags = anime.seasonFlags,
                 seasonNumber = anime.seasonNumber,
                 seasonSourceOrder = anime.seasonSourceOrder,
+                cast = anime.cast?.let(CastColumnAdapter::encode),
                 backgroundUrl = anime.backgroundUrl,
                 backgroundLastModified = anime.backgroundLastModified,
             )
@@ -346,6 +348,7 @@ class AnimeRestorer(
                 metadataProvider = anime.metadataProvider,
                 metadataProviderAnimeId = anime.metadataProviderAnimeId,
                 backgroundUrl = anime.backgroundUrl,
+                cast = anime.cast,
                 backgroundLastModified = anime.backgroundLastModified,
             )
             animesQueries.selectLastInsertedRowId()

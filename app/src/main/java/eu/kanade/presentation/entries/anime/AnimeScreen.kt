@@ -74,6 +74,7 @@ import eu.kanade.presentation.entries.anime.components.AnimeActionRow
 import eu.kanade.presentation.entries.anime.components.AnimeEpisodeListItem
 import eu.kanade.presentation.entries.anime.components.AnimeInfoBox
 import eu.kanade.presentation.entries.anime.components.AnimeSeasonListItem
+import eu.kanade.presentation.entries.anime.components.CastRow
 import eu.kanade.presentation.entries.anime.components.EpisodeDownloadAction
 import eu.kanade.presentation.entries.anime.components.ExpandableAnimeDescription
 import eu.kanade.presentation.entries.anime.components.MergedAnimesRow
@@ -198,7 +199,7 @@ fun AnimeScreen(
     onMergedAnimeClick: (Anime) -> Unit,
     onMergedAnimeLongClick: (Anime) -> Unit,
 
-) {
+    ) {
     val context = LocalContext.current
     val onCopyTagToClipboard: (tag: String) -> Unit = {
         if (it.isNotEmpty()) {
@@ -440,6 +441,7 @@ private fun AnimeScreenSmallImpl(
     val relatedAnimesEnabled by Injekt.get<SourcePreferences>().relatedAnimes().collectAsState()
     val expandRelatedAnimes by uiPreferences.expandRelatedAnimes().collectAsState()
     val showRelatedAnimesInOverflow by uiPreferences.relatedAnimesInOverflow().collectAsState()
+    val showCast by uiPreferences.showCast().collectAsState()
 
     BoxWithConstraints {
         val density = LocalDensity.current
@@ -578,6 +580,7 @@ private fun AnimeScreenSmallImpl(
                             doSearch = onSearch,
                             modifier = Modifier.ignorePadding(offsetGridPaddingPx),
                         )
+                        // Cast is shown below the genres/tags. Moved to a separate item after DESCRIPTION_WITH_TAG.
                     }
 
                 item(
@@ -651,6 +654,23 @@ private fun AnimeScreenSmallImpl(
                         ) { HorizontalDivider() }
                     }
 
+                    // Cast row should appear below the genres/tags, but only when trackers are in use
+                    if (state.hasLoggedInTrackers && showCast) {
+                        item(
+                            key = "cast_row",
+                            contentType = "cast_row",
+                            span = { GridItemSpan(maxLineSpan) },
+                        ) {
+                            state.anime.cast?.let { castList ->
+                                if (castList.isNotEmpty()) {
+                                    CastRow(
+                                        cast = castList,
+                                        modifier = Modifier.ignorePadding(offsetGridPaddingPx),
+                                    )
+                                }
+                            }
+                        }
+                    }
                     // KMK -->
                     if (state.source !is StubAnimeSource &&
                         relatedAnimesEnabled
@@ -912,6 +932,7 @@ fun AnimeScreenLargeImpl(
     val relatedAnimesEnabled by Injekt.get<SourcePreferences>().relatedAnimes().collectAsState()
     val expandRelatedAnimes by uiPreferences.expandRelatedAnimes().collectAsState()
     val showRelatedAnimesInOverflow by uiPreferences.relatedAnimesInOverflow().collectAsState()
+    val showCast by uiPreferences.showCast().collectAsState()
 
     BoxWithConstraints {
         val density = LocalDensity.current
@@ -1042,18 +1063,30 @@ fun AnimeScreenLargeImpl(
                                 onWebViewLongClicked = onWebViewLongClicked,
                                 onTrackingClicked = onTrackingClicked,
                                 onMetadataProviderClicked = onMetadataProviderClicked,
-                            onEditIntervalClicked = onEditIntervalClicked,
-                            onEditCategory = onEditCategoryClicked,
-                        )
-                        ExpandableAnimeDescription(
-                            defaultExpandState = true,
-                            description = state.anime.description,
-                            tagsProvider = { state.anime.genre },
-                            onTagSearch = onTagSearch,
-                            onCopyTagToClipboard = onCopyTagToClipboard,
-                        )
-                    }
-                },
+                                onEditIntervalClicked = onEditIntervalClicked,
+                                onEditCategory = onEditCategoryClicked,
+                            )
+                            ExpandableAnimeDescription(
+                                defaultExpandState = true,
+                                description = state.anime.description,
+                                tagsProvider = { state.anime.genre },
+                                onTagSearch = onTagSearch,
+                                onCopyTagToClipboard = onCopyTagToClipboard,
+                            )
+                            // Cast is shown below the genres/tags on large layout as well,
+                            // but only when trackers are in use and there is cast data.
+                            if (state.hasLoggedInTrackers && showCast) {
+                                state.anime.cast?.let { castList ->
+                                    if (castList.isNotEmpty()) {
+                                        CastRow(
+                                            cast = castList,
+                                            modifier = Modifier.ignorePadding(offsetGridPaddingPx),
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    },
                 endContent = {
                     FastScrollLazyVerticalGrid(
                         modifier = Modifier
@@ -1240,6 +1273,18 @@ fun AnimeScreenLargeImpl(
                                         onEpisodeSelected = onEpisodeSelected,
                                         onEpisodeSwipe = onEpisodeSwipe,
                                         itemModifier = Modifier.ignorePadding(offsetGridPaddingPx),
+                                    )
+                                }
+                            }
+                        }
+                        // Cast is shown below the genres/tags on large layout as well,
+                        // but only when trackers are in use and there is cast data.
+                        if (state.hasLoggedInTrackers && showCast) {
+                            state.anime.cast?.let { castList ->
+                                if (castList.isNotEmpty()) {
+                                    CastRow(
+                                        cast = castList,
+                                        modifier = Modifier.ignorePadding(offsetGridPaddingPx),
                                     )
                                 }
                             }

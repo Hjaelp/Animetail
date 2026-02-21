@@ -31,4 +31,6 @@ class SAnimeImpl : SAnime {
     override var fetch_type: FetchType = FetchType.Episodes
 
     override var season_number: Double = -1.0
+
+    override var cast: List<Credit>? = null
 }

@@ -34,6 +34,9 @@ interface SAnime : Serializable {
 
     var initialized: Boolean
 
+    // Optional cast/credits list
+    var cast: List<Credit>?
+
     fun getGenres(): List<String>? {
         if (genre.isNullOrBlank()) return null
         return genre?.split(", ")?.map { it.trim() }?.filterNot { it.isBlank() }?.distinct()

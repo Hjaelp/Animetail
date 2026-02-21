@@ -3,6 +3,7 @@ import eu.kanade.tachiyomi.animesource.model.FetchType;
 import kotlin.Boolean;
 import kotlin.String;
 import kotlin.collections.List;
+import eu.kanade.tachiyomi.animesource.model.Credit;
 
 CREATE TABLE animes(
     _id INTEGER NOT NULL PRIMARY KEY,
@@ -37,6 +38,7 @@ CREATE TABLE animes(
     metadataProvider INTEGER NOT NULL DEFAULT 0,
     metadataProviderAnimeId TEXT,
     background_url TEXT,
+    "cast" TEXT AS List<Credit>,
     background_last_modified INTEGER NOT NULL
 );
 
@@ -164,8 +166,8 @@ DELETE FROM animes
 WHERE favorite = 0 AND _id IN :animeIds;
 
 insert:
-INSERT INTO animes(source, url, artist, author, description, genre, title, status, thumbnail_url, favorite, last_update, next_update, initialized, viewer, episode_flags, cover_last_modified, date_added, update_strategy, calculate_interval, last_modified_at, version, fetch_type, parent_id, season_flags, season_number, season_source_order, metadataProvider, metadataProviderAnimeId, background_url, background_last_modified)
-VALUES (:source, :url, :artist, :author, :description, :genre, :title, :status, :thumbnailUrl, :favorite, :lastUpdate, :nextUpdate, :initialized, :viewerFlags, :episodeFlags, :coverLastModified, :dateAdded, :updateStrategy, :calculateInterval, 0, :version, :fetchType, :parentId, :seasonFlags, :seasonNumber, :seasonSourceOrder, :metadataProvider, :metadataProviderAnimeId, :backgroundUrl, :backgroundLastModified);
+INSERT INTO animes(source, url, artist, author, description, genre, title, status, thumbnail_url, favorite, last_update, next_update, initialized, viewer, episode_flags, cover_last_modified, date_added, update_strategy, calculate_interval, last_modified_at, version, fetch_type, parent_id, season_flags, season_number, season_source_order, metadataProvider, metadataProviderAnimeId, background_url, "cast", background_last_modified)
+VALUES (:source, :url, :artist, :author, :description, :genre, :title, :status, :thumbnailUrl, :favorite, :lastUpdate, :nextUpdate, :initialized, :viewerFlags, :episodeFlags, :coverLastModified, :dateAdded, :updateStrategy, :calculateInterval, 0, :version, :fetchType, :parentId, :seasonFlags, :seasonNumber, :seasonSourceOrder, :metadataProvider, :metadataProviderAnimeId, :backgroundUrl, :cast, :backgroundLastModified);
 
 update:
 UPDATE animes SET
@@ -198,6 +200,7 @@ UPDATE animes SET
     metadataProvider = coalesce(:metadataProvider, metadataProvider),
     metadataProviderAnimeId = coalesce(:metadataProviderAnimeId, metadataProviderAnimeId),
     background_url = coalesce(:backgroundUrl, background_url),
+    "cast" = coalesce(:cast, "cast"),
     background_last_modified = coalesce(:backgroundLastModified, background_last_modified)
 WHERE _id = :animeId;
 

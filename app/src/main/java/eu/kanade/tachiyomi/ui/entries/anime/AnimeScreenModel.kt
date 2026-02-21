@@ -38,6 +38,7 @@ import eu.kanade.presentation.entries.anime.components.EpisodeDownloadAction
 import eu.kanade.presentation.util.formattedMessage
 import eu.kanade.tachiyomi.animesource.AnimeSource
 import eu.kanade.tachiyomi.animesource.UnmeteredSource
+import eu.kanade.tachiyomi.animesource.model.Credit
 import eu.kanade.tachiyomi.animesource.model.FetchType
 import eu.kanade.tachiyomi.animesource.model.SAnime
 import eu.kanade.tachiyomi.animesource.model.Video
@@ -186,6 +187,10 @@ class AnimeScreenModel(
     // <-- AM (FILE_SIZE)
 ) : StateScreenModel<AnimeScreenModel.State>(State.Loading) {
 
+    // In-memory cache to hold cast fetched from network so UI can show it even if DB
+    // schema doesn't yet persist the cast. Keyed by anime id.
+    private val castCache: MutableMap<Long, List<Credit>?> = mutableMapOf()
+
     private val successState: State.Success?
         get() = state.value as? State.Success
 
@@ -245,10 +250,15 @@ class AnimeScreenModel(
             ) { animeAndEpisodesAndSeasons, _, _ -> animeAndEpisodesAndSeasons }
                 .flowWithLifecycle(lifecycle)
                 .collectLatest { (anime, episodes, seasons) ->
+                    // Preserve any cast we previously fetched and cached in memory so the UI
+                    // doesn't flash when the DB flow emits an anime without cast.
+                    val animeWithCast = anime.copy(
+                        cast = anime.cast ?: castCache[anime.id],
+                    )
                     updateSuccessState {
                         it.copy(
-                            anime = anime,
-                            episodes = episodes.toEpisodeListItems(anime),
+                            anime = animeWithCast,
+                            episodes = episodes.toEpisodeListItems(animeWithCast),
                             seasons = seasons.toAnimeSeasonItems(),
                         )
                     }
@@ -258,19 +268,8 @@ class AnimeScreenModel(
         observeDownloads()
 
         screenModelScope.launchIO {
-            val oldAnime = getAnimeAndEpisodesAndSeasons.awaitAnime(animeId)
-
-            // TODO(16): Remove checks
-            val source = sourceManager.getOrStub(oldAnime.source)
-            val anime = if (source.javaClass.declaredMethods.any {
-                    it.name in
-                        listOf("getSeasonList", "seasonListRequest", "seasonListParse")
-                }
-            ) {
-                oldAnime
-            } else {
-                oldAnime.copy(fetchType = FetchType.Episodes)
-            }
+            val anime = getAnimeAndEpisodesAndSeasons.awaitAnime(animeId)
+            val source = sourceManager.getOrStub(anime.source)
 
             val episodes = if (anime.fetchType == FetchType.Seasons) {
                 emptyList()
@@ -304,10 +303,14 @@ class AnimeScreenModel(
             }
             // <-- (Torrent)
 
+            // Show what we have earlier. Inject cast from in-memory cache if available.
+            val animeWithCast = anime.copy(
+                cast = anime.cast ?: castCache[anime.id],
+            )
             // Show what we have earlier
             mutableState.update {
                 State.Success(
-                    anime = anime,
+                    anime = animeWithCast,
                     source = source,
                     isFromSource = isFromSource,
                     episodes = episodes,
@@ -363,6 +366,12 @@ class AnimeScreenModel(
         try {
             withIOContext {
                 val networkAnime = state.source.getAnimeDetails(state.anime.toSAnime())
+                // If network provided cast/credits, cache them and update UI state so cast shows immediately.
+                networkAnime.cast?.let { credits ->
+                    castCache[state.anime.id] = credits
+                    // Update in-memory state to show cast without waiting DB persistence
+                    updateSuccessState { s -> s.copy(anime = s.anime.copy(cast = credits)) }
+                }
                 updateAnime.awaitUpdateFromSource(state.anime, networkAnime, manualFetch)
             }
         } catch (e: Throwable) {
@@ -609,7 +618,8 @@ class AnimeScreenModel(
                 )
             ) {
                 val updatedAnime = animeRepository.getAnimeById(anime.id)
-                updateSuccessState { it.copy(anime = updatedAnime) }
+                val updatedWithCast = updatedAnime.copy(cast = updatedAnime.cast ?: castCache[updatedAnime.id])
+                updateSuccessState { it.copy(anime = updatedWithCast) }
             }
         }
     }
@@ -792,7 +802,8 @@ class AnimeScreenModel(
                 snackbarHostState.showSnackbar(message = message)
             }
             val newAnime = animeRepository.getAnimeById(animeId)
-            updateSuccessState { it.copy(anime = newAnime, isRefreshingData = false) }
+            val newWithCast = newAnime.copy(cast = newAnime.cast ?: castCache[newAnime.id])
+            updateSuccessState { it.copy(anime = newWithCast, isRefreshingData = false) }
         }
     }
 
@@ -843,7 +854,8 @@ class AnimeScreenModel(
                 snackbarHostState.showSnackbar(message = message)
             }
             val newAnime = animeRepository.getAnimeById(animeId)
-            updateSuccessState { it.copy(anime = newAnime, isRefreshingData = false) }
+            val newWithCast = newAnime.copy(cast = newAnime.cast ?: castCache[newAnime.id])
+            updateSuccessState { it.copy(anime = newWithCast, isRefreshingData = false) }
         }
     }
 
