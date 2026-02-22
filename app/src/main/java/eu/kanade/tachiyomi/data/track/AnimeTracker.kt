@@ -118,9 +118,10 @@ interface AnimeTracker {
      * Default implementation returns null. Trackers that can provide cast should override.
      *
      * @param title Title to lookup for credits (may be null).
+     * @param url Optional URL of the tracked item (may be null).
      * @return List of [Credit] or null when not available.
      */
-    suspend fun fetchCastByTitle(title: String?): List<Credit>? {
+    suspend fun fetchCastByTitle(title: String?, url: String? = null): List<Credit>? {
         return null
     }
 

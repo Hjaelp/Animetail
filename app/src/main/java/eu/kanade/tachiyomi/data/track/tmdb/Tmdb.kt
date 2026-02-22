@@ -325,7 +325,7 @@ class Tmdb(id: Long) : BaseTracker(id, "TMDB"), AnimeTracker {
         }
     }
 
-    override suspend fun fetchCastByTitle(title: String?): List<Credit>? {
+    override suspend fun fetchCastByTitle(title: String?, url: String?): List<Credit>? {
         if (title.isNullOrBlank()) return null
 
         return try {

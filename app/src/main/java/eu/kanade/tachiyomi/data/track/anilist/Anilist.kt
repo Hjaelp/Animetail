@@ -383,7 +383,7 @@ class Anilist(id: Long) :
         }
     }
 
-    override suspend fun fetchCastByTitle(title: String?): List<Credit>? {
+    override suspend fun fetchCastByTitle(title: String?, url: String?): List<Credit>? {
         return api.fetchCastByTitle(title)
     }
 }

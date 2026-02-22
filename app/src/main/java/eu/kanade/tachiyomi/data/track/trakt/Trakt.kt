@@ -319,7 +319,7 @@ class Trakt(
         }
     }
 
-    override suspend fun fetchCastByTitle(title: String?): List<eu.kanade.tachiyomi.animesource.model.Credit>? {
+    override suspend fun fetchCastByTitle(title: String?, url: String?): List<eu.kanade.tachiyomi.animesource.model.Credit>? {
         if (title.isNullOrBlank()) return null
         return try {
             // Search Trakt for the title and use the first show result to fetch cast.

@@ -1,5 +1,6 @@
 package eu.kanade.tachiyomi.data.track.jellyfin
 
+import eu.kanade.tachiyomi.animesource.model.Credit
 import eu.kanade.tachiyomi.data.database.models.anime.AnimeTrack
 import eu.kanade.tachiyomi.data.track.jellyfin.dto.JFItem
 import eu.kanade.tachiyomi.data.track.jellyfin.dto.JFItemList
@@ -161,6 +162,52 @@ class JellyfinApi(
     private fun Long.equalsTo(other: Double): Boolean {
         return abs(this - other) < 0.001
     }
+
+    suspend fun fetchCast(url: String): List<Credit>? =
+        withIOContext {
+            try {
+                val httpUrl = url.toHttpUrl().newBuilder()
+                    .addQueryParameter("Fields", "People")
+                    .build()
+                val baseUrl = url.substringBefore("/Users")
+
+                val response = client.newCall(GET(httpUrl)).awaitSuccess()
+                val body = response.body.string()
+
+                var item = json.decodeFromString<JFItem>(body)
+
+                if (item.people.isNullOrEmpty() && item.seriesId != null) {
+                    val seriesUrl = httpUrl.newBuilder().apply {
+                        val segments = httpUrl.pathSegments
+                        val itemIndex = segments.indexOf("Items")
+                        if (itemIndex != -1 && itemIndex + 1 < segments.size) {
+                            setPathSegment(itemIndex + 1, item.seriesId!!)
+                        }
+                    }.build()
+
+                    val seriesResponse = client.newCall(GET(seriesUrl)).awaitSuccess()
+                    val seriesBody = seriesResponse.body.string()
+                    item = json.decodeFromString<JFItem>(seriesBody)
+                }
+
+                item.people?.map { person ->
+                    val imageUrl = if (person.primaryImageTag != null) {
+                        "${baseUrl}/Items/${person.id}/Images/Primary?tag=${person.primaryImageTag}"
+                    } else {
+                        null
+                    }
+                    Credit(
+                        name = person.name,
+                        role = person.role ?: person.type,
+                        character = if (person.type == "Actor") person.role else null,
+                        image_url = imageUrl,
+                    )
+                }
+            } catch (e: Exception) {
+                logcat(LogPriority.WARN, e) { "Could not fetch cast for item: $url" }
+                null
+            }
+        }
 
     companion object {
         private val DATE_FORMATTER = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US)

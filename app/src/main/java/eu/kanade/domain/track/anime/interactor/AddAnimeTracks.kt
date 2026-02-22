@@ -49,7 +49,7 @@ class AddAnimeTracks(
                 val titleForLookup = localAnime?.title
 
                 try {
-                    val cast = tracker.fetchCastByTitle(titleForLookup)
+                    val cast = tracker.fetchCastByTitle(titleForLookup, item.tracking_url)
                     if (!cast.isNullOrEmpty()) {
                         updateAnime.await(
                             tachiyomi.domain.entries.anime.model.AnimeUpdate(
@@ -126,7 +126,7 @@ class AddAnimeTracks(
                             try {
                                 if (service is AnimeTracker) {
                                     try {
-                                        val cast = (service as AnimeTracker).fetchCastByTitle(anime.title)
+                                        val cast = (service as AnimeTracker).fetchCastByTitle(anime.title, track.tracking_url)
                                         if (!cast.isNullOrEmpty()) {
                                             Injekt.get<UpdateAnime>().await(
                                                 tachiyomi.domain.entries.anime.model.AnimeUpdate(

@@ -9,6 +9,17 @@ data class JFItem(
     @SerialName("Id") val id: String,
     @SerialName("UserData") val userData: JFUserData,
     @SerialName("IndexNumber") val indexNumber: Long? = null,
+    @SerialName("People") val people: List<JFPerson>? = null,
+    @SerialName("SeriesId") val seriesId: String? = null,
+)
+
+@Serializable
+data class JFPerson(
+    @SerialName("Name") val name: String,
+    @SerialName("Id") val id: String,
+    @SerialName("Role") val role: String? = null,
+    @SerialName("Type") val type: String? = null,
+    @SerialName("PrimaryImageTag") val primaryImageTag: String? = null,
 )
 
 @Serializable
