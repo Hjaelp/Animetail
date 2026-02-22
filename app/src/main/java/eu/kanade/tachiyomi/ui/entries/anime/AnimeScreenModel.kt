@@ -47,6 +47,7 @@ import eu.kanade.tachiyomi.data.download.anime.AnimeDownloadManager
 import eu.kanade.tachiyomi.data.download.anime.model.AnimeDownload
 import eu.kanade.tachiyomi.data.torrentServer.service.TorrentServerService
 import eu.kanade.tachiyomi.data.track.EnhancedAnimeTracker
+import eu.kanade.tachiyomi.data.track.AnimeTracker
 import eu.kanade.tachiyomi.data.track.TrackerManager
 import eu.kanade.tachiyomi.network.HttpException
 import eu.kanade.tachiyomi.source.anime.isSourceForTorrents
@@ -373,6 +374,10 @@ class AnimeScreenModel(
                     updateSuccessState { s -> s.copy(anime = s.anime.copy(cast = credits)) }
                 }
                 updateAnime.awaitUpdateFromSource(state.anime, networkAnime, manualFetch)
+
+                if (manualFetch) {
+                    fetchCastFromTrackers()
+                }
             }
         } catch (e: Throwable) {
             // Ignore early hints "errors" that aren't handled by OkHttp
@@ -407,6 +412,31 @@ class AnimeScreenModel(
             logcat(LogPriority.ERROR, e)
         } finally {
             updateSuccessState { it.copy(isMergedAnimesFetched = true) }
+        }
+    }
+
+    private suspend fun fetchCastFromTrackers() {
+        val state = successState ?: return
+        try {
+            val tracks = getTracks.await(state.anime.id)
+            for (track in tracks) {
+                val service = trackerManager.get(track.trackerId)
+                if (service is AnimeTracker) {
+                    val cast = service.fetchCastByTitle(state.anime.title, track.remoteUrl)
+                    if (!cast.isNullOrEmpty()) {
+                        updateAnime.await(
+                            tachiyomi.domain.entries.anime.model.AnimeUpdate(
+                                id = state.anime.id,
+                                cast = cast,
+                            ),
+                        )
+                        updateSuccessState { it.copy(anime = it.anime.copy(cast = cast)) }
+                        break // Skip the other trackers
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            logcat(LogPriority.WARN, e) { "Failed to fetch cast from trackers" }
         }
     }
 
