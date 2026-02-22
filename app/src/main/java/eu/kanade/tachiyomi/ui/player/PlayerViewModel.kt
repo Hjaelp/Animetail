@@ -1309,7 +1309,23 @@ class PlayerViewModel @JvmOverloads constructor(
                     this
                 }
             }
-            .map { it.toDbEpisode() }
+            .map {
+                val dbEp = it.toDbEpisode()
+                
+                val eStr = String.format("%02d", dbEp.episode_number.toInt())
+                val s = dbEp.series_number
+                
+                if (!dbEp.name.matches(Regex("^(Episode|Season|Ep\\.)\\s*\\d+$", RegexOption.IGNORE_CASE))) {
+                    if (s == null || s == -1L) {
+                        dbEp.name = "Episode $eStr - ${dbEp.name}"
+                    } else {
+                        val sStr = String.format("%02d", s)
+                        dbEp.name = "S${sStr}E${eStr} - ${dbEp.name}"
+                    }
+                }
+                
+                dbEp
+            }
     }
 
     private var hasTrackers: Boolean = false

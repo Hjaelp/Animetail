@@ -34,7 +34,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.entries.components.DotSeparatorText
-import eu.kanade.presentation.util.formatEpisodeNumber
 import eu.kanade.tachiyomi.data.database.models.anime.Episode
 import eu.kanade.tachiyomi.util.lang.toRelativeString
 import tachiyomi.domain.entries.anime.model.Anime
@@ -85,10 +84,22 @@ fun EpisodeListDialog(
                     val isCurrentEpisode = episode.id == episodeList[currentEpisodeIndex].id
 
                     val title = if (displayMode == Anime.EPISODE_DISPLAY_NUMBER) {
-                        stringResource(
+                        val eStr = String.format("%02d", episode.episode_number.toInt())
+                        val numberTitle = stringResource(
                             AYMR.strings.display_mode_episode,
-                            formatEpisodeNumber(episode.episode_number.toDouble()),
+                            eStr,
                         )
+                        if (!episode.name.matches(Regex("^(Episode|Season|Ep\\.)\\s*\\d+$", RegexOption.IGNORE_CASE))) {
+                            val s = episode.series_number
+                            if (s == null || s == -1L) {
+                                "Episode $eStr - ${episode.name}"
+                            } else {
+                                val sStr = String.format("%02d", s)
+                                "S${sStr}E${eStr} - ${episode.name}"
+                            }
+                        } else {
+                            numberTitle
+                        }
                     } else {
                         episode.name
                     }
