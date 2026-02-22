@@ -47,34 +47,54 @@ class Jellyfin(
 
 
     private fun JellyfinItem.toAnimeMetadataSearchResult(): AnimeMetadataSearchResult {
+        val tag = this.imageTags?.get("Primary")
+        val seriesTag = this.seriesPrimaryImageTag
+        val coverUrl = when {
+            !tag.isNullOrEmpty() -> "${baseUrl}/Items/${this.id}/Images/Primary?tag=$tag"
+            !seriesTag.isNullOrEmpty() && !this.seriesId.isNullOrEmpty() -> "${baseUrl}/Items/${this.seriesId}/Images/Primary?tag=$seriesTag"
+            else -> null
+        }
         return AnimeMetadataSearchResult(
             id = this.id,
             title = this.name,
-            cover_url = "${baseUrl}/Items/${this.id}/Images/Primary?tag=${this.imageTags?.get("Primary")}",
+            cover_url = coverUrl,
             description = this.overview,
             type = this.type,
         )
     }
 
     private fun JellyfinItem.toAnimeMetadata(episodes: List<AnimeEpisode>): AnimeMetadata {
+        val tag = this.imageTags?.get("Primary")
+        val seriesTag = this.seriesPrimaryImageTag
+        val coverUrl = when {
+            !tag.isNullOrEmpty() -> "${baseUrl}/Items/${this.id}/Images/Primary?tag=$tag"
+            !seriesTag.isNullOrEmpty() && !this.seriesId.isNullOrEmpty() -> "${baseUrl}/Items/${this.seriesId}/Images/Primary?tag=$seriesTag"
+            else -> null
+        }
         return AnimeMetadata(
             id = this.id,
             title = this.name,
             synopsis = this.overview,
-            coverImage = "${baseUrl}/Items/${this.id}/Images/Primary?tag=${this.imageTags?.get("Primary")}",
-            posterImage = "${baseUrl}/Items/${this.id}/Images/Primary?tag=${this.imageTags?.get("Primary")}",
+            coverImage = coverUrl,
+            posterImage = coverUrl,
             episodes = episodes,
         )
     }
 
     private fun JellyfinItem.toAnimeEpisode(): AnimeEpisode {
+        val tag = this.imageTags?.get("Primary")
+        val thumbnailUrl = if (!tag.isNullOrEmpty()) {
+            "${baseUrl}/Items/${this.id}/Images/Primary?tag=$tag"
+        } else {
+            null
+        }
         return AnimeEpisode(
             id = this.id,
             seriesNumber = this.parentIndexNumber ?: 1L,
             number = this.indexNumber ?: 0,
             title = this.name,
             synopsis = this.overview,
-            thumbnail = "${baseUrl}/Items/${this.id}/Images/Primary?tag=${this.imageTags?.get("Primary")}",
+            thumbnail = thumbnailUrl,
             runtime = this.runTimeTicks?.let { it / 600_000_000 }?.toInt(),
         )
     }

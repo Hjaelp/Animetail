@@ -19,6 +19,8 @@ data class JellyfinItem(
     @SerialName("ParentIndexNumber") val parentIndexNumber: Long? = null,
     @SerialName("IndexNumber") val indexNumber: Int? = null,
     @SerialName("RunTimeTicks") val runTimeTicks: Long? = null,
+    @SerialName("SeriesId") val seriesId: String? = null,
+    @SerialName("SeriesPrimaryImageTag") val seriesPrimaryImageTag: String? = null,
 )
 
 @Serializable
