@@ -1825,6 +1825,8 @@ class AnimeScreenModel(
         data class EditAnimeInfo(val anime: Anime) : Dialog
         // SY <--
 
+        data class EpisodeInfo(val episode: Episode) : Dialog
+
         data object ChangeAnimeSkipIntro : Dialog
         data object EpisodeSettingsSheet : Dialog
         data object SeasonSettingsSheet : Dialog
@@ -1890,6 +1892,10 @@ class AnimeScreenModel(
 
     fun showAnimeSkipIntroDialog() {
         updateSuccessState { it.copy(dialog = Dialog.ChangeAnimeSkipIntro) }
+    }
+
+    fun showEpisodeInfo(episode: Episode) {
+        updateSuccessState { it.copy(dialog = Dialog.EpisodeInfo(episode)) }
     }
 
     private fun showQualitiesDialog(episode: Episode) {

@@ -40,7 +40,9 @@ import eu.kanade.presentation.entries.anime.DuplicateAnimeDialog
 import eu.kanade.presentation.entries.anime.EpisodeOptionsDialogScreen
 import eu.kanade.presentation.entries.anime.EpisodeSettingsDialog
 import eu.kanade.presentation.entries.anime.SeasonSettingsDialog
+import eu.kanade.presentation.entries.anime.components.AnimeEpisodeInfoDialog
 import eu.kanade.presentation.entries.anime.components.AnimeImagesDialog
+import eu.kanade.presentation.entries.anime.components.EpisodeDownloadAction
 import eu.kanade.presentation.entries.components.DeleteItemsDialog
 import eu.kanade.presentation.entries.components.SetIntervalDialog
 import eu.kanade.presentation.entries.manga.components.MangaCoverDialog
@@ -186,6 +188,19 @@ class AnimeScreen(
             }
         }
         val haptic = LocalHapticFeedback.current
+
+        val onEpisodeClickAction: (Episode, Boolean) -> Unit = { episode, alt ->
+            scope.launchIO {
+                if (successState.source.isSourceForTorrents()) {
+                    TorrentServerService.start()
+                    TorrentServerService.wait(10)
+                    TorrentServerUtils.setTrackersList()
+                }
+                val extPlayer = screenModel.alwaysUseExternalPlayer != alt
+                openEpisode(context, episode, extPlayer)
+            }
+        }
+
         AnimeScreen(
 
             state = successState,
@@ -200,17 +215,8 @@ class AnimeScreen(
             showFileSize = screenModel.showFileSize,
             // <-- AM (FILE_SIZE)
             navigateUp = navigator::pop,
-            onEpisodeClicked = { episode, alt ->
-                scope.launchIO {
-                    if (successState.source.isSourceForTorrents()) {
-                        TorrentServerService.start()
-                        TorrentServerService.wait(10)
-                        TorrentServerUtils.setTrackersList()
-                    }
-                    val extPlayer = screenModel.alwaysUseExternalPlayer != alt
-                    openEpisode(context, episode, extPlayer)
-                }
-            },
+            onEpisodeClicked = onEpisodeClickAction,
+            onInfoClicked = screenModel::showEpisodeInfo,
             onDownloadEpisode = screenModel::runEpisodeDownloadActions.takeIf {
                 !successState.source.isLocalOrStub() && successState.anime.fetchType == FetchType.Episodes
             },
@@ -487,6 +493,33 @@ class AnimeScreen(
                     onValueChanged = { interval: Int -> screenModel.setFetchInterval(dialog.anime, interval) }
                         .takeIf { screenModel.isUpdateIntervalEnabled },
                 )
+            }
+            is AnimeScreenModel.Dialog.EpisodeInfo -> {
+                val episodes = successState.processedEpisodes.map { it.episode }
+                val initialIndex = episodes.indexOfFirst { it.id == dialog.episode.id }
+                if (initialIndex != -1) {
+                    AnimeEpisodeInfoDialog(
+                        initialEpisodeIndex = initialIndex,
+                        episodes = episodes,
+                        animeTitle = successState.anime.title,
+                        onPlayClick = {
+                            onEpisodeClickAction(it, false)
+                        },
+                        onSeenClick = {
+                            screenModel.markEpisodesSeen(listOf(it), !it.seen)
+                        },
+                        onBookmarkClick = {
+                            screenModel.bookmarkEpisodes(listOf(it), !it.bookmark)
+                        },
+                        onDownloadClick = {
+                            val item = successState.episodes.find { item -> item.id == it.id }
+                            if (item != null) {
+                                screenModel.runEpisodeDownloadActions(listOf(item), EpisodeDownloadAction.START)
+                            }
+                        },
+                        onDismissRequest = onDismissRequest,
+                    )
+                }
             }
             AnimeScreenModel.Dialog.ChangeAnimeSkipIntro -> {
                 fun updateSkipIntroLength(newLength: Long) {

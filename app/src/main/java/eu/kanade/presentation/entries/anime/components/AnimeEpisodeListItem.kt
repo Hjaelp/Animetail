@@ -21,6 +21,7 @@ import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material.icons.outlined.FileDownloadOff
 import androidx.compose.material.icons.outlined.RemoveDone
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
@@ -54,6 +55,7 @@ import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.selectedBackground
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.automirrored.outlined.LabelOff
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.NewLabel
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.painter.ColorPainter
@@ -83,6 +85,7 @@ fun AnimeEpisodeListItem(
     onClick: () -> Unit,
     onDownloadClick: ((EpisodeDownloadAction) -> Unit)?,
     onEpisodeSwipe: (LibraryPreferences.EpisodeSwipeAction) -> Unit,
+    onInfoClick: () -> Unit,
     // AM (FILE_SIZE) -->
     fileSize: Long?,
     // <-- AM (FILE_SIZE)
@@ -249,6 +252,14 @@ fun AnimeEpisodeListItem(
                 fileSize = fileSize,
                 // <-- AM (FILE_SIZE)
             )
+
+            IconButton(onClick = onInfoClick) {
+                Icon(
+                    imageVector = Icons.Outlined.Info,
+                    contentDescription = "Info",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
         }
     }
 }

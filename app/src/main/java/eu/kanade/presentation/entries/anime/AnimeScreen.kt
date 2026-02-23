@@ -144,6 +144,7 @@ fun AnimeScreen(
     onEpisodeClicked: (episode: Episode, alt: Boolean) -> Unit,
     onDownloadEpisode: ((List<EpisodeList.Item>, EpisodeDownloadAction) -> Unit)?,
     onAddToLibraryClicked: () -> Unit,
+    onInfoClicked: (Episode) -> Unit,
     onWebViewClicked: (() -> Unit)?,
     onWebViewLongClicked: (() -> Unit)?,
     onTrackingClicked: (() -> Unit)?,
@@ -228,6 +229,7 @@ fun AnimeScreen(
             onEpisodeClicked = onEpisodeClicked,
             onDownloadEpisode = onDownloadEpisode,
             onAddToLibraryClicked = onAddToLibraryClicked,
+            onInfoClicked = onInfoClicked,
             onWebViewClicked = onWebViewClicked,
             onWebViewLongClicked = onWebViewLongClicked,
             onTrackingClicked = onTrackingClicked,
@@ -286,6 +288,7 @@ fun AnimeScreen(
             onEpisodeClicked = onEpisodeClicked,
             onDownloadEpisode = onDownloadEpisode,
             onAddToLibraryClicked = onAddToLibraryClicked,
+            onInfoClicked = onInfoClicked,
             onWebViewClicked = onWebViewClicked,
             onWebViewLongClicked = onWebViewLongClicked,
             onTrackingClicked = onTrackingClicked,
@@ -349,6 +352,7 @@ private fun AnimeScreenSmallImpl(
     onEpisodeClicked: (Episode, Boolean) -> Unit,
     onDownloadEpisode: ((List<EpisodeList.Item>, EpisodeDownloadAction) -> Unit)?,
     onAddToLibraryClicked: () -> Unit,
+    onInfoClicked: (Episode) -> Unit,
     onWebViewClicked: (() -> Unit)?,
     onWebViewLongClicked: (() -> Unit)?,
     onTrackingClicked: (() -> Unit)?,
@@ -812,6 +816,7 @@ private fun AnimeScreenSmallImpl(
                                 onDownloadEpisode = onDownloadEpisode,
                                 onEpisodeSelected = onEpisodeSelected,
                                 onEpisodeSwipe = onEpisodeSwipe,
+                                onInfoClicked = onInfoClicked,
                                 itemModifier = Modifier.ignorePadding(offsetGridPaddingPx),
                             )
                         }
@@ -840,6 +845,7 @@ fun AnimeScreenLargeImpl(
     onEpisodeClicked: (Episode, Boolean) -> Unit,
     onDownloadEpisode: ((List<EpisodeList.Item>, EpisodeDownloadAction) -> Unit)?,
     onAddToLibraryClicked: () -> Unit,
+    onInfoClicked: (Episode) -> Unit,
     onWebViewClicked: (() -> Unit)?,
     onWebViewLongClicked: (() -> Unit)?,
     onTrackingClicked: (() -> Unit)?,
@@ -1272,6 +1278,7 @@ fun AnimeScreenLargeImpl(
                                         onDownloadEpisode = onDownloadEpisode,
                                         onEpisodeSelected = onEpisodeSelected,
                                         onEpisodeSwipe = onEpisodeSwipe,
+                                        onInfoClicked = onInfoClicked,
                                         itemModifier = Modifier.ignorePadding(offsetGridPaddingPx),
                                     )
                                 }
@@ -1393,6 +1400,7 @@ private fun LazyGridScope.sharedEpisodeItems(
     onDownloadEpisode: ((List<EpisodeList.Item>, EpisodeDownloadAction) -> Unit)?,
     onEpisodeSelected: (EpisodeList.Item, Boolean, Boolean, Boolean) -> Unit,
     onEpisodeSwipe: (EpisodeList.Item, LibraryPreferences.EpisodeSwipeAction) -> Unit,
+    onInfoClicked: (Episode) -> Unit,
     itemModifier: Modifier = Modifier,
 ) {
     items(
@@ -1490,6 +1498,7 @@ private fun LazyGridScope.sharedEpisodeItems(
                     onEpisodeSwipe = {
                         onEpisodeSwipe(episodeItem, it)
                     },
+                    onInfoClick = { onInfoClicked(episodeItem.episode) },
                     modifier = itemModifier,
                     // AM (FILE_SIZE) -->
                     fileSize = fileSizeAsync,
