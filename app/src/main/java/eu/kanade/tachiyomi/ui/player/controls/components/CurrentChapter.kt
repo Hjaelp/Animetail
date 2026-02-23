@@ -97,7 +97,8 @@ fun CurrentChapter(
                     overflow = TextOverflow.Clip,
                     color = MaterialTheme.colorScheme.tertiary,
                 )
-                currentChapter.name.let {
+                currentChapter.name.let { name ->
+                    val truncatedName = if (name.length > 60) name.take(60) + "…" else name
                     Text(
                         text = Typography.bullet.toString(),
                         textAlign = TextAlign.Center,
@@ -107,7 +108,7 @@ fun CurrentChapter(
                         overflow = TextOverflow.Clip,
                     )
                     Text(
-                        text = it,
+                        text = truncatedName,
                         textAlign = TextAlign.Center,
                         style = MaterialTheme.typography.bodyMedium,
                         maxLines = 1,
