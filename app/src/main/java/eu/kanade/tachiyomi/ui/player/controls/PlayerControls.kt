@@ -385,11 +385,13 @@ fun PlayerControls(
                 ) {
                     val invertDuration by playerPreferences.invertDuration().collectAsState()
                     val readAhead by viewModel.readAhead.collectAsState()
+                    val readAheadStart by viewModel.readAheadStart.collectAsState()
                     val preciseSeeking by gesturePreferences.playerSmoothSeek().collectAsState()
                     SeekbarWithTimers(
                         position = position,
                         duration = duration,
                         readAheadValue = readAhead,
+                        readAheadStart = readAheadStart,
                         onValueChange = {
                             isSeeking = true
                             viewModel.updatePlayBackPos(it)

@@ -213,7 +213,7 @@ class AniyomiMPVView(context: Context, attributes: AttributeSet) : BaseMPVView(c
         "track-list" to MPVLib.mpvFormat.MPV_FORMAT_NONE,
 
         "time-pos" to MPVLib.mpvFormat.MPV_FORMAT_INT64,
-        "demuxer-cache-time" to MPVLib.mpvFormat.MPV_FORMAT_INT64,
+        "demuxer-cache-state" to MPVLib.mpvFormat.MPV_FORMAT_NONE,
         "duration" to MPVLib.mpvFormat.MPV_FORMAT_INT64,
         "volume" to MPVLib.mpvFormat.MPV_FORMAT_INT64,
         "volume-max" to MPVLib.mpvFormat.MPV_FORMAT_INT64,

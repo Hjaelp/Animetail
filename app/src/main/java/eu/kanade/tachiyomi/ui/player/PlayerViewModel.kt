@@ -34,6 +34,12 @@ import androidx.compose.runtime.Immutable
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.sample
+import kotlinx.coroutines.flow.collectLatest
+import kotlin.time.Duration.Companion.milliseconds
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -255,6 +261,11 @@ class PlayerViewModel @JvmOverloads constructor(
     private val _readAhead = MutableStateFlow(0f)
     val readAhead = _readAhead.asStateFlow()
 
+    private val _readAheadStart = MutableStateFlow(0f)
+    val readAheadStart = _readAheadStart.asStateFlow()
+
+    private val cacheStateSignal = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+
     private val _paused = MutableStateFlow(false)
     val paused = _paused.asStateFlow()
 
@@ -335,7 +346,36 @@ class PlayerViewModel @JvmOverloads constructor(
         }
 
         changeVideoAspect(playerPreferences.aspectState().get(), showToast = false)
+
+        viewModelScope.launchIO {
+            cacheStateSignal
+                .sample(1000.milliseconds)
+                .collectLatest {
+                    val stateString = MPVLib.getPropertyString("demuxer-cache-state") ?: return@collectLatest
+                    runCatching {
+                        val state = json.decodeFromString<CacheState>(stateString)
+                        val range = state.ranges.firstOrNull()
+                        if (range != null) {
+                            val start = range.start ?: 0.0
+                            val end = range.end ?: 0.0
+                            _readAheadStart.update { start.toFloat() }
+                            _readAhead.update { end.toFloat().coerceAtMost(duration.value) }
+                        }
+                    }
+                }
+        }
     }
+
+    @Serializable
+    private data class CacheState(
+        @SerialName("seekable-ranges") val ranges: List<CacheRange> = emptyList(),
+    )
+
+    @Serializable
+    private data class CacheRange(
+        val start: Double? = null,
+        val end: Double? = null,
+    )
 
     /**
      * Starts a sleep timer/cancels the current timer if [seconds] is less than 1.
@@ -560,8 +600,8 @@ class PlayerViewModel @JvmOverloads constructor(
         _pos.update { pos }
     }
 
-    fun updateReadAhead(value: Long) {
-        _readAhead.update { value.toFloat() }
+    fun onCacheStateUpdate() {
+        cacheStateSignal.tryEmit(Unit)
     }
 
     private fun updatePausedState() {

@@ -74,6 +74,7 @@ fun SeekbarWithTimers(
     position: Float,
     duration: Float,
     readAheadValue: Float,
+    readAheadStart: Float,
     onValueChange: (Float) -> Unit,
     onValueChangeFinished: () -> Unit,
     timersInverted: Pair<Boolean, Boolean>,
@@ -113,6 +114,7 @@ fun SeekbarWithTimers(
                 onValueChange = onValueChange,
                 onValueChangeFinished = onValueChangeFinished,
                 readAheadValue = readAheadValue,
+                progressStartPosition = if (duration > 0) readAheadStart / duration else 0f,
                 segments = chapters
                     .filter { it.start in 0f..duration }
                     .let {
@@ -197,7 +199,8 @@ private fun PreviewSeekBar() {
     SeekbarWithTimers(
         5f,
         20f,
-        4f,
+        10f,
+        2f,
         {},
         {},
         Pair(false, true),

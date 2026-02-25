@@ -705,7 +705,6 @@ class PlayerActivity : BaseActivity() {
                 viewModel.updatePlayBackPos(value.toFloat())
                 viewModel.setChapter(value.toFloat())
             }
-            "demuxer-cache-time" -> viewModel.updateReadAhead(value = value)
             "volume" -> viewModel.setMPVVolume(value.toInt())
             "volume-max" -> viewModel.volumeBoostCap = value.toInt() - 100
             // "chapter" -> viewModel.updateChapter(value)
@@ -717,6 +716,7 @@ class PlayerActivity : BaseActivity() {
     internal fun onObserverEvent(property: String) {
         if (player.isExiting) return
         when (property) {
+            "demuxer-cache-state" -> viewModel.onCacheStateUpdate()
             "chapter-list" -> {
                 viewModel.loadChapters()
                 viewModel.updateChapter(0)
