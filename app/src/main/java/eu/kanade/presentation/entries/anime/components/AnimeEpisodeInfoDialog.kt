@@ -24,6 +24,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -31,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
@@ -59,9 +61,11 @@ fun AnimeEpisodeInfoDialog(
 ) {
     val pagerState = rememberPagerState(initialPage = initialEpisodeIndex) { episodes.size }
     val json = Injekt.get<Json>()
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
+        sheetState = sheetState,
     ) {
         HorizontalPager(
             state = pagerState,
@@ -95,7 +99,8 @@ fun AnimeEpisodeInfoDialog(
                             .fillMaxWidth()
                             .height(300.dp)
                             .clip(MaterialTheme.shapes.medium),
-                        contentScale = ContentScale.Crop,
+                        contentScale = ContentScale.Fit,
+                        filterQuality = FilterQuality.Medium,
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                 }
