@@ -28,6 +28,7 @@ import eu.kanade.tachiyomi.data.download.manga.MangaDownloadManager
 import eu.kanade.tachiyomi.data.notification.Notifications
 import eu.kanade.tachiyomi.data.sync.SyncDataJob
 import eu.kanade.tachiyomi.data.track.TrackStatus
+import eu.kanade.tachiyomi.data.track.TrackerManager
 import eu.kanade.tachiyomi.source.UnmeteredSource
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.model.UpdateStrategy
@@ -81,6 +82,7 @@ import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.math.roundToInt
 
 class MangaLibraryUpdateJob(private val context: Context, workerParams: WorkerParameters) :
     CoroutineWorker(context, workerParams) {
@@ -94,6 +96,7 @@ class MangaLibraryUpdateJob(private val context: Context, workerParams: WorkerPa
     private val updateManga: UpdateManga = Injekt.get()
     private val syncChaptersWithSource: SyncChaptersWithSource = Injekt.get()
     private val getTracks: GetMangaTracks = Injekt.get()
+    private val trackerManager: TrackerManager = Injekt.get()
     private val mangaFetchInterval: MangaFetchInterval = Injekt.get()
     private val filterChaptersForDownload: FilterChaptersForDownload = Injekt.get()
 
@@ -213,6 +216,19 @@ class MangaLibraryUpdateJob(private val context: Context, workerParams: WorkerPa
                             TrackStatus.parseTrackerStatus(track.trackerId, track.status)
                         } ?: TrackStatus.OTHER
                         status.int == trackingExtra.toLong()
+                    }
+                }
+                MangaLibraryGroup.BY_TRACK_SCORE -> {
+                    val scoreExtra = groupExtra?.toIntOrNull() ?: -1
+                    val trackerMap = trackerManager.loggedInTrackers().associateBy { it.id }
+                    val tracks = runBlocking { getTracks.await() }.groupBy { it.mangaId }
+
+                    libraryManga.filter { (manga) ->
+                        val scores = tracks[manga.id]?.mapNotNull { track ->
+                            trackerMap[track.trackerId]?.mangaService?.get10PointScore(track)
+                        }
+                        val maxScore = if (scores.isNullOrEmpty()) -1 else scores.maxOrNull()?.roundToInt() ?: -1
+                        maxScore == scoreExtra
                     }
                 }
                 MangaLibraryGroup.BY_SOURCE -> {

@@ -33,6 +33,7 @@ import eu.kanade.tachiyomi.data.download.anime.AnimeDownloadManager
 import eu.kanade.tachiyomi.data.notification.Notifications
 import eu.kanade.tachiyomi.data.sync.SyncDataJob
 import eu.kanade.tachiyomi.data.track.TrackStatus
+import eu.kanade.tachiyomi.data.track.TrackerManager
 import eu.kanade.tachiyomi.util.storage.getUriCompat
 import eu.kanade.tachiyomi.util.system.createFileInCacheDir
 import eu.kanade.tachiyomi.util.system.isConnectedToWifi
@@ -85,6 +86,7 @@ import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.math.roundToInt
 
 class AnimeLibraryUpdateJob(private val context: Context, workerParams: WorkerParameters) :
     CoroutineWorker(context, workerParams) {
@@ -99,6 +101,7 @@ class AnimeLibraryUpdateJob(private val context: Context, workerParams: WorkerPa
     private val updateAnime: UpdateAnime = Injekt.get()
     private val syncEpisodesWithSource: SyncEpisodesWithSource = Injekt.get()
     private val getTracks: GetAnimeTracks = Injekt.get()
+    private val trackerManager: TrackerManager = Injekt.get()
     private val animeFetchInterval: AnimeFetchInterval = Injekt.get()
     private val filterEpisodesForDownload: FilterEpisodesForDownload = Injekt.get()
     private val getAnimeSeasonsByParentId: GetAnimeSeasonsByParentId = Injekt.get()
@@ -215,6 +218,19 @@ class AnimeLibraryUpdateJob(private val context: Context, workerParams: WorkerPa
                             TrackStatus.parseTrackerStatus(track.trackerId, track.status)
                         } ?: TrackStatus.OTHER
                         status.int == trackingExtra.toLong()
+                    }
+                }
+                AnimeLibraryGroup.BY_TRACK_SCORE -> {
+                    val scoreExtra = groupExtra?.toIntOrNull() ?: -1
+                    val trackerMap = trackerManager.loggedInTrackers().associateBy { it.id }
+                    val tracks = runBlocking { getTracks.await() }.groupBy { it.animeId }
+
+                    libraryAnime.filter { (anime) ->
+                        val scores = tracks[anime.id]?.mapNotNull { track ->
+                            trackerMap[track.trackerId]?.animeService?.get10PointScore(track)
+                        }
+                        val maxScore = if (scores.isNullOrEmpty()) -1 else scores.maxOrNull()?.roundToInt() ?: -1
+                        maxScore == scoreExtra
                     }
                 }
                 AnimeLibraryGroup.BY_SOURCE -> {

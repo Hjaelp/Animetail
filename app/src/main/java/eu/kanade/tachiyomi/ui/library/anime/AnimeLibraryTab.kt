@@ -124,7 +124,7 @@ data object AnimeLibraryTab : Tab {
                 groupExtra = when (state.groupType) {
                     AnimeLibraryGroup.BY_DEFAULT -> null
                     AnimeLibraryGroup.BY_SOURCE, AnimeLibraryGroup.BY_TRACK_STATUS,
-                    AnimeLibraryGroup.BY_TAG,
+                    AnimeLibraryGroup.BY_TAG, AnimeLibraryGroup.BY_TRACK_SCORE,
                     -> (if (state.groupTypeSub != AnimeLibraryGroup.UNGROUPED) (category?.id?.div(1000)?.minus(1)) else category?.id)?.toString()
                     AnimeLibraryGroup.BY_STATUS -> (if (state.groupTypeSub != AnimeLibraryGroup.UNGROUPED) (category?.id?.div(1000)?.minus(1)) else category?.id?.minus(1))?.toString()
                     else -> null

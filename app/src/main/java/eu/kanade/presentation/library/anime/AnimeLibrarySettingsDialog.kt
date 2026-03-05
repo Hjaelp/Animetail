@@ -361,6 +361,7 @@ private fun groupTypeDrawableRes(type: Int): Int {
         AnimeLibraryGroup.BY_SOURCE -> R.drawable.ic_browse_filled_24dp
         AnimeLibraryGroup.BY_TAG -> R.drawable.ic_tag_24dp
         AnimeLibraryGroup.UNGROUPED -> R.drawable.ic_ungroup_24dp
+        AnimeLibraryGroup.BY_TRACK_SCORE -> R.drawable.ic_star_filled_24dp
         else -> R.drawable.ic_label_24dp
     }
 }
@@ -383,6 +384,7 @@ private fun ColumnScope.GroupPage(
             add(AnimeLibraryGroup.BY_STATUS)
             if (trackers.isNotEmpty()) {
                 add(AnimeLibraryGroup.BY_TRACK_STATUS)
+                add(AnimeLibraryGroup.BY_TRACK_SCORE)
             }
         }.map {
             GroupMode(

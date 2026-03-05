@@ -121,7 +121,7 @@ data object MangaLibraryTab : Tab {
                 groupExtra = when (state.groupType) {
                     MangaLibraryGroup.BY_DEFAULT -> null
                     MangaLibraryGroup.BY_SOURCE,
-                    MangaLibraryGroup.BY_TRACK_STATUS, MangaLibraryGroup.BY_TAG,
+                    MangaLibraryGroup.BY_TRACK_STATUS, MangaLibraryGroup.BY_TAG, MangaLibraryGroup.BY_TRACK_SCORE,
                     -> (if (state.groupTypeSub != MangaLibraryGroup.UNGROUPED) (category?.id?.div(1000)?.minus(1)) else category?.id)?.toString()
                     MangaLibraryGroup.BY_STATUS -> (if (state.groupTypeSub != MangaLibraryGroup.UNGROUPED) (category?.id?.div(1000)?.minus(1)) else category?.id?.minus(1))?.toString()
                     else -> null

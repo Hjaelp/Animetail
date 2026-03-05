@@ -83,6 +83,8 @@ import tachiyomi.source.local.entries.anime.LocalAnimeSource
 import tachiyomi.source.local.entries.anime.isLocal
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
+import kotlin.math.ceil
+import kotlin.math.roundToInt
 import kotlin.random.Random
 
 /**
@@ -907,6 +909,41 @@ class AnimeLibraryScreenModel(
                         order = TrackStatus.entries.toTypedArray().indexOfFirst {
                             it.int == id
                         }.takeUnless { it == -1 }?.toLong() ?: TrackStatus.OTHER.ordinal.toLong(),
+                        flags = 0,
+                        hidden = false,
+                    )
+                }
+            }
+            AnimeLibraryGroup.BY_TRACK_SCORE -> {
+                val trackerMap = trackerManager.loggedInTrackers().associateBy { it.id }
+                val tracks = runBlocking { getTracks.await() }.groupBy { it.animeId }
+                libraryAnime.groupBy { item ->
+                    if (item.isMerged) {
+                        val allScores = item.mergedAnime?.flatMap { libraryAnime ->
+                            tracks[libraryAnime.anime.id]?.mapNotNull { track ->
+                                trackerMap[track.trackerId]?.animeService?.get10PointScore(track)
+                            } ?: emptyList()
+                        }?.filter { it > 0.0 }
+                        if (allScores.isNullOrEmpty()) {
+                            -1
+                        } else {
+                            ceil(allScores.average()).toInt()
+                        }
+                    } else {
+                        val scores = tracks[item.libraryAnime.anime.id]?.mapNotNull { track ->
+                            trackerMap[track.trackerId]?.animeService?.get10PointScore(track)
+                        }
+                        if (scores.isNullOrEmpty()) {
+                            -1
+                        } else {
+                            scores.maxOrNull()?.roundToInt() ?: -1
+                        }
+                    }
+                }.mapKeys { (score) ->
+                    Category(
+                        id = score.toLong(),
+                        name = if (score == -1) context.getString(R.string.not_tracked) else score.toString(),
+                        order = (if (score == -1) 11 else 10 - score).toLong(),
                         flags = 0,
                         hidden = false,
                     )
