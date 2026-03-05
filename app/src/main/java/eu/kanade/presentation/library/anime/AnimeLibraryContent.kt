@@ -29,6 +29,8 @@ import kotlin.time.Duration.Companion.seconds
 @Composable
 fun AnimeLibraryContent(
     categories: List<Category>,
+    primaryCategories: List<Category>,
+    subCategories: List<List<Category>>,
     searchQuery: String?,
     selection: List<LibraryAnime>,
     contentPadding: PaddingValues,
@@ -67,11 +69,57 @@ fun AnimeLibraryContent(
                     pagerState.scrollToPage(categories.size - 1)
                 }
             }
-            LibraryTabs(
-                categories = categories,
-                pagerState = pagerState,
-                getNumberOfItemsForCategory = getNumberOfAnimeForCategory,
-            ) { scope.launch { pagerState.animateScrollToPage(it) } }
+
+            if (primaryCategories.isNotEmpty()) {
+                val (primaryIndex, subIndex) = remember(pagerState.currentPage, primaryCategories, subCategories) {
+                    var count = 0
+                    for (i in primaryCategories.indices) {
+                        val subSize = subCategories[i].size
+                        if (pagerState.currentPage < count + subSize) {
+                            return@remember i to (pagerState.currentPage - count)
+                        }
+                        count += subSize
+                    }
+                    0 to 0
+                }
+
+                LibraryTabs(
+                    categories = primaryCategories,
+                    currentPageIndex = primaryIndex,
+                    getNumberOfItemsForCategory = { primaryCategory ->
+                        val pIndex = primaryCategories.indexOf(primaryCategory)
+                        if (pIndex != -1) {
+                            subCategories[pIndex].sumOf { combinedSubCategory ->
+                                getNumberOfAnimeForCategory(combinedSubCategory) ?: 0
+                            }.takeIf { it > 0 }
+                        } else {
+                            null
+                        }
+                    },
+                    onTabItemClick = {
+                        val targetPage = subCategories.take(it).sumOf { it.size }
+                        scope.launch { pagerState.animateScrollToPage(targetPage) }
+                    },
+                )
+
+                LibraryTabs(
+                    categories = subCategories[primaryIndex],
+                    currentPageIndex = subIndex,
+                    getNumberOfItemsForCategory = { combinedSubCategory ->
+                        getNumberOfAnimeForCategory(combinedSubCategory)
+                    },
+                    onTabItemClick = {
+                        val primaryStartPage = subCategories.take(primaryIndex).sumOf { it.size }
+                        scope.launch { pagerState.animateScrollToPage(primaryStartPage + it) }
+                    },
+                )
+            } else {
+                LibraryTabs(
+                    categories = categories,
+                    currentPageIndex = pagerState.currentPage,
+                    getNumberOfItemsForCategory = getNumberOfAnimeForCategory,
+                ) { scope.launch { pagerState.animateScrollToPage(it) } }
+            }
         }
 
         val notSelectionMode = selection.isEmpty()

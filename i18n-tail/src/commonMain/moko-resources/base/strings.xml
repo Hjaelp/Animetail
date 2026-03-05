@@ -13,6 +13,7 @@
 
 
     <string name="group">Group</string>
+    <string name="sub_group">Sub Group</string>
 
 
     <string name="anime_library_group_updates">Anime Library dynamic category updates</string>

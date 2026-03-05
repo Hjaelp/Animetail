@@ -131,15 +131,15 @@ class AnimeLibraryScreenModel(
                 // SY -->
                 combine(
                     state.map { it.groupType }.distinctUntilChanged(),
+                    state.map { it.groupTypeSub }.distinctUntilChanged(),
                     libraryPreferences.animeSortingMode().changes(),
-                    ::Pair,
+                    ::Triple,
                 ),
                 // SY <--
-            ) { searchQuery, library, tracks, (trackingFilter, _), (groupType, sort) ->
-                library
-                    // SY -->
-                    .applyGrouping(groupType)
-                    // SY <--
+            ) { searchQuery, library, tracks, (trackingFilter, _), (groupType, groupTypeSub, sort) ->
+                val (map, primary, sub) = library.applyGrouping(groupType, groupTypeSub)
+                val processedMap = map
+
                     .applyFilters(tracks, trackingFilter)
                     .applySort(tracks, sort.takeIf { groupType != AnimeLibraryGroup.BY_DEFAULT }, trackingFilter.keys)
                     .mapValues { (_, value) ->
@@ -149,12 +149,15 @@ class AnimeLibraryScreenModel(
                             value
                         }
                     }
+                Triple(processedMap, primary, sub)
             }
-                .collectLatest {
+                .collectLatest { (library, primary, sub) ->
                     mutableState.update { state ->
                         state.copy(
                             isLoading = false,
-                            library = it,
+                            library = library,
+                            primaryCategories = primary,
+                            subCategories = sub,
                         )
                     }
                 }
@@ -208,6 +211,14 @@ class AnimeLibraryScreenModel(
             }
             .launchIn(screenModelScope)
         // SY <--
+
+        libraryPreferences.groupAnimeLibraryBySub().changes()
+            .onEach {
+                mutableState.update { state ->
+                    state.copy(groupTypeSub = it)
+                }
+            }
+            .launchIn(screenModelScope)
     }
 
     private suspend fun AnimeLibraryMap.applyFilters(
@@ -312,13 +323,7 @@ class AnimeLibraryScreenModel(
         }
 
         fun AnimeLibrarySort.comparator(): Comparator<AnimeLibraryItem> = Comparator { i1, i2 ->
-            // SY -->
-            // Use groupSort when provided, otherwise use the sort from the category
-            val currentSort = when {
-                groupSort != null -> groupSort
-                else -> keys.find { it.id == i1.libraryAnime.category }?.sort ?: AnimeLibrarySort.default
-            }
-            // SY <--
+            val currentSort = this
             when (currentSort.type) {
                 AnimeLibrarySort.Type.Alphabetical -> {
                     sortAlphabetically(i1, i2)
@@ -462,7 +467,10 @@ class AnimeLibraryScreenModel(
     }
 
     // SY -->
-    private fun AnimeLibraryMap.applyGrouping(groupType: Int): AnimeLibraryMap {
+    private fun AnimeLibraryMap.applyGrouping(
+        groupType: Int,
+        groupTypeSub: Int,
+    ): Triple<AnimeLibraryMap, List<Category>, List<List<Category>>> {
         val items = when (groupType) {
             AnimeLibraryGroup.BY_DEFAULT -> this
             AnimeLibraryGroup.UNGROUPED -> {
@@ -485,7 +493,47 @@ class AnimeLibraryScreenModel(
             }
         }
 
-        return items
+        if (groupTypeSub == AnimeLibraryGroup.UNGROUPED) {
+            return Triple(items, emptyList(), emptyList())
+        }
+
+        val primaryCategories = items.keys.toList()
+        val subCategories = mutableListOf<List<Category>>()
+        val result = mutableMapOf<Category, List<AnimeLibraryItem>>()
+
+        primaryCategories.forEach { primaryCategory ->
+            val subGrouped = if (groupTypeSub == AnimeLibraryGroup.BY_DEFAULT) {
+                items[primaryCategory].orEmpty().groupBy { it.libraryAnime.category }.mapKeys { (id) ->
+                    this.keys.find { it.id == id } ?: Category(
+                        id = id,
+                        name = preferences.context.getString(R.string.ungrouped),
+                        order = 0,
+                        flags = 0,
+                        hidden = false,
+                    )
+                }.toSortedMap(compareBy { it.order })
+            } else {
+                getGroupedAnimeItems(groupTypeSub, items[primaryCategory].orEmpty())
+            }
+
+            val combinedSubCategories = mutableListOf<Category>()
+            subGrouped.forEach { (subCategory, subItems) ->
+                val combinedCategory = subCategory.copy(
+                    id = java.util.Objects.hash(primaryCategory.id, subCategory.id).toLong(),
+                    order = subCategory.order,
+                    flags = when {
+                        groupTypeSub == AnimeLibraryGroup.BY_DEFAULT -> subCategory.flags
+                        groupType == AnimeLibraryGroup.BY_DEFAULT -> primaryCategory.flags
+                        else -> 0L
+                    },
+                )
+                result[combinedCategory] = subItems
+                combinedSubCategories.add(combinedCategory)
+            }
+            subCategories.add(combinedSubCategories)
+        }
+
+        return Triple(result, primaryCategories, subCategories)
     }
     // SY <--
 
@@ -983,7 +1031,10 @@ class AnimeLibraryScreenModel(
         val dialog: Dialog? = null,
         // SY -->
         val groupType: Int = AnimeLibraryGroup.BY_DEFAULT,
+        val groupTypeSub: Int = AnimeLibraryGroup.UNGROUPED,
         // SY <--
+        val primaryCategories: List<Category> = emptyList(),
+        val subCategories: List<List<Category>> = emptyList(),
     ) {
         private val libraryCount by lazy {
             library.values
@@ -996,7 +1047,11 @@ class AnimeLibraryScreenModel(
 
         val selectionMode = selection.isNotEmpty()
 
-        val categories = library.keys.toList()
+        val categories = if (primaryCategories.isNotEmpty()) {
+            subCategories.flatten()
+        } else {
+            library.keys.toList()
+        }
 
         val showResetInfo: Boolean by lazy {
             selection.fastAny { (anime) ->
@@ -1013,7 +1068,8 @@ class AnimeLibraryScreenModel(
         }
 
         fun getAnimelibItemsByPage(page: Int): List<AnimeLibraryItem> {
-            return library.values.toTypedArray().getOrNull(page).orEmpty()
+            val category = categories.getOrNull(page) ?: return emptyList()
+            return library[category].orEmpty()
         }
 
         fun getAnimeCountForCategory(category: Category): Int? {

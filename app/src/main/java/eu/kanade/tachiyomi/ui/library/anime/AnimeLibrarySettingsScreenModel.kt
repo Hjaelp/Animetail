@@ -15,6 +15,7 @@ import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.domain.category.anime.interactor.SetAnimeDisplayMode
 import tachiyomi.domain.category.anime.interactor.SetSortModeForAnimeCategory
 import tachiyomi.domain.category.model.Category
+import tachiyomi.domain.library.anime.model.AnimeLibraryGroup
 import tachiyomi.domain.library.anime.model.AnimeLibrarySort
 import tachiyomi.domain.library.model.LibraryDisplayMode
 import tachiyomi.domain.library.service.LibraryPreferences
@@ -39,6 +40,7 @@ class AnimeLibrarySettingsScreenModel(
 
     // SY -->
     val grouping by libraryPreferences.groupAnimeLibraryBy().asState(screenModelScope)
+    val groupingSub by libraryPreferences.groupAnimeLibraryBySub().asState(screenModelScope)
 
     // SY <--
 
@@ -69,7 +71,22 @@ class AnimeLibrarySettingsScreenModel(
     // SY -->
     fun setGrouping(grouping: Int) {
         screenModelScope.launchIO {
+            val currentSub = libraryPreferences.groupAnimeLibraryBySub().get()
+            if (grouping == currentSub || grouping == AnimeLibraryGroup.UNGROUPED) {
+                libraryPreferences.groupAnimeLibraryBySub().set(AnimeLibraryGroup.UNGROUPED)
+            }
             libraryPreferences.groupAnimeLibraryBy().set(grouping)
+        }
+    }
+
+    fun setGroupingSub(grouping: Int) {
+        screenModelScope.launchIO {
+            val currentPrimary = libraryPreferences.groupAnimeLibraryBy().get()
+            if (grouping != currentPrimary && currentPrimary != AnimeLibraryGroup.UNGROUPED) {
+                libraryPreferences.groupAnimeLibraryBySub().set(grouping)
+            } else if (grouping == currentPrimary) {
+                libraryPreferences.groupAnimeLibraryBySub().set(AnimeLibraryGroup.UNGROUPED)
+            }
         }
     }
     // SY <--

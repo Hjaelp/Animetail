@@ -51,6 +51,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -105,6 +106,7 @@ fun HeadingItem(
 fun IconItem(
     label: String,
     icon: ImageVector,
+    enabled: Boolean = true,
     onClick: () -> Unit,
 ) {
     BaseSettingsItem(
@@ -117,6 +119,7 @@ fun IconItem(
             )
         },
         onClick = onClick,
+        enabled = enabled,
     )
 }
 
@@ -124,6 +127,7 @@ fun IconItem(
 fun SortItem(
     label: String,
     sortDescending: Boolean?,
+    enabled: Boolean = true,
     onClick: () -> Unit,
 ) {
     val arrowIcon = when (sortDescending) {
@@ -135,12 +139,18 @@ fun SortItem(
     BaseSortItem(
         label = label,
         icon = arrowIcon,
+        enabled = enabled,
         onClick = onClick,
     )
 }
 
 @Composable
-fun BaseSortItem(label: String, icon: ImageVector?, onClick: () -> Unit) {
+fun BaseSortItem(
+    label: String,
+    icon: ImageVector?,
+    enabled: Boolean = true,
+    onClick: () -> Unit,
+) {
     BaseSettingsItem(
         label = label,
         widget = {
@@ -155,6 +165,7 @@ fun BaseSortItem(label: String, icon: ImageVector?, onClick: () -> Unit) {
             }
         },
         onClick = onClick,
+        enabled = enabled,
     )
 }
 
@@ -162,11 +173,13 @@ fun BaseSortItem(label: String, icon: ImageVector?, onClick: () -> Unit) {
 fun CheckboxItem(
     label: String,
     pref: Preference<Boolean>,
+    enabled: Boolean = true,
 ) {
     val checked by pref.collectAsState()
     CheckboxItem(
         label = label,
         checked = checked,
+        enabled = enabled,
         onClick = { pref.toggle() },
     )
 }
@@ -175,6 +188,7 @@ fun CheckboxItem(
 fun CheckboxItem(
     label: String,
     checked: Boolean,
+    enabled: Boolean = true,
     onClick: () -> Unit,
 ) {
     BaseSettingsItem(
@@ -183,9 +197,11 @@ fun CheckboxItem(
             Checkbox(
                 checked = checked,
                 onCheckedChange = null,
+                enabled = enabled,
             )
         },
         onClick = onClick,
+        enabled = enabled,
     )
 }
 
@@ -193,6 +209,7 @@ fun CheckboxItem(
 fun RadioItem(
     label: String,
     selected: Boolean,
+    enabled: Boolean = true,
     onClick: () -> Unit,
 ) {
     BaseSettingsItem(
@@ -201,9 +218,11 @@ fun RadioItem(
             RadioButton(
                 selected = selected,
                 onClick = null,
+                enabled = enabled,
             )
         },
         onClick = onClick,
+        enabled = enabled,
     )
 }
 
@@ -372,6 +391,7 @@ fun TriStateItem(
                 },
             )
             .fillMaxWidth()
+            .alpha(if (enabled) 1f else DISABLED_ALPHA)
             .padding(
                 horizontal = SettingsItemsPaddings.Horizontal,
                 vertical = SettingsItemsPaddings.Vertical,
@@ -613,11 +633,13 @@ private fun BaseSettingsItem(
     label: String,
     widget: @Composable RowScope.() -> Unit,
     onClick: () -> Unit,
+    enabled: Boolean = true,
 ) {
     Row(
         modifier = Modifier
-            .clickable(onClick = onClick)
+            .clickable(enabled = enabled, onClick = onClick)
             .fillMaxWidth()
+            .alpha(if (enabled) 1f else DISABLED_ALPHA)
             .padding(
                 horizontal = SettingsItemsPaddings.Horizontal,
                 vertical = SettingsItemsPaddings.Vertical,
@@ -639,6 +661,7 @@ fun IconItem(
     label: String,
     icon: Painter,
     selected: Boolean,
+    enabled: Boolean = true,
     onClick: () -> Unit,
 ) {
     BaseSettingsItem(
@@ -655,6 +678,7 @@ fun IconItem(
             )
         },
         onClick = onClick,
+        enabled = enabled,
     )
 }
 // SY <--

@@ -1,7 +1,6 @@
 package eu.kanade.presentation.library.components
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.pager.PagerState
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryScrollableTabRow
@@ -17,11 +16,11 @@ import tachiyomi.presentation.core.components.material.TabText
 @Composable
 internal fun LibraryTabs(
     categories: List<Category>,
-    pagerState: PagerState,
+    currentPageIndex: Int,
     getNumberOfItemsForCategory: (Category) -> Int?,
     onTabItemClick: (Int) -> Unit,
 ) {
-    val currentPageIndex = pagerState.currentPage.coerceAtMost(categories.lastIndex)
+    val currentPageIndex = currentPageIndex.coerceAtMost(categories.lastIndex)
     Column(
         modifier = Modifier.zIndex(1f),
     ) {

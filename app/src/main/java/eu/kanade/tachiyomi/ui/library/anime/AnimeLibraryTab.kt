@@ -119,14 +119,14 @@ data object AnimeLibraryTab : Tab {
             // SY -->
             val started = AnimeLibraryUpdateJob.startNow(
                 context = context,
-                category = if (state.groupType == AnimeLibraryGroup.BY_DEFAULT) category else null,
+                category = if (state.groupType == AnimeLibraryGroup.BY_DEFAULT && state.groupTypeSub == AnimeLibraryGroup.UNGROUPED) category else null,
                 group = state.groupType,
                 groupExtra = when (state.groupType) {
                     AnimeLibraryGroup.BY_DEFAULT -> null
                     AnimeLibraryGroup.BY_SOURCE, AnimeLibraryGroup.BY_TRACK_STATUS,
                     AnimeLibraryGroup.BY_TAG,
-                    -> category?.id?.toString()
-                    AnimeLibraryGroup.BY_STATUS -> category?.id?.minus(1)?.toString()
+                    -> (if (state.groupTypeSub != AnimeLibraryGroup.UNGROUPED) (category?.id?.div(1000)?.minus(1)) else category?.id)?.toString()
+                    AnimeLibraryGroup.BY_STATUS -> (if (state.groupTypeSub != AnimeLibraryGroup.UNGROUPED) (category?.id?.div(1000)?.minus(1)) else category?.id?.minus(1))?.toString()
                     else -> null
                 },
             )
@@ -235,6 +235,8 @@ data object AnimeLibraryTab : Tab {
                 else -> {
                     AnimeLibraryContent(
                         categories = state.categories,
+                        primaryCategories = state.primaryCategories,
+                        subCategories = state.subCategories,
                         searchQuery = state.searchQuery,
                         selection = state.selection,
                         contentPadding = contentPadding,

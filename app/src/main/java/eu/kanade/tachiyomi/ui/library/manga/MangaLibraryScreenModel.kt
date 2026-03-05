@@ -126,15 +126,15 @@ class MangaLibraryScreenModel(
                 // SY -->
                 combine(
                     state.map { it.groupType }.distinctUntilChanged(),
+                    state.map { it.groupTypeSub }.distinctUntilChanged(),
                     libraryPreferences.mangaSortingMode().changes(),
-                    ::Pair,
+                    ::Triple,
                 ),
                 // SY <--
-            ) { searchQuery, library, tracks, (trackingFilter, _), (groupType, sort) ->
-                library
+            ) { searchQuery, library, tracks, (trackingFilter, _), (groupType, groupTypeSub, sort) ->
+                val (map, primary, sub) = library.applyGrouping(groupType, groupTypeSub)
+                val processedMap = map
                     // SY -->
-                    .applyGrouping(groupType)
-                    // SY <--
                     .applyFilters(tracks, trackingFilter)
                     .applySort(tracks, sort.takeIf { groupType != MangaLibraryGroup.BY_DEFAULT }, trackingFilter.keys)
                     .mapValues { (_, value) ->
@@ -144,12 +144,15 @@ class MangaLibraryScreenModel(
                             value
                         }
                     }
+                Triple(processedMap, primary, sub)
             }
-                .collectLatest {
+                .collectLatest { (library, primary, sub) ->
                     mutableState.update { state ->
                         state.copy(
                             isLoading = false,
-                            library = it,
+                            library = library,
+                            primaryCategories = primary,
+                            subCategories = sub,
                         )
                     }
                 }
@@ -199,6 +202,14 @@ class MangaLibraryScreenModel(
             .onEach {
                 mutableState.update { state ->
                     state.copy(groupType = it)
+                }
+            }
+            .launchIn(screenModelScope)
+
+        libraryPreferences.groupMangaLibraryBySub().changes()
+            .onEach {
+                mutableState.update { state ->
+                    state.copy(groupTypeSub = it)
                 }
             }
             .launchIn(screenModelScope)
@@ -307,13 +318,7 @@ class MangaLibraryScreenModel(
         }
 
         fun MangaLibrarySort.comparator(): Comparator<MangaLibraryItem> = Comparator { i1, i2 ->
-            // SY -->
-            // Use groupSort when provided, otherwise use the sort from the category
-            val currentSort = when {
-                groupSort != null -> groupSort
-                else -> keys.find { it.id == i1.libraryManga.category }?.sort ?: MangaLibrarySort.default
-            }
-            // SY <--
+            val currentSort = this
             when (currentSort.type) {
                 MangaLibrarySort.Type.Alphabetical -> {
                     sortAlphabetically(i1, i2)
@@ -445,7 +450,10 @@ class MangaLibraryScreenModel(
     }
 
     // SY -->
-    private fun MangaLibraryMap.applyGrouping(groupType: Int): MangaLibraryMap {
+    private fun MangaLibraryMap.applyGrouping(
+        groupType: Int,
+        groupTypeSub: Int,
+    ): Triple<MangaLibraryMap, List<Category>, List<List<Category>>> {
         val items = when (groupType) {
             MangaLibraryGroup.BY_DEFAULT -> this
             MangaLibraryGroup.UNGROUPED -> {
@@ -468,7 +476,47 @@ class MangaLibraryScreenModel(
             }
         }
 
-        return items
+        if (groupTypeSub == MangaLibraryGroup.UNGROUPED) {
+            return Triple(items, emptyList(), emptyList())
+        }
+
+        val primaryCategories = items.keys.toList()
+        val subCategories = mutableListOf<List<Category>>()
+        val result = mutableMapOf<Category, List<MangaLibraryItem>>()
+
+        primaryCategories.forEach { primaryCategory ->
+            val subGrouped = if (groupTypeSub == MangaLibraryGroup.BY_DEFAULT) {
+                items[primaryCategory].orEmpty().groupBy { it.libraryManga.category }.mapKeys { (id) ->
+                    this.keys.find { it.id == id } ?: Category(
+                        id = id,
+                        name = preferences.context.getString(R.string.ungrouped),
+                        order = 0,
+                        flags = 0,
+                        hidden = false,
+                    )
+                }.toSortedMap(compareBy { it.order })
+            } else {
+                getGroupedMangaItems(groupTypeSub, items[primaryCategory].orEmpty())
+            }
+
+            val combinedSubCategories = mutableListOf<Category>()
+            subGrouped.forEach { (subCategory, subItems) ->
+                val combinedCategory = subCategory.copy(
+                    id = java.util.Objects.hash(primaryCategory.id, subCategory.id).toLong(),
+                    order = subCategory.order,
+                    flags = when {
+                        groupTypeSub == MangaLibraryGroup.BY_DEFAULT -> subCategory.flags
+                        groupType == MangaLibraryGroup.BY_DEFAULT -> primaryCategory.flags
+                        else -> 0L
+                    },
+                )
+                result[combinedCategory] = subItems
+                combinedSubCategories.add(combinedCategory)
+            }
+            subCategories.add(combinedSubCategories)
+        }
+
+        return Triple(result, primaryCategories, subCategories)
     }
     // SY <--
 
@@ -960,7 +1008,10 @@ class MangaLibraryScreenModel(
         val dialog: Dialog? = null,
         // SY -->
         val groupType: Int = MangaLibraryGroup.BY_DEFAULT,
+        val groupTypeSub: Int = MangaLibraryGroup.UNGROUPED,
         // SY <--
+        val primaryCategories: List<Category> = emptyList(),
+        val subCategories: List<List<Category>> = emptyList(),
     ) {
         private val libraryCount by lazy {
             library.values
@@ -973,7 +1024,11 @@ class MangaLibraryScreenModel(
 
         val selectionMode = selection.isNotEmpty()
 
-        val categories = library.keys.toList()
+        val categories = if (primaryCategories.isNotEmpty()) {
+            subCategories.flatten()
+        } else {
+            library.keys.toList()
+        }
 
         // SY -->
         val showResetInfo: Boolean by lazy {
@@ -993,7 +1048,8 @@ class MangaLibraryScreenModel(
         }
 
         fun getLibraryItemsByPage(page: Int): List<MangaLibraryItem> {
-            return library.values.toTypedArray().getOrNull(page).orEmpty()
+            val category = categories.getOrNull(page) ?: return emptyList()
+            return library[category].orEmpty()
         }
 
         fun getMangaCountForCategory(category: Category): Int? {

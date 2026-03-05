@@ -416,9 +416,19 @@ class LibraryPreferences(
         AnimeLibraryGroup.BY_DEFAULT,
     )
 
+    fun groupAnimeLibraryBySub() = preferenceStore.getInt(
+        "group_anime_library_by_sub",
+        AnimeLibraryGroup.UNGROUPED,
+    )
+
     fun groupMangaLibraryBy() = preferenceStore.getInt(
         "group_library_by",
         MangaLibraryGroup.BY_DEFAULT,
+    )
+
+    fun groupMangaLibraryBySub() = preferenceStore.getInt(
+        "group_library_by_sub",
+        MangaLibraryGroup.UNGROUPED,
     )
 
     // SY <--

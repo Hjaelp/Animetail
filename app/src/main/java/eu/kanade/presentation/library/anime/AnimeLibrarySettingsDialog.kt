@@ -374,15 +374,15 @@ private fun ColumnScope.GroupPage(
 
     val groups = remember(hasCategories, trackers) {
         buildList {
-            add(AnimeLibraryGroup.BY_DEFAULT)
+            add(AnimeLibraryGroup.UNGROUPED)
+            if (hasCategories) {
+                add(AnimeLibraryGroup.BY_DEFAULT)
+            }
             add(AnimeLibraryGroup.BY_SOURCE)
             add(AnimeLibraryGroup.BY_TAG)
             add(AnimeLibraryGroup.BY_STATUS)
             if (trackers.isNotEmpty()) {
                 add(AnimeLibraryGroup.BY_TRACK_STATUS)
-            }
-            if (hasCategories) {
-                add(AnimeLibraryGroup.UNGROUPED)
             }
         }.map {
             GroupMode(
@@ -400,6 +400,21 @@ private fun ColumnScope.GroupPage(
             selected = it.int == screenModel.grouping,
             onClick = {
                 screenModel.setGrouping(it.int)
+            },
+        )
+    }
+
+    HeadingItem(TLMR.strings.sub_group)
+
+    groups.fastForEach {
+        val isEnabled = screenModel.grouping != AnimeLibraryGroup.UNGROUPED && it.int != screenModel.grouping
+        IconItem(
+            label = stringResource(it.nameRes),
+            icon = painterResource(it.drawableRes),
+            selected = it.int == screenModel.groupingSub,
+            enabled = isEnabled,
+            onClick = {
+                screenModel.setGroupingSub(it.int)
             },
         )
     }
