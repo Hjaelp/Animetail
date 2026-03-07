@@ -36,9 +36,12 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlin.time.Duration.Companion.milliseconds
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.SavedStateHandle
@@ -182,6 +185,8 @@ class PlayerViewModel @JvmOverloads constructor(
     uiPreferences: UiPreferences = Injekt.get(),
 ) : ViewModel() {
 
+    private val initLock = Mutex()
+
     private val _currentPlaylist = MutableStateFlow<List<Episode>>(emptyList())
     val currentPlaylist = _currentPlaylist.asStateFlow()
 
@@ -209,7 +214,7 @@ class PlayerViewModel @JvmOverloads constructor(
     private val _isLoadingEpisode = MutableStateFlow(false)
     val isLoadingEpisode = _isLoadingEpisode.asStateFlow()
 
-    private val _currentDecoder = MutableStateFlow(getDecoderFromValue(MPVLib.getPropertyString("hwdec")))
+    private val _currentDecoder = MutableStateFlow(Decoder.AutoCopy)
     val currentDecoder = _currentDecoder.asStateFlow()
 
     val mediaTitle = MutableStateFlow("")
@@ -290,8 +295,8 @@ class PlayerViewModel @JvmOverloads constructor(
         }.getOrElse { 0f },
     )
     val currentVolume = MutableStateFlow(activity.audioManager.getStreamVolume(AudioManager.STREAM_MUSIC))
-    val currentMPVVolume = MutableStateFlow(MPVLib.getPropertyInt("volume"))
-    var volumeBoostCap: Int = MPVLib.getPropertyInt("volume-max")
+    val currentMPVVolume = MutableStateFlow(0)
+    var volumeBoostCap: Int = 100
 
     // Pair(startingPosition, seekAmount)
     val gestureSeekAmount = MutableStateFlow<Pair<Float, Float>?>(null)
@@ -325,6 +330,12 @@ class PlayerViewModel @JvmOverloads constructor(
     private val _primaryButton = MutableStateFlow<CustomButton?>(null)
     val primaryButton = _primaryButton.asStateFlow()
 
+    private val playerReady = CompletableDeferred<Unit>()
+
+    fun signalPlayerReady() {
+        playerReady.complete(Unit)
+    }
+
     init {
         viewModelScope.launchIO {
             try {
@@ -345,21 +356,29 @@ class PlayerViewModel @JvmOverloads constructor(
             }
         }
 
-        changeVideoAspect(playerPreferences.aspectState().get(), showToast = false)
+        viewModelScope.launch {
+            playerReady.await()
 
-        viewModelScope.launchIO {
-            cacheStateSignal
-                .sample(1000.milliseconds)
-                .collectLatest {
-                    val stateString = MPVLib.getPropertyString("demuxer-cache-state") ?: return@collectLatest
-                    runCatching {
-                        val state = json.decodeFromString<CacheState>(stateString)
-                        val range = state.ranges.firstOrNull()
-                        if (range != null) {
-                            val start = range.start ?: 0.0
-                            val end = range.end ?: 0.0
-                            _readAheadStart.update { start.toFloat() }
-                            _readAhead.update { end.toFloat().coerceAtMost(duration.value) }
+            _currentDecoder.update { getDecoderFromValue(MPVLib.getPropertyString("hwdec")) }
+            currentMPVVolume.update { MPVLib.getPropertyInt("volume") }
+            volumeBoostCap = MPVLib.getPropertyInt("volume-max")
+
+            changeVideoAspect(playerPreferences.aspectState().get(), showToast = false)
+
+            viewModelScope.launchIO {
+                cacheStateSignal
+                    .sample(1000.milliseconds)
+                    .collectLatest {
+                        val stateString = MPVLib.getPropertyString("demuxer-cache-state") ?: return@collectLatest
+                        runCatching {
+                            val state = json.decodeFromString<CacheState>(stateString)
+                            val range = state.ranges.firstOrNull()
+                            if (range != null) {
+                                val start = range.start ?: 0.0
+                                val end = range.end ?: 0.0
+                                _readAheadStart.update { start.toFloat() }
+                                _readAhead.update { end.toFloat().coerceAtMost(duration.value) }
+                            }
                         }
                     }
                 }
@@ -1259,75 +1278,79 @@ class PlayerViewModel @JvmOverloads constructor(
         hostIndex: Int,
         vidIndex: Int,
     ): Pair<InitResult, Result<Boolean>> {
-        val defaultResult = InitResult(currentHosterList, qualityIndex, null)
-        if (!needsInit(animeId, initialEpisodeId)) return Pair(defaultResult, Result.success(true))
-        return try {
-            val anime = getAnime.await(animeId)
-            if (anime != null) {
-                _currentAnime.update { _ -> anime }
-                animeTitle.update { _ -> anime.title }
-                sourceManager.isInitialized.first { it }
-                episodeId = initialEpisodeId
+        if (!needsInit(animeId, initialEpisodeId)) {
+            return Pair(InitResult(currentHosterList, qualityIndex, null), Result.success(true))
+        }
 
-                checkTrackers(anime)
+        return initLock.withLock {
+            if (!needsInit(animeId, initialEpisodeId)) {
+                return@withLock Pair(InitResult(currentHosterList, qualityIndex, null), Result.success(true))
+            }
+            try {
+                val anime = getAnime.await(animeId)
+                if (anime != null) {
+                    _currentAnime.update { _ -> anime }
+                    animeTitle.update { _ -> anime.title }
+                    sourceManager.isInitialized.first { it }
+                    episodeId = initialEpisodeId
 
-                updateEpisodeList(initEpisodeList(anime))
+                    checkTrackers(anime)
 
-                val episode = currentPlaylist.value.first { it.id == episodeId }
-                val source = sourceManager.getOrStub(anime.source)
+                    updateEpisodeList(initEpisodeList(anime))
 
-                _currentEpisode.update { _ -> episode }
-                _customBookmarks.update { _ -> episode.chapter_bookmarks?.let { json.decodeFromString<List<CustomBookmark>>(it) } ?: emptyList() }
-                _currentSource.update { _ -> source }
+                    val episode = currentPlaylist.value.first { it.id == episodeId }
+                    val source = sourceManager.getOrStub(anime.source)
 
-                updateEpisode(episode)
+                    _currentEpisode.update { _ -> episode }
+                    _customBookmarks.update { _ -> episode.chapter_bookmarks?.let { json.decodeFromString<List<CustomBookmark>>(it) } ?: emptyList() }
+                    _currentSource.update { _ -> source }
 
-                _hasPreviousEpisode.update { _ -> getCurrentEpisodeIndex() != 0 }
-                _hasNextEpisode.update { _ -> getCurrentEpisodeIndex() != currentPlaylist.value.size - 1 }
+                    updateEpisode(episode)
 
-                // Write to mpv table
-                MPVLib.setPropertyString("user-data/current-anime/anime-title", anime.title)
-                MPVLib.setPropertyInt("user-data/current-anime/intro-length", getAnimeSkipIntroLength())
-                MPVLib.setPropertyString(
-                    "user-data/current-anime/category",
-                    getAnimeCategories.await(anime.id).joinToString {
-                        it.name
-                    },
-                )
+                    _hasPreviousEpisode.update { _ -> getCurrentEpisodeIndex() != 0 }
+                    _hasNextEpisode.update { _ -> getCurrentEpisodeIndex() != currentPlaylist.value.size - 1 }
 
-                val currentEp = currentEpisode.value
-                    ?: throw ExceptionWithStringResource("No episode loaded", AYMR.strings.no_episode_loaded)
-                if (hostList.isNotBlank()) {
-                    currentHosterList = hostList.toHosterList().ifEmpty {
-                        currentHosterList = null
-                        throw ExceptionWithStringResource(
-                            "Hoster selected from empty list",
-                            AYMR.strings.select_hoster_from_empty_list,
-                        )
-                    }
-                    qualityIndex = Pair(hostIndex, vidIndex)
-                } else {
-                    EpisodeLoader.getHosters(currentEp.toDomainEpisode()!!, anime, source)
-                        .takeIf { it.isNotEmpty() }
-                        ?.also { currentHosterList = it }
-                        ?: run {
+                    // Write to mpv table
+                    MPVLib.setPropertyString("user-data/current-anime/anime-title", anime.title)
+                    MPVLib.setPropertyInt("user-data/current-anime/intro-length", getAnimeSkipIntroLength())
+                    MPVLib.setPropertyString(
+                        "user-data/current-anime/category",
+                        getAnimeCategories.await(anime.id).joinToString {
+                            it.name
+                        },
+                    )
+
+                    val currentEp = currentEpisode.value
+                        ?: throw ExceptionWithStringResource("No episode loaded", AYMR.strings.no_episode_loaded)
+                    if (hostList.isNotBlank()) {
+                        currentHosterList = hostList.toHosterList().ifEmpty {
                             currentHosterList = null
                             throw ExceptionWithStringResource("Hoster list is empty", AYMR.strings.no_hosters)
                         }
-                }
+                        qualityIndex = Pair(hostIndex, vidIndex)
+                    } else {
+                        EpisodeLoader.getHosters(currentEp.toDomainEpisode()!!, anime, source)
+                            .takeIf { it.isNotEmpty() }
+                            ?.also { currentHosterList = it }
+                            ?: run {
+                                currentHosterList = null
+                                throw ExceptionWithStringResource("Hoster list is empty", AYMR.strings.no_hosters)
+                            }
+                    }
 
-                val result = InitResult(
-                    hosterList = currentHosterList,
-                    videoIndex = qualityIndex,
-                    position = episodePosition,
-                )
-                Pair(result, Result.success(true))
-            } else {
-                // Unlikely but okay
-                Pair(defaultResult, Result.success(false))
+                    val result = InitResult(
+                        hosterList = currentHosterList,
+                        videoIndex = qualityIndex,
+                        position = episodePosition,
+                    )
+                    Pair(result, Result.success(true))
+                } else {
+                    // Unlikely but okay
+                    Pair(InitResult(currentHosterList, qualityIndex, null), Result.success(false))
+                }
+            } catch (e: Throwable) {
+                Pair(InitResult(currentHosterList, qualityIndex, null), Result.failure(e))
             }
-        } catch (e: Throwable) {
-            Pair(defaultResult, Result.failure(e))
         }
     }
 
@@ -1351,10 +1374,10 @@ class PlayerViewModel @JvmOverloads constructor(
             }
             .map {
                 val dbEp = it.toDbEpisode()
-                
+
                 val eStr = String.format("%02d", dbEp.episode_number.toInt())
                 val s = dbEp.series_number
-                
+
                 if (!dbEp.name.matches(Regex("^(Episode|Season|Ep\\.)\\s*\\d+$", RegexOption.IGNORE_CASE))) {
                     if (s == null || s == -1L) {
                         dbEp.name = "Episode $eStr - ${dbEp.name}"

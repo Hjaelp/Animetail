@@ -472,6 +472,7 @@ class PlayerActivity : BaseActivity() {
             cacheDir = applicationContext.cacheDir.path,
             logLvl = logLevel,
         )
+        viewModel.signalPlayerReady()
         MPVLib.addLogObserver(playerObserver)
         MPVLib.addObserver(playerObserver)
     }
