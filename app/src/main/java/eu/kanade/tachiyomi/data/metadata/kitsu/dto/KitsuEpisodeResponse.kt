@@ -11,4 +11,5 @@ data class KitsuEpisodeResponse(
 @Serializable
 data class KitsuSingleAnimeResponse(
     val data: KitsuAnimeData,
+    val included: List<KitsuIncluded>? = null,
 )

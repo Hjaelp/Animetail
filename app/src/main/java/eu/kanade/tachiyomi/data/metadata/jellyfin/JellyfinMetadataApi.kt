@@ -25,7 +25,7 @@ class JellyfinMetadataApi(
             .addQueryParameter("Recursive", "true")
             .addQueryParameter("IncludeItemTypes", "Season,Series,Movie") // Search for series
             .addQueryParameter("SearchTerm", query)
-            .addQueryParameter("Fields", "Overview,ImageTags,SeriesId,SeriesPrimaryImageTag")
+            .addQueryParameter("Fields", "Overview,ImageTags,SeriesId,SeriesPrimaryImageTag,Genres,Studios,People,Status")
             .build()
 
         with(json) {
@@ -42,7 +42,7 @@ class JellyfinMetadataApi(
             .addPathSegment(parentId)
             .addPathSegment("Seasons")
             .addQueryParameter("SearchTerm", query)
-            .addQueryParameter("Fields", "Overview,ImageTags,SeriesId,SeriesPrimaryImageTag")
+            .addQueryParameter("Fields", "Overview,ImageTags,SeriesId,SeriesPrimaryImageTag,Genres,Studios,People,Status")
             .build()
 
         with(json) {
@@ -57,7 +57,7 @@ class JellyfinMetadataApi(
         val url = baseUrl.toHttpUrl().newBuilder()
             .addPathSegment("items")
             .addPathSegment(id)
-            .addQueryParameter("Fields", "Overview,ImageTags,SeriesId,SeriesPrimaryImageTag")
+            .addQueryParameter("Fields", "Overview,ImageTags,SeriesId,SeriesPrimaryImageTag,Genres,Studios,People,Status")
             .build()
 
         with(json) {

@@ -21,6 +21,21 @@ data class JellyfinItem(
     @SerialName("RunTimeTicks") val runTimeTicks: Long? = null,
     @SerialName("SeriesId") val seriesId: String? = null,
     @SerialName("SeriesPrimaryImageTag") val seriesPrimaryImageTag: String? = null,
+    @SerialName("Genres") val genres: List<String>? = null,
+    @SerialName("Studios") val studios: List<JellyfinStudio>? = null,
+    @SerialName("People") val people: List<JellyfinPerson>? = null,
+    @SerialName("Status") val status: String? = null,
+)
+
+@Serializable
+data class JellyfinStudio(
+    @SerialName("Name") val name: String,
+)
+
+@Serializable
+data class JellyfinPerson(
+    @SerialName("Name") val name: String,
+    @SerialName("Type") val type: String,
 )
 
 @Serializable

@@ -277,7 +277,7 @@ class DomainModule : InjektModule {
 
         addSingletonFactory<List<tachiyomi.domain.metadata.anime.repository.AnimeMetadataSource>> { get<eu.kanade.tachiyomi.data.metadata.MetadataManager>().animeSources }
         addSingletonFactory<AnimeMetadataRepository> { AnimeMetadataRepositoryImpl(get()) }
-        addFactory { UpdateAnimeMetadata(get(), get(), get()) }
+        addFactory { UpdateAnimeMetadata(get(), get(), get(), get(), get()) }
         addFactory { RemoveAnimeMetadataProviderDetails(get()) }
 
         addFactory { GetAnimeMetadata(get()) }

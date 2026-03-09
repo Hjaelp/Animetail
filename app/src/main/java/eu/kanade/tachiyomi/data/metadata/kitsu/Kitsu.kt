@@ -1,11 +1,14 @@
 package eu.kanade.tachiyomi.data.metadata.kitsu
 
+import eu.kanade.tachiyomi.animesource.model.SAnime
 import eu.kanade.tachiyomi.data.metadata.BaseMetadataProvider
 import tachiyomi.domain.metadata.anime.model.AnimeMetadata
 import tachiyomi.domain.metadata.anime.model.AnimeMetadataSearchResult
 import tachiyomi.domain.metadata.anime.model.AnimeEpisode
 import eu.kanade.tachiyomi.data.metadata.kitsu.dto.KitsuEpisodeData
+import eu.kanade.tachiyomi.data.metadata.kitsu.dto.KitsuIncluded
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonPrimitive
 import eu.kanade.tachiyomi.data.metadata.kitsu.dto.KitsuAnimeData
 import uy.kohesive.injekt.injectLazy
 import kotlin.getValue
@@ -29,9 +32,9 @@ class Kitsu : BaseMetadataProvider(), AnimeMetadataSource {
     }
 
     override suspend fun getAnimeDetails(id: String): AnimeMetadata? {
-        val animeData = kitsuApi.getAnimeDetails(id)
+        val response = kitsuApi.getAnimeDetails(id)
         val episodes = kitsuApi.getAnimeEpisodes(id).map { it.toAnimeEpisode() }
-        return animeData.data.toAnimeMetadata(episodes)
+        return response.data.toAnimeMetadata(episodes, response.included)
     }
 
     private fun KitsuAnimeData.toAnimeMetadataSearchResult(): AnimeMetadataSearchResult {
@@ -44,11 +47,29 @@ class Kitsu : BaseMetadataProvider(), AnimeMetadataSource {
         )
     }
 
-    private fun KitsuAnimeData.toAnimeMetadata(episodes: List<AnimeEpisode>): AnimeMetadata {
+    private fun KitsuAnimeData.toAnimeMetadata(episodes: List<AnimeEpisode>, included: List<KitsuIncluded>? = null): AnimeMetadata {
+        val genres = included?.filter { it.type == "genres" }
+            ?.map { it.attributes["name"]?.jsonPrimitive?.content ?: "" }
+            ?.filter { it.isNotBlank() }
+            ?.takeIf { it.isNotEmpty() }
+        val studios = included?.filter { it.type == "companies" }
+            ?.map { it.attributes["name"]?.jsonPrimitive?.content ?: "" }
+            ?.filter { it.isNotBlank() }
+            ?.takeIf { it.isNotEmpty() }
+
         return AnimeMetadata(
             id = this.id,
             title = this.attributes.canonicalTitle,
             synopsis = this.attributes.synopsis,
+            genres = genres,
+            artist = studios?.joinToString { it }?.takeIf { it.isNotBlank() },
+            author = null, // Kitsu doesn't easily provide author (director/writer) without more inclusions
+            status = when (this.attributes.status) {
+                "current" -> SAnime.ONGOING
+                "finished" -> SAnime.COMPLETED
+                "tba", "unreleased" -> SAnime.UNKNOWN
+                else -> SAnime.UNKNOWN
+            },
             coverImage = this.attributes.posterImage?.original,
             posterImage = this.attributes.posterImage?.original,
             episodes = episodes,

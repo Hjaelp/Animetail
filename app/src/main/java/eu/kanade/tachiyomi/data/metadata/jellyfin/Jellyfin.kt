@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.data.metadata.jellyfin
 
 import eu.kanade.tachiyomi.animesource.ConfigurableAnimeSource
 import eu.kanade.tachiyomi.animesource.sourcePreferences
+import eu.kanade.tachiyomi.animesource.model.SAnime
 import eu.kanade.tachiyomi.data.metadata.BaseMetadataProvider
 import eu.kanade.tachiyomi.data.metadata.jellyfin.dto.JellyfinItem
 import okhttp3.Dns
@@ -75,6 +76,15 @@ class Jellyfin(
             id = this.id,
             title = this.name,
             synopsis = this.overview,
+            genres = this.genres?.filter { it.isNotBlank() }?.takeIf { it.isNotEmpty() },
+            author = this.people?.filter { it.type == "Creator" || it.type == "Author" }
+                ?.joinToString { it.name }
+                ?.takeIf { it.isNotBlank() },
+            artist = this.studios?.take(3)?.joinToString { it.name }?.takeIf { it.isNotBlank() },
+            status = when (this.status) {
+                "Continuing" -> SAnime.ONGOING
+                else -> SAnime.COMPLETED
+            },
             coverImage = coverUrl,
             posterImage = coverUrl,
             episodes = episodes,

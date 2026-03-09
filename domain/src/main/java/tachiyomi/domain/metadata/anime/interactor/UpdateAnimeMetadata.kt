@@ -1,4 +1,6 @@
 package tachiyomi.domain.metadata.anime.interactor
+import tachiyomi.domain.entries.anime.interactor.GetCustomAnimeInfo
+import tachiyomi.domain.entries.anime.interactor.SetCustomAnimeInfo
 import tachiyomi.domain.entries.anime.model.Anime
 import tachiyomi.domain.entries.anime.model.toAnimeUpdate
 import tachiyomi.domain.entries.anime.repository.AnimeRepository
@@ -11,6 +13,8 @@ class UpdateAnimeMetadata(
     private val animeMetadataRepository: AnimeMetadataRepository,
     private val animeRepository: AnimeRepository,
     private val episodeRepository: EpisodeRepository,
+    private val getCustomAnimeInfo: GetCustomAnimeInfo,
+    private val setCustomAnimeInfo: SetCustomAnimeInfo,
 ) {
     suspend fun await(anime: Anime, providerId: Long, providerAnimeId: String?) {
         val searchId = providerAnimeId ?: anime.metadataProviderAnimeId ?: ""
@@ -46,8 +50,24 @@ class UpdateAnimeMetadata(
                 episodeRepository.updateAllEpisodes(updatedEpisodes.map { it.toEpisodeUpdate() })
             }
 
+            // Clear custom genre to show the merged result in the library
+            getCustomAnimeInfo.get(anime.id)?.let { customInfo ->
+                if (customInfo.genre != null) {
+                    setCustomAnimeInfo.set(customInfo.copy(genre = null))
+                }
+            }
+
+            val mergedGenres = (anime.genre.orEmpty() + animeMetadata.genres.orEmpty())
+                .distinct()
+                .filter { it.isNotBlank() }
+                .takeIf { it.isNotEmpty() }
+
             val updatedAnime = anime.copy(
                 ogDescription = animeMetadata.synopsis,
+                ogGenre = mergedGenres,
+                /*ogAuthor = animeMetadata.author, // Disabled because 
+                ogArtist = animeMetadata.artist,*/ // the current providers don't provide accurate info.
+                ogStatus = animeMetadata.status?.toLong() ?: anime.ogStatus,
                 thumbnailUrl = animeMetadata.posterImage ?: anime.thumbnailUrl,
                 metadataProvider = providerId,
                 metadataProviderAnimeId = animeMetadata.id,

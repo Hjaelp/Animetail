@@ -16,7 +16,7 @@ class KitsuApi(
 
     suspend fun searchAnime(query: String): KitsuAnimeResponse {
         val request = Request.Builder()
-            .url("${BASE_URL}anime?filter[text]=$query")
+            .url("${BASE_URL}anime?filter[text]=$query&include=genres,productions.company")
             .build()
 
         return withIOContext {
@@ -33,7 +33,7 @@ class KitsuApi(
 
     suspend fun getAnimeDetails(id: String): KitsuSingleAnimeResponse {
         val request = Request.Builder()
-            .url("${BASE_URL}anime/$id")
+            .url("${BASE_URL}anime/$id?include=genres,productions.company")
             .build()
 
         return withIOContext {

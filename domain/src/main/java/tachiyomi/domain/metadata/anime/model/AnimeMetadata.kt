@@ -9,6 +9,8 @@ data class AnimeMetadata(
     val posterImage: String? = null,
     val episodes: List<AnimeEpisode>? = null,
     val genres: List<String>? = null,
+    val author: String? = null,
+    val artist: String? = null,
     val status: Int? = null,
     val startDate: Long? = null,
     val endDate: Long? = null,
