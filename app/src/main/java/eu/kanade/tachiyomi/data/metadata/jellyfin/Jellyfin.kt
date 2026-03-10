@@ -43,7 +43,18 @@ class Jellyfin(
     override suspend fun getAnimeDetails(id: String): AnimeMetadata? {
         val animeData = jellyfinApi.getAnimeDetails(id)
         val episodes = jellyfinApi.getAnimeEpisodes(id).map { it.toAnimeEpisode() }
-        return animeData.toAnimeMetadata(episodes)
+
+        val parentData = if (
+            (animeData.genres.isNullOrEmpty() || animeData.studios.isNullOrEmpty() || animeData.people.isNullOrEmpty()) &&
+            !animeData.seriesId.isNullOrEmpty() &&
+            animeData.seriesId != animeData.id
+        ) {
+            runCatching { jellyfinApi.getAnimeDetails(animeData.seriesId!!) }.getOrNull()
+        } else {
+            null
+        }
+
+        return animeData.toAnimeMetadata(episodes, parentData)
     }
 
 
@@ -64,7 +75,7 @@ class Jellyfin(
         )
     }
 
-    private fun JellyfinItem.toAnimeMetadata(episodes: List<AnimeEpisode>): AnimeMetadata {
+    private fun JellyfinItem.toAnimeMetadata(episodes: List<AnimeEpisode>, parentData: JellyfinItem? = null): AnimeMetadata {
         val tag = this.imageTags?.get("Primary")
         val seriesTag = this.seriesPrimaryImageTag
         val coverUrl = when {
@@ -72,16 +83,26 @@ class Jellyfin(
             !seriesTag.isNullOrEmpty() && !this.seriesId.isNullOrEmpty() -> "${baseUrl}/Items/${this.seriesId}/Images/Primary?tag=$seriesTag"
             else -> null
         }
+
+        val itemGenres = this.genres?.filter { it.isNotBlank() }?.takeIf { it.isNotEmpty() }
+            ?: parentData?.genres?.filter { it.isNotBlank() }?.takeIf { it.isNotEmpty() }
+
+        val itemPeople = this.people?.takeIf { it.isNotEmpty() }
+            ?: parentData?.people?.takeIf { it.isNotEmpty() }
+
+        val itemStudios = this.studios?.takeIf { it.isNotEmpty() }
+            ?: parentData?.studios?.takeIf { it.isNotEmpty() }
+
         return AnimeMetadata(
             id = this.id,
             title = this.name,
             synopsis = this.overview,
-            genres = this.genres?.filter { it.isNotBlank() }?.takeIf { it.isNotEmpty() },
-            author = this.people?.filter { it.type == "Creator" || it.type == "Author" }
+            genres = itemGenres,
+            author = itemPeople?.filter { it.type == "Creator" || it.type == "Author" }
                 ?.joinToString { it.name }
                 ?.takeIf { it.isNotBlank() },
-            artist = this.studios?.take(3)?.joinToString { it.name }?.takeIf { it.isNotBlank() },
-            status = when (this.status) {
+            artist = itemStudios?.take(3)?.joinToString { it.name }?.takeIf { it.isNotBlank() },
+            status = when (this.status ?: parentData?.status) {
                 "Continuing" -> SAnime.ONGOING
                 else -> SAnime.COMPLETED
             },
