@@ -52,4 +52,6 @@ fun Episode.toDbEpisode(): DbEpisode = EpisodeImpl().also {
     it.last_modified = lastModifiedAt
     it.chapter_bookmarks = chapterBookmarks
     it.series_number = seriesNumber
+    it.overview = overview
+    it.thumbnail_url = thumbnailUrl
 }
