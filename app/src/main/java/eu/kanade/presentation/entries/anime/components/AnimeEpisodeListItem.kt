@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.filled.Bookmarks
 import androidx.compose.material.icons.filled.Circle
 import androidx.compose.material.icons.outlined.BookmarkAdd
 import androidx.compose.material.icons.outlined.BookmarkRemove
@@ -39,7 +40,11 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.BaselineShift
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import eu.kanade.presentation.entries.components.DotSeparatorText
@@ -73,6 +78,7 @@ fun AnimeEpisodeListItem(
     previewUrl: String?,
     seen: Boolean,
     bookmark: Boolean,
+    chapterBookmarksCount: Int = 0,
     fillermark: Boolean,
     selected: Boolean,
     isAnyEpisodeSelected: Boolean,
@@ -169,6 +175,35 @@ fun AnimeEpisodeListItem(
                                 .sizeIn(maxHeight = with(LocalDensity.current) { textHeight.toDp() - 2.dp }),
                             tint = MaterialTheme.colorScheme.primary,
                         )
+                    }
+                    if (chapterBookmarksCount > 0) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(end = 4.dp),
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Bookmarks,
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .sizeIn(maxHeight = with(LocalDensity.current) { textHeight.toDp() - 2.dp }),
+                                tint = MaterialTheme.colorScheme.primary,
+                            )
+                            Text(
+                                text = buildAnnotatedString {
+                                    withStyle(
+                                        style = SpanStyle(
+                                            baselineShift = BaselineShift.Superscript,
+                                            fontSize = 8.sp,
+                                        ),
+                                    ) {
+                                        append("x$chapterBookmarksCount")
+                                    }
+                                },
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.padding(start = 2.dp),
+                            )
+                        }
                     }
                     val formattedTitle = if (!title.matches(Regex("^(Episode|Season|Ep\\.)\\s*\\d+$", RegexOption.IGNORE_CASE))) {
                         if (seriesNumber == null || seriesNumber == -1L) {

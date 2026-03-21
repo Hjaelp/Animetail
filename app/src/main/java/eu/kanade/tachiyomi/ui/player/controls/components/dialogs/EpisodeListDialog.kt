@@ -18,6 +18,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Label
 import androidx.compose.material.icons.automirrored.outlined.Label
 import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.filled.Bookmarks
 import androidx.compose.material.icons.outlined.BookmarkAdd
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -39,16 +40,23 @@ import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.BaselineShift
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import eu.kanade.presentation.entries.components.DotSeparatorText
 import eu.kanade.presentation.util.rememberResourceBitmapPainter
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.anime.Episode
+import eu.kanade.tachiyomi.ui.player.CustomBookmark
 import eu.kanade.tachiyomi.util.lang.toRelativeString
+import kotlinx.serialization.json.Json
 import tachiyomi.domain.entries.anime.model.Anime
 import tachiyomi.i18n.aniyomi.AYMR
 import tachiyomi.presentation.core.components.VerticalFastScroller
@@ -57,6 +65,8 @@ import tachiyomi.presentation.core.components.material.SECONDARY_ALPHA
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.theme.header
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -181,7 +191,15 @@ private fun EpisodeListItem(
 ) {
     var isBookmarked by remember { mutableStateOf(episode.bookmark) }
     var isFillermarked by remember { mutableStateOf(episode.fillermark) }
-    var textHeight by remember { mutableStateOf(0) }
+    var textHeight by remember { mutableIntStateOf(0) }
+
+    val chapterBookmarksCount = remember(episode.chapter_bookmarks) {
+        runCatching {
+            episode.chapter_bookmarks?.let {
+                Injekt.get<Json>().decodeFromString<List<CustomBookmark>>(it).size
+            } ?: 0
+        }.getOrDefault(0)
+    }
 
     val seen = episode.seen
     val textAlpha = if (seen && !isCurrentEpisode) DISABLED_ALPHA else 1f
@@ -240,6 +258,35 @@ private fun EpisodeListItem(
                 horizontalArrangement = Arrangement.spacedBy(2.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
+                if (chapterBookmarksCount > 0) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(end = 4.dp),
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Bookmarks,
+                            contentDescription = null,
+                            modifier = Modifier
+                                .sizeIn(maxHeight = with(LocalDensity.current) { textHeight.toDp() - 2.dp }),
+                            tint = MaterialTheme.colorScheme.primary,
+                        )
+                        Text(
+                            text = buildAnnotatedString {
+                                withStyle(
+                                    style = SpanStyle(
+                                        baselineShift = BaselineShift.Superscript,
+                                        fontSize = 8.sp,
+                                    ),
+                                ) {
+                                    append("x$chapterBookmarksCount")
+                                }
+                            },
+                            style = MaterialTheme.typography.header,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(start = 2.dp),
+                        )
+                    }
+                }
                 Text(
                     text = title,
                     style = MaterialTheme.typography.header,

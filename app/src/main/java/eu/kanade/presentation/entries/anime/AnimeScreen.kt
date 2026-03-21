@@ -99,8 +99,10 @@ import eu.kanade.tachiyomi.ui.entries.anime.AnimeScreenModel
 import eu.kanade.tachiyomi.ui.entries.anime.AnimeSeasonItem
 import eu.kanade.tachiyomi.ui.entries.anime.EpisodeList
 import eu.kanade.tachiyomi.ui.home.HomeScreen.uiPreferences
+import eu.kanade.tachiyomi.ui.player.CustomBookmark
 import eu.kanade.tachiyomi.util.system.copyToClipboard
 import kotlinx.coroutines.delay
+import kotlinx.serialization.json.Json
 import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.domain.entries.anime.model.Anime
 import tachiyomi.domain.items.episode.model.Episode
@@ -1444,6 +1446,15 @@ private fun LazyGridScope.sharedEpisodeItems(
                     }
                 }
                 // <-- AM (FILE_SIZE)
+
+                val chapterBookmarksCount = remember(episodeItem.episode.chapterBookmarks) {
+                    runCatching {
+                        episodeItem.episode.chapterBookmarks?.let {
+                            Injekt.get<Json>().decodeFromString<List<CustomBookmark>>(it).size
+                        } ?: 0
+                    }.getOrDefault(0)
+                }
+
                 AnimeEpisodeListItem(
                     title = if (anime.displayMode == Anime.EPISODE_DISPLAY_NUMBER) {
                         stringResource(
@@ -1470,6 +1481,7 @@ private fun LazyGridScope.sharedEpisodeItems(
                     previewUrl = episodeItem.episode.previewUrl.takeIf { !it.isNullOrBlank() && showPreviews },
                     seen = episodeItem.episode.seen,
                     bookmark = episodeItem.episode.bookmark,
+                    chapterBookmarksCount = chapterBookmarksCount,
                     fillermark = episodeItem.episode.fillermark,
                     selected = episodeItem.selected,
                     isAnyEpisodeSelected = isAnyEpisodeSelected,
