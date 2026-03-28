@@ -368,8 +368,24 @@ data object MangaLibraryTab : Tab {
                     navigator.push(MangaScreen(manga.manga.id))
                     mergedMangaDialogState.value = null // Dismiss dialog after navigation
                 },
-                displayMode = displayMode,
-                columns = columns,
+                onContinueReading = { manga ->
+                    scope.launchIO {
+                        val chapter = screenModel.getNextUnreadChapter(manga.manga)
+                        if (chapter != null) {
+                            context.startActivity(
+                                ReaderActivity.newIntent(
+                                    context,
+                                    chapter.mangaId,
+                                    chapter.id,
+                                ),
+                            )
+                        } else {
+                            snackbarHostState.showSnackbar(
+                                context.stringResource(MR.strings.no_next_chapter),
+                            )
+                        }
+                    }
+                },
             )
         }
     }

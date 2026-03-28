@@ -355,8 +355,12 @@ data object AnimeLibraryTab : Tab {
                     navigator.push(AnimeScreen(anime.anime.id))
                     mergedAnimeDialogState.value = null // Dismiss dialog after navigation
                 },
-                displayMode = displayMode,
-                columns = columns,
+                onContinueWatching = { anime ->
+                    scope.launchIO {
+                        val episode = screenModel.getNextUnseenEpisode(anime.anime)
+                        if (episode != null) openEpisode(episode)
+                    }
+                },
             )
         }
     }
