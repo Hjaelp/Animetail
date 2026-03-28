@@ -164,6 +164,8 @@
     <string name="pref_player_subtitle_blacklist_info">Blacklist for subtitles. If a blacklist is defined, all subtitles that contains a blacklisted word will be filtered out. Multiple values can be delimited by a comma.</string>
     <string name="pref_download_custom_fonts">Download custom subtitle fonts from video</string>
     <string name="pref_download_custom_fonts_info">Download fonts attached to the video for subtitle styling (mainly used when transcoding and in supported hosts).</string>
+    <string name="pref_clear_mpv_fonts">Clear fonts from MPV fonts directory</string>
+    <string name="pref_clear_mpv_fonts_confirm">Delete %d font(s) from the MPV font directory?</string>
     <!-- Player settings - Audio -->
     <string name="pref_player_audio">Audio</string>
     <string name="pref_player_audio_summary">Preferred languages, pitch correction, audio channels</string>
