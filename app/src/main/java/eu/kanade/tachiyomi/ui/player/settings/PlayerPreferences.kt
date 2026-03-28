@@ -85,4 +85,6 @@ class PlayerPreferences(
     // Old
 
     fun autoplayEnabled() = preferenceStore.getBoolean("pref_auto_play_enabled", false)
+
+    fun downloadFonts() = preferenceStore.getBoolean("pref_download_fonts", false)
 }

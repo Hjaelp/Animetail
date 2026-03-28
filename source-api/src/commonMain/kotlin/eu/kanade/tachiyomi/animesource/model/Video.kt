@@ -35,6 +35,7 @@ data class Video(
     val preferred: Boolean = false,
     val subtitleTracks: List<Track> = emptyList(),
     val audioTracks: List<Track> = emptyList(),
+    val attachments: List<Track> = emptyList(),
     val timestamps: List<TimeStamp> = emptyList(),
     val mpvArgs: List<Pair<String, String>> = emptyList(),
     val ffmpegStreamArgs: List<Pair<String, String>> = emptyList(),
@@ -63,12 +64,14 @@ data class Video(
         headers: Headers? = null,
         subtitleTracks: List<Track> = emptyList(),
         audioTracks: List<Track> = emptyList(),
+        attachments: List<Track> = emptyList(),
     ) : this(
         videoTitle = quality,
         videoUrl = videoUrl ?: "null",
         headers = headers,
         subtitleTracks = subtitleTracks,
         audioTracks = audioTracks,
+        attachments = attachments,
     ) {
         this.videoPageUrl = url
     }
@@ -112,6 +115,7 @@ data class SerializableVideo(
     val preferred: Boolean = false,
     val subtitleTracks: List<Track> = emptyList(),
     val audioTracks: List<Track> = emptyList(),
+    val attachments: List<Track> = emptyList(),
     val timestamps: List<TimeStamp> = emptyList(),
     val mpvArgs: List<Pair<String, String>> = emptyList(),
     val ffmpegStreamArgs: List<Pair<String, String>> = emptyList(),
@@ -133,6 +137,7 @@ data class SerializableVideo(
                         vid.preferred,
                         vid.subtitleTracks,
                         vid.audioTracks,
+                        vid.attachments,
                         vid.timestamps,
                         vid.mpvArgs,
                         vid.ffmpegStreamArgs,
@@ -157,6 +162,7 @@ data class SerializableVideo(
                         sVid.preferred,
                         sVid.subtitleTracks,
                         sVid.audioTracks,
+                        sVid.attachments,
                         sVid.timestamps,
                         sVid.mpvArgs,
                         sVid.ffmpegStreamArgs,

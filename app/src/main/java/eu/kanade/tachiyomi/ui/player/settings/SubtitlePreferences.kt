@@ -51,6 +51,7 @@ class SubtitlePreferences(
     fun subtitlesDelay() = preferenceStore.getInt("pref_subtitles_delay", 0)
     fun subtitlesSpeed() = preferenceStore.getFloat("pref_subtitles_speed", 1f)
     fun subtitlesSecondaryDelay() = preferenceStore.getInt("pref_subtitles_secondary_delay", 0)
+    fun downloadCustomFonts() = preferenceStore.getBoolean("pref_download_custom_fonts", false)
 }
 
 enum class SubtitleJustification(

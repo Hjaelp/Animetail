@@ -176,7 +176,7 @@ class PlayerActivity : BaseActivity() {
             }
         }
         internal const val MPV_DIR = "mpv"
-        private const val MPV_FONTS_DIR = "fonts"
+        internal const val MPV_FONTS_DIR = "fonts"
         private const val MPV_SCRIPTS_DIR = "scripts"
         private const val MPV_SCRIPTS_OPTS_DIR = "script-opts"
         private const val MPV_SHADERS_DIR = "shaders"

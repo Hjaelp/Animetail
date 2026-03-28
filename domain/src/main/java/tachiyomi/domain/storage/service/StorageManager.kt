@@ -1,6 +1,7 @@
 package tachiyomi.domain.storage.service
 
 import android.content.Context
+import android.provider.DocumentsContract
 import androidx.core.net.toUri
 import com.hippo.unifile.UniFile
 import eu.kanade.tachiyomi.util.storage.DiskUtil
@@ -92,6 +93,17 @@ class StorageManager(
 
     fun getMPVConfigDirectory(): UniFile? {
         return baseDir?.createDirectory(MPV_CONFIG_PATH)
+    }
+
+    // storageFontsDir.createFile causes wrong extension issues...
+    fun createFontFile(parent: UniFile, fileName: String): UniFile? {
+        val uri = DocumentsContract.createDocument(
+            context.contentResolver,
+            parent.uri,
+            "application/octet-stream",
+            fileName
+        )
+        return uri?.let { UniFile.fromUri(context, it) }
     }
 }
 

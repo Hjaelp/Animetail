@@ -26,8 +26,14 @@ object PlayerSettingsSubtitleScreen : SearchableSettings {
         val langPref = subtitlePreferences.preferredSubLanguages()
         val whitelist = subtitlePreferences.subtitleWhitelist()
         val blacklist = subtitlePreferences.subtitleBlacklist()
+        val downloadCustomFonts = subtitlePreferences.downloadCustomFonts()
 
         return listOf(
+            Preference.PreferenceItem.SwitchPreference(
+                preference = downloadCustomFonts,
+                title = stringResource(AYMR.strings.pref_download_custom_fonts),
+                subtitle = stringResource(AYMR.strings.pref_download_custom_fonts_info),
+            ),
             Preference.PreferenceItem.EditTextInfoPreference(
                 preference = langPref,
                 dialogSubtitle = stringResource(AYMR.strings.pref_player_subtitle_lang_info),

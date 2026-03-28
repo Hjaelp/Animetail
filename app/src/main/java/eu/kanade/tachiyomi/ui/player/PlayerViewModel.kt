@@ -86,6 +86,7 @@ import eu.kanade.tachiyomi.ui.player.loader.EpisodeLoader
 import eu.kanade.tachiyomi.ui.player.loader.HosterLoader
 import eu.kanade.tachiyomi.ui.player.settings.GesturePreferences
 import eu.kanade.tachiyomi.ui.player.settings.PlayerPreferences
+import eu.kanade.tachiyomi.ui.player.settings.SubtitlePreferences
 import eu.kanade.tachiyomi.ui.player.utils.AniSkipApi
 import eu.kanade.tachiyomi.ui.player.utils.ChapterUtils.Companion.getStringRes
 import eu.kanade.tachiyomi.ui.player.utils.TrackSelect
@@ -137,7 +138,11 @@ import tachiyomi.domain.items.episode.model.EpisodeUpdate
 import tachiyomi.domain.items.episode.service.getEpisodeSort
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.source.anime.service.AnimeSourceManager
+import tachiyomi.domain.storage.service.StorageManager
 import tachiyomi.domain.track.anime.interactor.GetAnimeTracks
+import eu.kanade.tachiyomi.network.NetworkHelper
+import okhttp3.Headers
+import okhttp3.Request
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.aniyomi.AYMR
 import tachiyomi.source.local.entries.anime.isLocal
@@ -182,7 +187,10 @@ class PlayerViewModel @JvmOverloads constructor(
     private val getIncognitoState: GetAnimeIncognitoState = Injekt.get(),
     private val libraryPreferences: LibraryPreferences = Injekt.get(),
     private val json: Json = Injekt.get(),
+    private val storageManager: StorageManager = Injekt.get(),
+    private val networkHelper: NetworkHelper = Injekt.get(),
     uiPreferences: UiPreferences = Injekt.get(),
+    private val subtitlePreferences: SubtitlePreferences = Injekt.get(),
 ) : ViewModel() {
 
     private val initLock = Mutex()
@@ -1386,7 +1394,7 @@ class PlayerViewModel @JvmOverloads constructor(
                         dbEp.name = "S${sStr}E${eStr} - ${dbEp.name}"
                     }
                 }
-                
+
                 dbEp
             }
     }
@@ -1556,7 +1564,68 @@ class PlayerViewModel @JvmOverloads constructor(
         qualityIndex = Pair(hosterIndex, videoIndex)
 
         activity.setVideo(resolvedVideo)
+        if (subtitlePreferences.downloadCustomFonts().get()) {
+            saveFontsFromAttachments(resolvedVideo)
+        }
         return true
+    }
+
+    private fun saveFontsFromAttachments(video: Video) {
+        val attachments = video.attachments
+        viewModelScope.launchIO {
+            val storageFontsDir = storageManager.getFontsDirectory()
+            if (storageFontsDir == null){
+                return@launchIO
+            }
+
+            attachments.forEach { attachment ->
+                val fileName = DiskUtil.buildValidFilename(attachment.lang)
+                val baseName = fileName.substringBeforeLast(".")
+
+                val isFont = listOf(".ttf", ".otf", ".woff", ".woff2").any {
+                    fileName.lowercase().endsWith(it)
+                }
+
+                if (isFont) {
+                    val exists = storageFontsDir?.listFiles()?.any {
+                        it.name.equals(fileName, ignoreCase = true)
+                    } == true
+
+                    if (exists) {
+                        logcat(LogPriority.DEBUG) { "saveFontsFromAttachments(): font already exists: $fileName" }
+                        return@forEach
+                    }
+
+                    try {
+                        val bytes = if (attachment.url.startsWith("http")) {
+                            val request = Request.Builder()
+                                .url(attachment.url)
+                                .apply {
+                                    video.headers?.let { headers(it) }
+                                }
+                                .build()
+
+                            networkHelper.client.newCall(request).execute().use { response ->
+                                if (response.isSuccessful) response.body?.bytes() else null
+                            }
+                        } else {
+                            null
+                        } ?: return@forEach
+
+                        val newFile = storageManager.createFontFile(storageFontsDir, fileName)
+
+                        newFile?.openOutputStream()?.use { output ->
+                            output?.write(bytes)
+                        } ?: throw Exception("saveFontsFromAttachments(): Could not open OutputStream for $fileName")
+
+                        logcat(LogPriority.DEBUG) { "saveFontsFromAttachments(): Successfully saved font: $fileName" }
+
+                    } catch (e: Exception) {
+                        logcat(LogPriority.ERROR, e) { "saveFontsFromAttachments(): Failed to save font: $fileName" }
+                    }
+                }
+            }
+        }
     }
 
     fun onVideoClicked(hosterIndex: Int, videoIndex: Int) {
