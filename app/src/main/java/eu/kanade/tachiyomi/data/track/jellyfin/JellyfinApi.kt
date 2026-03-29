@@ -32,7 +32,6 @@ class JellyfinApi(
         withIOContext {
             try {
                 val httpUrl = url.toHttpUrl()
-                val fragment = httpUrl.fragment!!
 
                 val track = with(json) {
                     client.newCall(GET(url))
@@ -41,12 +40,7 @@ class JellyfinApi(
                         .toTrack()
                 }.apply { tracking_url = url }
 
-                when {
-                    fragment.startsWith("seriesId") -> {
-                        getTrackFromSeries(track, httpUrl)
-                    }
-                    else -> track
-                }
+                getTrackFromSeries(track, httpUrl)
             } catch (e: Exception) {
                 logcat(LogPriority.WARN, e) { "Could not get item: $url" }
                 throw e
@@ -57,7 +51,7 @@ class JellyfinApi(
         trackId,
     ).also {
         it.title = name
-        it.total_episodes = 1
+        it.total_episodes = (childCount ?: 1).toLong()
         if (userData.played) {
             it.last_episode_seen = 1.0
             it.status = Jellyfin.COMPLETED

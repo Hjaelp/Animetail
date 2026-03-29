@@ -11,6 +11,7 @@ data class JFItem(
     @SerialName("IndexNumber") val indexNumber: Long? = null,
     @SerialName("People") val people: List<JFPerson>? = null,
     @SerialName("SeriesId") val seriesId: String? = null,
+    @SerialName("ChildCount") val childCount: Int? = null,
 )
 
 @Serializable
