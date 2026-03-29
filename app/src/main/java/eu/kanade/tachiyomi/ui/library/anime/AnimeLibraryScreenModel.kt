@@ -331,44 +331,153 @@ class AnimeLibraryScreenModel(
                     sortAlphabetically(i1, i2)
                 }
                 AnimeLibrarySort.Type.LastSeen -> {
-                    i1.libraryAnime.lastSeen.compareTo(i2.libraryAnime.lastSeen)
+                    val i1Value = if (i1.isMerged) {
+                        i1.mergedAnime?.maxOfOrNull { it.lastSeen } ?: i1.libraryAnime.lastSeen
+                    } else {
+                        i1.libraryAnime.lastSeen
+                    }
+                    val i2Value = if (i2.isMerged) {
+                        i2.mergedAnime?.maxOfOrNull { it.lastSeen } ?: i2.libraryAnime.lastSeen
+                    } else {
+                        i2.libraryAnime.lastSeen
+                    }
+                    i1Value.compareTo(i2Value)
                 }
                 AnimeLibrarySort.Type.LastUpdate -> {
-                    i1.libraryAnime.anime.lastUpdate.compareTo(i2.libraryAnime.anime.lastUpdate)
+                    val i1Value = if (i1.isMerged) {
+                        i1.mergedAnime?.maxOfOrNull { it.anime.lastUpdate } ?: i1.libraryAnime.anime.lastUpdate
+                    } else {
+                        i1.libraryAnime.anime.lastUpdate
+                    }
+                    val i2Value = if (i2.isMerged) {
+                        i2.mergedAnime?.maxOfOrNull { it.anime.lastUpdate } ?: i2.libraryAnime.anime.lastUpdate
+                    } else {
+                        i2.libraryAnime.anime.lastUpdate
+                    }
+                    i1Value.compareTo(i2Value)
                 }
-                AnimeLibrarySort.Type.UnseenCount -> when {
-                    // Ensure unseen content comes first
-                    i1.libraryAnime.unseenCount == i2.libraryAnime.unseenCount -> 0
-                    i1.libraryAnime.unseenCount == 0L -> if (currentSort.isAscending) 1 else -1
-                    i2.libraryAnime.unseenCount == 0L -> if (currentSort.isAscending) -1 else 1
-                    else -> i1.libraryAnime.unseenCount.compareTo(i2.libraryAnime.unseenCount)
+                AnimeLibrarySort.Type.UnseenCount -> {
+                    val i1Value = if (i1.isMerged) {
+                        i1.mergedAnime?.sumOf { it.totalCount - it.seenCount } ?: i1.libraryAnime.unseenCount
+                    } else {
+                        i1.libraryAnime.unseenCount
+                    }
+                    val i2Value = if (i2.isMerged) {
+                        i2.mergedAnime?.sumOf { it.totalCount - it.seenCount } ?: i2.libraryAnime.unseenCount
+                    } else {
+                        i2.libraryAnime.unseenCount
+                    }
+                    when {
+                        i1Value == i2Value -> 0
+                        i1Value == 0L -> if (currentSort.isAscending) 1 else -1
+                        i2Value == 0L -> if (currentSort.isAscending) -1 else 1
+                        else -> i1Value.compareTo(i2Value)
+                    }
                 }
                 AnimeLibrarySort.Type.TotalEpisodes -> {
-                    i1.libraryAnime.totalCount.compareTo(i2.libraryAnime.totalCount)
+                    val i1Value = if (i1.isMerged) {
+                        i1.mergedAnime?.sumOf { it.totalCount } ?: i1.libraryAnime.totalCount
+                    } else {
+                        i1.libraryAnime.totalCount
+                    }
+                    val i2Value = if (i2.isMerged) {
+                        i2.mergedAnime?.sumOf { it.totalCount } ?: i2.libraryAnime.totalCount
+                    } else {
+                        i2.libraryAnime.totalCount
+                    }
+                    i1Value.compareTo(i2Value)
                 }
                 AnimeLibrarySort.Type.LatestEpisode -> {
-                    i1.libraryAnime.latestUpload.compareTo(i2.libraryAnime.latestUpload)
+                    val i1Value = if (i1.isMerged) {
+                        i1.mergedAnime?.maxOfOrNull { it.latestUpload } ?: i1.libraryAnime.latestUpload
+                    } else {
+                        i1.libraryAnime.latestUpload
+                    }
+                    val i2Value = if (i2.isMerged) {
+                        i2.mergedAnime?.maxOfOrNull { it.latestUpload } ?: i2.libraryAnime.latestUpload
+                    } else {
+                        i2.libraryAnime.latestUpload
+                    }
+                    i1Value.compareTo(i2Value)
                 }
                 AnimeLibrarySort.Type.EpisodeFetchDate -> {
-                    i1.libraryAnime.episodeFetchedAt.compareTo(i2.libraryAnime.episodeFetchedAt)
+                    val i1Value = if (i1.isMerged) {
+                        i1.mergedAnime?.maxOfOrNull { it.episodeFetchedAt } ?: i1.libraryAnime.episodeFetchedAt
+                    } else {
+                        i1.libraryAnime.episodeFetchedAt
+                    }
+                    val i2Value = if (i2.isMerged) {
+                        i2.mergedAnime?.maxOfOrNull { it.episodeFetchedAt } ?: i2.libraryAnime.episodeFetchedAt
+                    } else {
+                        i2.libraryAnime.episodeFetchedAt
+                    }
+                    i1Value.compareTo(i2Value)
                 }
                 AnimeLibrarySort.Type.DateAdded -> {
-                    i1.libraryAnime.anime.dateAdded.compareTo(i2.libraryAnime.anime.dateAdded)
+                    val i1Value = if (i1.isMerged) {
+                        i1.mergedAnime?.maxOfOrNull { it.anime.dateAdded } ?: i1.libraryAnime.anime.dateAdded
+                    } else {
+                        i1.libraryAnime.anime.dateAdded
+                    }
+                    val i2Value = if (i2.isMerged) {
+                        i2.mergedAnime?.maxOfOrNull { it.anime.dateAdded } ?: i2.libraryAnime.anime.dateAdded
+                    } else {
+                        i2.libraryAnime.anime.dateAdded
+                    }
+                    i1Value.compareTo(i2Value)
                 }
                 AnimeLibrarySort.Type.TrackerMean -> {
-                    val item1Score = trackerScores[i1.libraryAnime.id] ?: defaultTrackerScoreSortValue
-                    val item2Score = trackerScores[i2.libraryAnime.id] ?: defaultTrackerScoreSortValue
-                    item1Score.compareTo(item2Score)
+                    val i1Score = if (i1.isMerged) {
+                        val scores = i1.mergedAnime?.mapNotNull { trackerScores[it.id] }
+                            ?.filter { it != defaultTrackerScoreSortValue }
+                        if (scores.isNullOrEmpty()) defaultTrackerScoreSortValue else scores.average()
+                    } else {
+                        trackerScores[i1.libraryAnime.id] ?: defaultTrackerScoreSortValue
+                    }
+                    val i2Score = if (i2.isMerged) {
+                        val scores = i2.mergedAnime?.mapNotNull { trackerScores[it.id] }
+                            ?.filter { it != defaultTrackerScoreSortValue }
+                        if (scores.isNullOrEmpty()) defaultTrackerScoreSortValue else scores.average()
+                    } else {
+                        trackerScores[i2.libraryAnime.id] ?: defaultTrackerScoreSortValue
+                    }
+                    i1Score.compareTo(i2Score)
                 }
-                AnimeLibrarySort.Type.AiringTime -> when {
-                    i1.libraryAnime.unseenCount != i2.libraryAnime.unseenCount ->
-                        i1.libraryAnime.unseenCount.compareTo(i2.libraryAnime.unseenCount)
-                    i1.libraryAnime.anime.nextEpisodeAiringAt == i2.libraryAnime.anime.nextEpisodeAiringAt -> 0
-                    i1.libraryAnime.anime.nextEpisodeAiringAt == 0L -> if (currentSort.isAscending) 1 else -1
-                    i2.libraryAnime.anime.nextEpisodeAiringAt == 0L -> if (currentSort.isAscending) -1 else 1
-                    else -> i1.libraryAnime.anime.nextEpisodeAiringAt.compareTo(
-                        i2.libraryAnime.anime.nextEpisodeAiringAt,
-                    )
+                AnimeLibrarySort.Type.AiringTime -> {
+                    val i1Unseen = if (i1.isMerged) {
+                        i1.mergedAnime?.sumOf { it.totalCount - it.seenCount } ?: i1.libraryAnime.unseenCount
+                    } else {
+                        i1.libraryAnime.unseenCount
+                    }
+                    val i2Unseen = if (i2.isMerged) {
+                        i2.mergedAnime?.sumOf { it.totalCount - it.seenCount } ?: i2.libraryAnime.unseenCount
+                    } else {
+                        i2.libraryAnime.unseenCount
+                    }
+                    if (i1Unseen != i2Unseen) {
+                        i1Unseen.compareTo(i2Unseen)
+                    } else {
+                        val i1Airing = if (i1.isMerged) {
+                            i1.mergedAnime?.map { it.anime.nextEpisodeAiringAt }
+                                ?.filter { it > 0 }
+                                ?.minOrNull() ?: i1.libraryAnime.anime.nextEpisodeAiringAt
+                        } else {
+                            i1.libraryAnime.anime.nextEpisodeAiringAt
+                        }
+                        val i2Airing = if (i2.isMerged) {
+                            i2.mergedAnime?.map { it.anime.nextEpisodeAiringAt }
+                                ?.filter { it > 0 }
+                                ?.minOrNull() ?: i2.libraryAnime.anime.nextEpisodeAiringAt
+                        } else {
+                            i2.libraryAnime.anime.nextEpisodeAiringAt
+                        }
+                        when {
+                            i1Airing == i2Airing -> 0
+                            i1Airing == 0L -> if (currentSort.isAscending) 1 else -1
+                            i2Airing == 0L -> if (currentSort.isAscending) -1 else 1
+                            else -> i1Airing.compareTo(i2Airing)
+                        }
+                    }
                 }
                 AnimeLibrarySort.Type.Random -> {
                     error("Why Are We Still Here? Just To Suffer?")

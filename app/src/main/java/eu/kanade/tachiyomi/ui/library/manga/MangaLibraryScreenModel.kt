@@ -326,34 +326,117 @@ class MangaLibraryScreenModel(
                     sortAlphabetically(i1, i2)
                 }
                 MangaLibrarySort.Type.LastRead -> {
-                    i1.libraryManga.lastRead.compareTo(i2.libraryManga.lastRead)
+                    val i1Value = if (i1.isMerged) {
+                        i1.mergedManga?.maxOfOrNull { it.lastRead } ?: i1.libraryManga.lastRead
+                    } else {
+                        i1.libraryManga.lastRead
+                    }
+                    val i2Value = if (i2.isMerged) {
+                        i2.mergedManga?.maxOfOrNull { it.lastRead } ?: i2.libraryManga.lastRead
+                    } else {
+                        i2.libraryManga.lastRead
+                    }
+                    i1Value.compareTo(i2Value)
                 }
                 MangaLibrarySort.Type.LastUpdate -> {
-                    i1.libraryManga.manga.lastUpdate.compareTo(i2.libraryManga.manga.lastUpdate)
+                    val i1Value = if (i1.isMerged) {
+                        i1.mergedManga?.maxOfOrNull { it.manga.lastUpdate } ?: i1.libraryManga.manga.lastUpdate
+                    } else {
+                        i1.libraryManga.manga.lastUpdate
+                    }
+                    val i2Value = if (i2.isMerged) {
+                        i2.mergedManga?.maxOfOrNull { it.manga.lastUpdate } ?: i2.libraryManga.manga.lastUpdate
+                    } else {
+                        i2.libraryManga.manga.lastUpdate
+                    }
+                    i1Value.compareTo(i2Value)
                 }
-                MangaLibrarySort.Type.UnreadCount -> when {
-                    // Ensure unread content comes first
-                    i1.libraryManga.unreadCount == i2.libraryManga.unreadCount -> 0
-                    i1.libraryManga.unreadCount == 0L -> if (currentSort.isAscending) 1 else -1
-                    i2.libraryManga.unreadCount == 0L -> if (currentSort.isAscending) -1 else 1
-                    else -> i1.libraryManga.unreadCount.compareTo(i2.libraryManga.unreadCount)
+                MangaLibrarySort.Type.UnreadCount -> {
+                    val i1Value = if (i1.isMerged) {
+                        i1.mergedManga?.sumOf { it.unreadCount } ?: i1.libraryManga.unreadCount
+                    } else {
+                        i1.libraryManga.unreadCount
+                    }
+                    val i2Value = if (i2.isMerged) {
+                        i2.mergedManga?.sumOf { it.unreadCount } ?: i2.libraryManga.unreadCount
+                    } else {
+                        i2.libraryManga.unreadCount
+                    }
+                    when {
+                        i1Value == i2Value -> 0
+                        i1Value == 0L -> if (currentSort.isAscending) 1 else -1
+                        i2Value == 0L -> if (currentSort.isAscending) -1 else 1
+                        else -> i1Value.compareTo(i2Value)
+                    }
                 }
                 MangaLibrarySort.Type.TotalChapters -> {
-                    i1.libraryManga.totalChapters.compareTo(i2.libraryManga.totalChapters)
+                    val i1Value = if (i1.isMerged) {
+                        i1.mergedManga?.sumOf { it.totalChapters } ?: i1.libraryManga.totalChapters
+                    } else {
+                        i1.libraryManga.totalChapters
+                    }
+                    val i2Value = if (i2.isMerged) {
+                        i2.mergedManga?.sumOf { it.totalChapters } ?: i2.libraryManga.totalChapters
+                    } else {
+                        i2.libraryManga.totalChapters
+                    }
+                    i1Value.compareTo(i2Value)
                 }
                 MangaLibrarySort.Type.LatestChapter -> {
-                    i1.libraryManga.latestUpload.compareTo(i2.libraryManga.latestUpload)
+                    val i1Value = if (i1.isMerged) {
+                        i1.mergedManga?.maxOfOrNull { it.latestUpload } ?: i1.libraryManga.latestUpload
+                    } else {
+                        i1.libraryManga.latestUpload
+                    }
+                    val i2Value = if (i2.isMerged) {
+                        i2.mergedManga?.maxOfOrNull { it.latestUpload } ?: i2.libraryManga.latestUpload
+                    } else {
+                        i2.libraryManga.latestUpload
+                    }
+                    i1Value.compareTo(i2Value)
                 }
                 MangaLibrarySort.Type.ChapterFetchDate -> {
-                    i1.libraryManga.chapterFetchedAt.compareTo(i2.libraryManga.chapterFetchedAt)
+                    val i1Value = if (i1.isMerged) {
+                        i1.mergedManga?.maxOfOrNull { it.chapterFetchedAt } ?: i1.libraryManga.chapterFetchedAt
+                    } else {
+                        i1.libraryManga.chapterFetchedAt
+                    }
+                    val i2Value = if (i2.isMerged) {
+                        i2.mergedManga?.maxOfOrNull { it.chapterFetchedAt } ?: i2.libraryManga.chapterFetchedAt
+                    } else {
+                        i2.libraryManga.chapterFetchedAt
+                    }
+                    i1Value.compareTo(i2Value)
                 }
                 MangaLibrarySort.Type.DateAdded -> {
-                    i1.libraryManga.manga.dateAdded.compareTo(i2.libraryManga.manga.dateAdded)
+                    val i1Value = if (i1.isMerged) {
+                        i1.mergedManga?.maxOfOrNull { it.manga.dateAdded } ?: i1.libraryManga.manga.dateAdded
+                    } else {
+                        i1.libraryManga.manga.dateAdded
+                    }
+                    val i2Value = if (i2.isMerged) {
+                        i2.mergedManga?.maxOfOrNull { it.manga.dateAdded } ?: i2.libraryManga.manga.dateAdded
+                    } else {
+                        i2.libraryManga.manga.dateAdded
+                    }
+                    i1Value.compareTo(i2Value)
                 }
                 MangaLibrarySort.Type.TrackerMean -> {
-                    val item1Score = trackerScores[i1.libraryManga.id] ?: defaultTrackerScoreSortValue
-                    val item2Score = trackerScores[i2.libraryManga.id] ?: defaultTrackerScoreSortValue
-                    item1Score.compareTo(item2Score)
+                    val i1Score = if (i1.isMerged) {
+                        val scores = i1.mergedManga?.mapNotNull { trackerScores[it.id] }
+                            ?.filter { it != defaultTrackerScoreSortValue }
+                        if (scores.isNullOrEmpty()) defaultTrackerScoreSortValue else scores.average()
+                    } else {
+                        trackerScores[i1.libraryManga.id] ?: defaultTrackerScoreSortValue
+                    }
+                    val i2Score = if (i2.isMerged) {
+                        val scores = i2.mergedManga?.mapNotNull { trackerScores[it.id] }
+                            ?.filter { it != defaultTrackerScoreSortValue }
+                        if (scores.isNullOrEmpty()) defaultTrackerScoreSortValue else scores.average()
+                    } else {
+                        trackerScores[i2.libraryManga.id] ?: defaultTrackerScoreSortValue
+                    }
+                    i1Score.compareTo(i2Score)
                 }
                 MangaLibrarySort.Type.Random -> {
                     error("Why Are We Still Here? Just To Suffer?")
