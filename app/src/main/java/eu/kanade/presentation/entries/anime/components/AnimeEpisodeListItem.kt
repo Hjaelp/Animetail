@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -64,6 +65,7 @@ import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.NewLabel
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.painter.ColorPainter
+import androidx.compose.ui.layout.ContentScale
 import eu.kanade.presentation.util.rememberResourceBitmapPainter
 import eu.kanade.tachiyomi.R
 
@@ -134,7 +136,7 @@ fun AnimeEpisodeListItem(
                     onClick = onClick,
                     onLongClick = onLongClick,
                 )
-                .padding(start = 16.dp, top = 8.dp, end = 8.dp, bottom = 8.dp),
+                .padding(start = 16.dp, top = 6.dp, end = 8.dp, bottom = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             if (thumbnailUrl != null) {
@@ -143,8 +145,10 @@ fun AnimeEpisodeListItem(
                     contentDescription = "",
                     placeholder = ColorPainter(Color(0x1F888888)),
                     error = rememberResourceBitmapPainter(id = R.drawable.cover_error),
+                    contentScale = ContentScale.Crop,
                     modifier = Modifier
-                        .sizeIn(maxHeight = 100.dp, maxWidth = 130.dp)
+                        .height(100.dp)
+                        .aspectRatio(16f / 9f)
                 )
                 Spacer(modifier = Modifier.padding(start = 8.dp))
             }
