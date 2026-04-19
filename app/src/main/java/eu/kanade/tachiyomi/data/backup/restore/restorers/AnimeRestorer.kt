@@ -124,6 +124,8 @@ class AnimeRestorer(
             version = newer.version,
             fetchType = newer.fetchType,
             parentId = newer.parentId,
+            metadataProvider = newer.metadataProvider,
+            metadataProviderAnimeId = newer.metadataProviderAnimeId,
         )
     }
 

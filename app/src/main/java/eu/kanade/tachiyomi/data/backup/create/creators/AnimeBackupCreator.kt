@@ -98,4 +98,6 @@ private fun Anime.toBackupAnime() =
         seasonFlags = this.seasonFlags,
         seasonNumber = this.seasonNumber,
         seasonSourceOrder = this.seasonSourceOrder,
+        metadataProvider = this.metadataProvider,
+        metadataProviderAnimeId = this.metadataProviderAnimeId,
     )
