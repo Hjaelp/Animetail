@@ -25,6 +25,13 @@ import java.lang.Long.max
 import java.time.ZonedDateTime
 import java.util.TreeSet
 
+data class RemovedEpisodeMetadata(
+    val chapterBookmarks: String? = null,
+    val seen: Boolean = false,
+    val bookmark: Boolean = false,
+    val fillermark: Boolean = false,
+)
+
 class SyncEpisodesWithSource(
     private val downloadManager: AnimeDownloadManager,
     private val downloadProvider: AnimeDownloadProvider,
@@ -77,6 +84,32 @@ class SyncEpisodesWithSource(
             }
         }
 
+        val removedEpisodesMetadata = removedEpisodes
+            .fold(mutableMapOf<Double, Episode>()) { all, episode ->
+                val existing = all[episode.episodeNumber]
+
+                if (existing == null ||
+                    compareValuesBy(
+                        episode, existing,
+                        { it.chapterBookmarks != null },
+                        { it.seen },
+                        { it.bookmark }
+                    ) > 0
+                ) {
+                    all[episode.episodeNumber] = episode
+                }
+
+                all
+            }
+            .mapValues { (_, it) ->
+                RemovedEpisodeMetadata(
+                    chapterBookmarks = it.chapterBookmarks,
+                    seen = it.seen,
+                    bookmark = it.bookmark,
+                    fillermark = it.fillermark,
+                )
+            }
+
         // Used to not set upload date of older episodes
         // to a higher value than newer episodes
         var maxSeenUploadDate = 0L
@@ -102,13 +135,21 @@ class SyncEpisodesWithSource(
             val dbEpisode = dbEpisodes.find { it.url == episode.url }
 
             if (dbEpisode == null) {
-                val toAddEpisode = if (episode.dateUpload == 0L) {
+                val baseEpisode = if (episode.dateUpload == 0L) {
                     val altDateUpload = if (maxSeenUploadDate == 0L) nowMillis else maxSeenUploadDate
                     episode.copy(dateUpload = altDateUpload)
                 } else {
                     maxSeenUploadDate = max(maxSeenUploadDate, sourceEpisode.dateUpload)
                     episode
                 }
+                val toAddEpisode = removedEpisodesMetadata[baseEpisode.episodeNumber]?.let { meta ->
+                    baseEpisode.copy(
+                        chapterBookmarks = baseEpisode.chapterBookmarks ?: meta.chapterBookmarks,
+                        seen = baseEpisode.seen || meta.seen,
+                        bookmark = baseEpisode.bookmark || meta.bookmark,
+                        fillermark = baseEpisode.fillermark || meta.fillermark,
+                    )
+                } ?: baseEpisode
                 newEpisodes.add(toAddEpisode)
             } else {
                 if (shouldUpdateDbEpisode.await(dbEpisode, episode)) {
@@ -168,8 +209,6 @@ class SyncEpisodesWithSource(
         val changedOrDuplicateReadUrls = mutableSetOf<String>()
 
         val deletedEpisodeNumbers = TreeSet<Double>()
-        val deletedSeenEpisodeNumbers = TreeSet<Double>()
-        val deletedBookmarkedEpisodeNumbers = TreeSet<Double>()
 
         val readEpisodeNumbers = dbEpisodes
             .asSequence()
@@ -178,8 +217,6 @@ class SyncEpisodesWithSource(
             .toSet()
 
         removedEpisodes.forEach { episode ->
-            if (episode.seen) deletedSeenEpisodeNumbers.add(episode.episodeNumber)
-            if (episode.bookmark) deletedBookmarkedEpisodeNumbers.add(episode.episodeNumber)
             deletedEpisodeNumbers.add(episode.episodeNumber)
         }
 
@@ -201,11 +238,6 @@ class SyncEpisodesWithSource(
             }
 
             if (!episode.isRecognizedNumber || episode.episodeNumber !in deletedEpisodeNumbers) return@map episode
-
-            episode = episode.copy(
-                seen = episode.episodeNumber in deletedSeenEpisodeNumbers,
-                bookmark = episode.episodeNumber in deletedBookmarkedEpisodeNumbers,
-            )
 
             // Try to to use the fetch date of the original entry to not pollute 'Updates' tab
             deletedEpisodeNumberDateFetchMap[episode.episodeNumber]?.let {
