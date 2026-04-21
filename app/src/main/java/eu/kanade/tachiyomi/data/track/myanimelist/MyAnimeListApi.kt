@@ -106,7 +106,6 @@ class MyAnimeListApi(
             val url = "$BASE_API_URL/anime".toUri().buildUpon()
                 // MAL API throws a 400 when the query is over 64 characters...
                 .appendQueryParameter("q", query.take(64))
-                .appendQueryParameter("q", query)
                 .appendQueryParameter("nsfw", "true")
                 .build()
             with(json) {
