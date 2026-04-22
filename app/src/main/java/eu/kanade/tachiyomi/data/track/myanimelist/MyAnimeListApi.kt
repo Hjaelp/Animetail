@@ -103,9 +103,11 @@ class MyAnimeListApi(
 
     suspend fun searchAnime(query: String): List<AnimeTrackSearch> {
         return withIOContext {
+            // These words in query usually pollute the search result.
+            val title = query.replace(Regex("(Season [\\d.]+|Specials?|ova)", RegexOption.IGNORE_CASE), "")
             val url = "$BASE_API_URL/anime".toUri().buildUpon()
                 // MAL API throws a 400 when the query is over 64 characters...
-                .appendQueryParameter("q", query.take(64))
+                .appendQueryParameter("q", title.take(64))
                 .appendQueryParameter("nsfw", "true")
                 .build()
             with(json) {
@@ -125,7 +127,7 @@ class MyAnimeListApi(
                 .appendPath(id.toString())
                 .appendQueryParameter(
                     "fields",
-                    "id,title,synopsis,num_chapters,mean,main_picture,status,media_type,start_date",
+                    "id,title,alternative_titles,synopsis,num_chapters,mean,main_picture,status,media_type,start_date",
                 )
                 .build()
             with(json) {
@@ -135,7 +137,7 @@ class MyAnimeListApi(
                     .let {
                         MangaTrackSearch.create(trackId).apply {
                             remote_id = it.id
-                            title = it.title
+                            title = it.alternativeTitles?.en.takeIf { !it.isNullOrBlank() } ?: it.title
                             summary = it.synopsis
                             total_chapters = it.numChapters
                             score = it.mean
@@ -156,7 +158,7 @@ class MyAnimeListApi(
                 .appendPath(id.toString())
                 .appendQueryParameter(
                     "fields",
-                    "id,title,synopsis,num_episodes,mean,main_picture,status,media_type,start_date",
+                    "id,title,alternative_titles,synopsis,num_episodes,mean,main_picture,status,media_type,start_date",
                 )
                 .build()
             with(json) {
@@ -166,7 +168,7 @@ class MyAnimeListApi(
                     .let {
                         AnimeTrackSearch.create(trackId).apply {
                             remote_id = it.id
-                            title = it.title
+                            title = it.alternativeTitles?.en.takeIf { !it.isNullOrBlank() } ?: it.title
                             summary = it.synopsis
                             total_episodes = it.numEpisodes
                             score = it.mean

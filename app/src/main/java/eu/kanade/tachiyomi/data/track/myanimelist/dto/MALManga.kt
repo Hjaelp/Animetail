@@ -7,6 +7,8 @@ import kotlinx.serialization.Serializable
 data class MALManga(
     val id: Long,
     val title: String,
+    @SerialName("alternative_titles")
+    val alternativeTitles: MALMangaAlternativeTitles? = null,
     val synopsis: String = "",
     @SerialName("num_chapters")
     val numChapters: Long,
@@ -18,6 +20,12 @@ data class MALManga(
     val mediaType: String,
     @SerialName("start_date")
     val startDate: String?,
+)
+
+@Serializable
+data class MALMangaAlternativeTitles(
+    val en: String? = null,
+    val ja: String? = null,
 )
 
 @Serializable
