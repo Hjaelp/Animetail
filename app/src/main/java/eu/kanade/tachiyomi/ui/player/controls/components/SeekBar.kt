@@ -23,13 +23,12 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material3.MaterialTheme
@@ -40,6 +39,10 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -177,20 +180,35 @@ private fun BookmarkIndicators(
 ) {
     if (duration == 0f) return
 
-    BoxWithConstraints(modifier = modifier.height(8.dp)) {
-        bookmarks.forEach { bookmark ->
-            val position = bookmark.position.toFloat() / duration
-            if (position in 0f..1f) {
-                Box(
-                    modifier = Modifier
-                        .offset(x = 6.dp + (this.maxWidth - 18.dp) * position) // Fix later, not very precise
-                        .width(2.dp)
-                        .fillMaxHeight()
-                        .background(Color(0xFFe6e6e6)),
-                )
+    val thumbRadius = 10.dp // probably
+    val indicatorWidth = 3.dp
+
+    Spacer(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(10.dp)
+            .drawBehind {
+                val thumbRadiusPx = thumbRadius.toPx()
+                val trackWidth = size.width - (thumbRadiusPx * 2)
+
+                bookmarks.forEach { bookmark ->
+                    val position = bookmark.position.toFloat() / duration
+                    if (position in 0f..1f) {
+                        val xPos = thumbRadiusPx + (trackWidth * position)
+
+                        drawRoundRect(
+                            color = Color.White.copy(alpha = 0.75f),
+                            topLeft = Offset(
+                                x = xPos - (indicatorWidth.toPx() / 2),
+                                y = 0f,
+                            ),
+                            size = Size(indicatorWidth.toPx(), 9.dp.toPx()),
+                            cornerRadius = CornerRadius(4f, 4f)
+                        )
+                    }
+                }
             }
-        }
-    }
+    )
 }
 
 @Preview
