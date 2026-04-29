@@ -1116,7 +1116,13 @@ class ReaderActivity : BaseActivity() {
      */
     private inner class ReaderConfig {
 
-        private fun getCombinedPaint(grayscale: Boolean, invertedColors: Boolean): Paint {
+        private fun getCombinedPaint(
+            grayscale: Boolean,
+            invertedColors: Boolean,
+            contrast: Boolean,
+            darkLevel: Int,
+            lightLevel: Int,
+        ): Paint {
             return Paint().apply {
                 colorFilter = ColorMatrixColorFilter(
                     ColorMatrix().apply {
@@ -1130,6 +1136,24 @@ class ReaderActivity : BaseActivity() {
                                         -1f, 0f, 0f, 0f, 255f,
                                         0f, -1f, 0f, 0f, 255f,
                                         0f, 0f, -1f, 0f, 255f,
+                                        0f, 0f, 0f, 1f, 0f,
+                                    ),
+                                ),
+                            )
+                        }
+                        if (contrast) {
+                            val b = darkLevel.coerceIn(0, 255)
+                            val w = lightLevel.coerceIn(0, 255)
+                            val black = minOf(b, w)
+                            val white = maxOf(b, w)
+                            val ratio = (white - black) / 255f
+                            val offset = black.toFloat()
+                            postConcat(
+                                ColorMatrix(
+                                    floatArrayOf(
+                                        ratio, 0f, 0f, 0f, offset,
+                                        0f, ratio, 0f, 0f, offset,
+                                        0f, 0f, ratio, 0f, offset,
                                         0f, 0f, 0f, 1f, 0f,
                                     ),
                                 ),
@@ -1175,9 +1199,21 @@ class ReaderActivity : BaseActivity() {
                 .onEach(::setCustomBrightness)
                 .launchIn(lifecycleScope)
 
-            merge(readerPreferences.grayscale().changes(), readerPreferences.invertedColors().changes())
-                .onEach { setLayerPaint(readerPreferences.grayscale().get(), readerPreferences.invertedColors().get()) }
-                .launchIn(lifecycleScope)
+            merge(
+                readerPreferences.grayscale().changes(),
+                readerPreferences.invertedColors().changes(),
+                readerPreferences.contrast().changes(),
+                readerPreferences.darkLevel().changes(),
+                readerPreferences.lightLevel().changes(),
+            ).onEach {
+                setLayerPaint(
+                    readerPreferences.grayscale().get(),
+                    readerPreferences.invertedColors().get(),
+                    readerPreferences.contrast().get(),
+                    readerPreferences.darkLevel().get(),
+                    readerPreferences.lightLevel().get(),
+                )
+            }.launchIn(lifecycleScope)
 
             readerPreferences.fullscreen().changes()
                 .onEach {
@@ -1309,8 +1345,18 @@ class ReaderActivity : BaseActivity() {
 
             viewModel.setBrightnessOverlayValue(value)
         }
-        private fun setLayerPaint(grayscale: Boolean, invertedColors: Boolean) {
-            val paint = if (grayscale || invertedColors) getCombinedPaint(grayscale, invertedColors) else null
+        private fun setLayerPaint(
+            grayscale: Boolean,
+            invertedColors: Boolean,
+            contrast: Boolean,
+            darkLevel: Int,
+            lightLevel: Int,
+        ) {
+            val paint = if (grayscale || invertedColors || contrast) {
+                getCombinedPaint(grayscale, invertedColors, contrast, darkLevel, lightLevel)
+            } else {
+                null
+            }
             binding.viewerContainer.setLayerType(LAYER_TYPE_HARDWARE, paint)
         }
     }

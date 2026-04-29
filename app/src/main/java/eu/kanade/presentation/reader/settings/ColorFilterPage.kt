@@ -122,6 +122,42 @@ internal fun ColumnScope.ColorFilterPage(screenModel: ReaderSettingsScreenModel)
         label = stringResource(MR.strings.pref_inverted_colors),
         pref = screenModel.preferences.invertedColors(),
     )
+
+    val contrast by screenModel.preferences.contrast().collectAsState()
+    CheckboxItem(
+        label = stringResource(MR.strings.pref_contrast),
+        pref = screenModel.preferences.contrast(),
+    )
+    if (contrast) {
+        val darkLevel by screenModel.preferences.darkLevel().collectAsState()
+        val lightLevel by screenModel.preferences.lightLevel().collectAsState()
+
+         // Dark Level Slider
+         SliderItem(
+             value = darkLevel,
+             valueRange = 0..255,
+             steps = 0,
+             label = stringResource(MR.strings.pref_contrast_dark_level),
+            onChange = { newValue ->
+                val validatedValue = newValue.coerceAtMost(lightLevel)
+                screenModel.preferences.darkLevel().set(validatedValue)
+            },
+            pillColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+        )
+
+         // Light Level Slider
+         SliderItem(
+             value = lightLevel,
+             valueRange = 0..255,
+             steps = 0,
+             label = stringResource(MR.strings.pref_contrast_light_level),
+            onChange = { newValue ->
+                val validatedValue = newValue.coerceAtLeast(darkLevel)
+                screenModel.preferences.lightLevel().set(validatedValue)
+            },
+            pillColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+        )
+    }
 }
 
 private fun getColorValue(currentColor: Int, color: Int, mask: Long, bitShift: Int): Int {

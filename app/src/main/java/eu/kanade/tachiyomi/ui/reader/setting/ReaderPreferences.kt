@@ -121,6 +121,12 @@ class ReaderPreferences(
 
     fun invertedColors() = preferenceStore.getBoolean("pref_inverted_colors", false)
 
+    fun contrast() = preferenceStore.getBoolean("pref_contrast", false)
+
+    fun darkLevel() = preferenceStore.getInt("dark_level", 0)
+
+    fun lightLevel() = preferenceStore.getInt("light_level", 255)
+
     // endregion
 
     // region Controls
