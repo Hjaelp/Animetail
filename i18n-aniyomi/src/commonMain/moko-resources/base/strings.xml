@@ -568,6 +568,7 @@
     <string name="data_saver_server_summary">Put Bandwidth Hero Proxy server url here</string>
     <string name="download_slots_info">Will only download concurrently from self-hosted or unmetered sources</string>
     <string name="unseen">Unseen</string>
+    <string name="last_watched">Last watched</string>
     <string name="label_manga_extension_repos">Manga extension repos</string>
     <string name="label_anime_extension_repos">Anime extension repos</string>
     <string name="onboarding_storage_action_create_folder">Create default Aniyomi folder</string>

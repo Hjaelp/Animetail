@@ -110,6 +110,7 @@ import tachiyomi.domain.entries.anime.model.AnimeUpdate
 import tachiyomi.domain.entries.anime.model.CustomAnimeInfo
 import tachiyomi.domain.entries.anime.model.NoSeasonsException
 import tachiyomi.domain.entries.anime.repository.AnimeRepository
+import tachiyomi.domain.history.anime.repository.AnimeHistoryRepository
 import tachiyomi.domain.entries.applyFilter
 import tachiyomi.domain.items.episode.interactor.GetEpisodesByAnimeId
 import tachiyomi.domain.items.episode.interactor.SetAnimeDefaultEpisodeFlags
@@ -186,6 +187,7 @@ class AnimeScreenModel(
     // AM (FILE_SIZE) -->
     private val storagePreferences: StoragePreferences = Injekt.get(),
     // <-- AM (FILE_SIZE)
+    private val animeHistoryRepository: AnimeHistoryRepository = Injekt.get(),
 ) : StateScreenModel<AnimeScreenModel.State>(State.Loading) {
 
     // In-memory cache to hold cast fetched from network so UI can show it even if DB
@@ -256,11 +258,13 @@ class AnimeScreenModel(
                     val animeWithCast = anime.copy(
                         cast = anime.cast ?: castCache[anime.id],
                     )
+                    val lastReseenEpisodeId = getLastReseenEpisodeId(anime, episodes)
                     updateSuccessState {
                         it.copy(
                             anime = animeWithCast,
                             episodes = episodes.toEpisodeListItems(animeWithCast),
                             seasons = seasons.toAnimeSeasonItems(),
+                            lastReseenEpisodeId = lastReseenEpisodeId,
                         )
                     }
                 }
@@ -1068,6 +1072,20 @@ class AnimeScreenModel(
         val anime = successState?.anime ?: return emptyList()
         val episodes = getUnseenEpisodes().sortedWith(getEpisodeSort(anime))
         return if (anime.sortDescending()) episodes.reversed() else episodes
+    }
+    private suspend fun getLastReseenEpisodeId(anime: Anime, episodes: List<Episode>): Long? {
+        if (episodes.size <= 1 || !episodes.all { it.seen }) return null
+        val history = animeHistoryRepository.getHistoryByAnimeId(anime.id).filter { it.seenAt != null }
+        if (history.isEmpty()) return null
+        val lastSeenHistory = history.maxByOrNull { it.seenAt!! } ?: return null
+        val matchedEpisodeId = lastSeenHistory.episodeId
+        val matchedEpisode = episodes.find { it.id == matchedEpisodeId } ?: return null
+        val lastEpisode = episodes.maxByOrNull { it.episodeNumber } ?: return null
+        return if (matchedEpisode.episodeNumber == lastEpisode.episodeNumber) {
+            null
+        } else {
+            matchedEpisodeId
+        }
     }
 
     private fun startDownload(
@@ -1938,6 +1956,7 @@ class AnimeScreenModel(
             // KMK <--
             val mergedAnimes: List<Anime>? = null,
             val isMergedAnimesFetched: Boolean? = null,
+            val lastReseenEpisodeId: Long? = null,
         ) : State {
 
             val mergedAnimesSorted by lazy {

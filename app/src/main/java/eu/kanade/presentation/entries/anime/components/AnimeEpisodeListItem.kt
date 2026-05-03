@@ -15,6 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Bookmarks
 import androidx.compose.material.icons.filled.Circle
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.outlined.BookmarkAdd
 import androidx.compose.material.icons.outlined.BookmarkRemove
 import androidx.compose.material.icons.outlined.Delete
@@ -82,6 +83,7 @@ fun AnimeEpisodeListItem(
     bookmark: Boolean,
     chapterBookmarksCount: Int = 0,
     fillermark: Boolean,
+    isLastReseen: Boolean,
     selected: Boolean,
     isAnyEpisodeSelected: Boolean,
     downloadIndicatorEnabled: Boolean,
@@ -175,6 +177,15 @@ fun AnimeEpisodeListItem(
                         Icon(
                             imageVector = Icons.Filled.Bookmark,
                             contentDescription = stringResource(MR.strings.action_filter_bookmarked),
+                            modifier = Modifier
+                                .sizeIn(maxHeight = with(LocalDensity.current) { textHeight.toDp() - 2.dp }),
+                            tint = MaterialTheme.colorScheme.primary,
+                        )
+                    }
+                    if (isLastReseen) {
+                        Icon(
+                            imageVector = Icons.Filled.History,
+                            contentDescription = stringResource(AYMR.strings.last_watched),
                             modifier = Modifier
                                 .sizeIn(maxHeight = with(LocalDensity.current) { textHeight.toDp() - 2.dp }),
                             tint = MaterialTheme.colorScheme.primary,
