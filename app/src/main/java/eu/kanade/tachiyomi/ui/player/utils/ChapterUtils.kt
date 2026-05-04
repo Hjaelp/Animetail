@@ -18,6 +18,16 @@ class ChapterUtils {
             ChapterType.Other -> null
         }
 
+        fun inferChapterType(name: String): ChapterType {
+            val lowerName = name.lowercase()
+            return when {
+                Regex("""\b(opening|op\d*)\b""").containsMatchIn(lowerName) -> ChapterType.Opening
+                Regex("""\b(ending|credits|ed\d*)\b""").containsMatchIn(lowerName) -> ChapterType.Ending
+                Regex("""\b(recap|review|summary)\b""").containsMatchIn(lowerName) -> ChapterType.Recap
+                else -> ChapterType.Other
+            }
+        }
+
         fun mergeChapters(
             currentChapters: List<IndexedSegment>,
             stamps: List<TimeStamp>,

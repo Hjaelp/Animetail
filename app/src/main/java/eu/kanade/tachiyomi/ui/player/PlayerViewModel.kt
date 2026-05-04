@@ -89,6 +89,7 @@ import eu.kanade.tachiyomi.ui.player.settings.PlayerPreferences
 import eu.kanade.tachiyomi.ui.player.settings.SubtitlePreferences
 import eu.kanade.tachiyomi.ui.player.utils.AniSkipApi
 import eu.kanade.tachiyomi.ui.player.utils.ChapterUtils.Companion.getStringRes
+import eu.kanade.tachiyomi.ui.player.utils.ChapterUtils.Companion.inferChapterType
 import eu.kanade.tachiyomi.ui.player.utils.TrackSelect
 import eu.kanade.tachiyomi.ui.reader.SaveImageNotifier
 import eu.kanade.tachiyomi.util.editBackground
@@ -545,6 +546,7 @@ class PlayerViewModel @JvmOverloads constructor(
                     name = title,
                     start = time.toFloat(),
                     index = 0,
+                    chapterType = inferChapterType(title)
                 ),
             )
         }
