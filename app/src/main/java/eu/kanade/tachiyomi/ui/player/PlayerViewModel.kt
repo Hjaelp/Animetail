@@ -2174,8 +2174,13 @@ class PlayerViewModel @JvmOverloads constructor(
     private val autoSkip = playerPreferences.autoSkipIntro().get()
     private val netflixStyle = playerPreferences.enableNetflixStyleIntroSkip().get()
 
-    private val defaultWaitingTime = playerPreferences.waitingTimeIntroSkip().get()
-    var waitingSkipIntro = defaultWaitingTime
+    val defaultWaitingTime = playerPreferences.waitingTimeIntroSkip().get()
+    private val _waitingSkipIntro = MutableStateFlow(defaultWaitingTime)
+    val waitingSkipIntro = _waitingSkipIntro.asStateFlow()
+
+    internal fun updateWaitingSkipIntro(value: Int) {
+        _waitingSkipIntro.value = value
+    }
 
     fun setChapter(position: Float) {
         getCurrentChapter(position)?.let { (chapterIndex, chapter) ->
@@ -2189,23 +2194,22 @@ class PlayerViewModel @JvmOverloads constructor(
 
             if (chapter.chapterType == ChapterType.Other) {
                 _skipIntroText.update { _ -> null }
-                waitingSkipIntro = defaultWaitingTime
+                updateWaitingSkipIntro(defaultWaitingTime)
             } else {
                 val nextChapterPos = chapters.value.getOrNull(chapterIndex + 1)?.start ?: pos.value
 
                 if (netflixStyle) {
                     // show a toast with the seconds before the skip
-                    if (waitingSkipIntro == defaultWaitingTime) {
+                    if (waitingSkipIntro.value == defaultWaitingTime) {
                         activity.showToast(
                             "Skip Intro: ${activity.stringResource(
                                 AYMR.strings.player_aniskip_dontskip_toast,
                                 chapter.name,
-                                waitingSkipIntro,
+                                waitingSkipIntro.value,
                             )}",
                         )
                     }
-                    showSkipIntroButton(chapter, nextChapterPos, waitingSkipIntro)
-                    waitingSkipIntro--
+                    showSkipIntroButton(chapter, nextChapterPos, waitingSkipIntro.value)
                 } else if (autoSkip) {
                     seekToWithText(
                         seekValue = nextChapterPos.toInt(),
@@ -2213,6 +2217,9 @@ class PlayerViewModel @JvmOverloads constructor(
                     )
                 } else {
                     updateSkipIntroButton(chapter.chapterType)
+                }
+                if (!autoSkip) {
+                    updateWaitingSkipIntro(waitingSkipIntro.value - 1)
                 }
             }
         }
@@ -2250,8 +2257,8 @@ class PlayerViewModel @JvmOverloads constructor(
     fun onSkipIntro() {
         getCurrentChapter()?.let { (chapterIndex, chapter) ->
             // this stops the counter
-            if (waitingSkipIntro > 0 && netflixStyle) {
-                waitingSkipIntro = -1
+            if (waitingSkipIntro.value > 0 && netflixStyle) {
+                updateWaitingSkipIntro(-1)
                 return
             }
 

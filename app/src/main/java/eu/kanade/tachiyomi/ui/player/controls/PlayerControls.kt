@@ -18,8 +18,10 @@
 package eu.kanade.tachiyomi.ui.player.controls
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.FiniteAnimationSpec
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -29,6 +31,7 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.fillMaxSize
@@ -89,6 +92,17 @@ import tachiyomi.presentation.core.util.collectAsState
 import tachiyomi.source.local.entries.anime.LocalAnimeSource
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.ui.unit.dp
+import androidx.compose.material3.Text
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 
 @Suppress("CompositionLocalAllowlist")
 val LocalPlayerButtonsClickEvent = staticCompositionLocalOf { {} }
@@ -124,6 +138,7 @@ fun PlayerControls(
     val chapters by viewModel.chapters.collectAsState()
     val customBookmarksList by viewModel.customBookmarks.collectAsState()
     val currentBrightness by viewModel.currentBrightness.collectAsState()
+    val waitingSkipIntro by viewModel.waitingSkipIntro.collectAsState()
 
     val playerTimeToDisappear by playerPreferences.playerTimeToDisappear().collectAsState()
     var isSeeking by remember { mutableStateOf(false) }
@@ -182,6 +197,7 @@ fun PlayerControls(
                     unlockControlsButton,
                     bottomRightControls, bottomLeftControls,
                     centerControls, seekbar, playerUpdates,
+                    skipOverlay,
                 ) = createRefs()
 
                 val hasPreviousEpisode by viewModel.hasPreviousEpisode.collectAsState()
@@ -552,6 +568,62 @@ fun PlayerControls(
                         },
                         onOpenSheet = viewModel::showSheet,
                     )
+                }
+                // Skip intro overlay when controls are hidden
+                val labelPresent = skipIntroButton != null
+                val skipLabel = remember { mutableStateOf("") }
+                if (labelPresent) skipLabel.value = skipIntroButton.toString()
+
+                val progress = remember { Animatable(1f) }
+
+                LaunchedEffect(waitingSkipIntro) {
+                    val target = (waitingSkipIntro / viewModel.defaultWaitingTime.toFloat()).coerceIn(0f, 1f)
+                    progress.animateTo(
+                        targetValue = target,
+                        animationSpec = tween(durationMillis = 600, easing = LinearEasing)
+                    )
+                }
+
+                val skipOverlayVisible = labelPresent && !controlsShown && !areControlsLocked && waitingSkipIntro >= 0 && progress.value >= 0
+
+                AnimatedVisibility(
+                    visible = skipOverlayVisible,
+                    enter = slideInHorizontally(playerControlsEnterAnimationSpec()) { it } + fadeIn(playerControlsEnterAnimationSpec()),
+                    exit = slideOutHorizontally(playerControlsExitAnimationSpec()) { it } + fadeOut(playerControlsExitAnimationSpec()),
+                    modifier = Modifier.constrainAs(skipOverlay) {
+                        end.linkTo(parent.end, spacing.small)
+                        linkTo(parent.top, parent.bottom, bias = 0.7f)
+                    }
+                ) {
+
+                    OutlinedButton(
+                        onClick = viewModel::onSkipIntro,
+                        shape = RoundedCornerShape(4.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            containerColor = Color.Black.copy(alpha = 0.4f),
+                            contentColor = Color.White,
+                        ),
+                        border = BorderStroke(1.5.dp, Color.White.copy(alpha = 0.6f)),
+                        contentPadding = PaddingValues(horizontal = 18.dp, vertical = 10.dp),
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(4.dp))
+                            .drawWithContent {
+                            drawContent()
+                            if (progress.value > 0f) {
+                                drawRect(
+                                    color = Color.White.copy(alpha = 0.85f),
+                                    topLeft = Offset(1.5.dp.toPx(), size.height - 6.dp.toPx()),
+                                    size = Size((size.width * progress.value)-1.5.dp.toPx(), 3.dp.toPx())
+                                )
+                            }
+                        },
+                    ) {
+                        Text(
+                            text = skipLabel.value,
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.Medium,
+                        )
+                    }
                 }
             }
         }
