@@ -112,6 +112,7 @@ import uy.kohesive.injekt.api.get
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
+import java.io.File
 import java.util.Calendar
 import kotlin.math.ceil
 import kotlin.math.floor
@@ -465,7 +466,7 @@ class PlayerActivity : BaseActivity() {
 
         copyUserFiles(mpvDir)
         copyAssets(mpvDir)
-        copyFontsDirectory(mpvDir)
+        setFontsDirectory(mpvDir)
 
         player.initialize(
             configDir = mpvDir.filePath!!,
@@ -562,6 +563,18 @@ class PlayerActivity : BaseActivity() {
         }
     }
 
+    private fun setFontsDirectory(mpvDir: UniFile) {
+        val fontsDirectory = storageManager.getFontsDirectory() ?: return
+        val path = fontsDirectory.filePath
+        val realPath = path?.takeIf { File(it).let { f -> f.exists() && f.isDirectory } }
+
+        if (realPath != null) {
+            MPVLib.setPropertyString("sub-fonts-dir", realPath)
+            MPVLib.setPropertyString("osd-fonts-dir", realPath)
+        } else {
+            copyFontsDirectory(mpvDir)
+        }
+    }
     fun setupCustomButtons(buttons: List<CustomButton>) {
         CoroutineScope(Dispatchers.IO).launchIO {
             val scriptsDir = {
