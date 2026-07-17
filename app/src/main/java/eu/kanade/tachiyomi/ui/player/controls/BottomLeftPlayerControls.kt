@@ -78,10 +78,12 @@ fun BottomLeftPlayerControls(
             enter = fadeIn(),
             exit = fadeOut(),
         ) {
-            CurrentChapter(
-                chapter = currentChapter!!,
-                onClick = { onOpenSheet(Sheets.Chapters) },
-            )
+            currentChapter?.let { chapter ->
+                CurrentChapter(
+                    chapter = chapter,
+                    onClick = { onOpenSheet(Sheets.Chapters) },
+                )
+            }
         }
         ControlsButton(
             icon = Icons.Default.BookmarkAdd,

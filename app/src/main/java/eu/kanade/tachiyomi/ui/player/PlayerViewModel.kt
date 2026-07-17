@@ -1561,6 +1561,7 @@ class PlayerViewModel @JvmOverloads constructor(
             selectedHosterState.getChangedAt(videoIndex, resolvedVideo, Video.State.READY),
         )
 
+        clearChapters()
         _currentVideo.update { _ -> resolvedVideo }
 
         qualityIndex = Pair(hosterIndex, videoIndex)
@@ -2180,6 +2181,11 @@ class PlayerViewModel @JvmOverloads constructor(
 
     internal fun updateWaitingSkipIntro(value: Int) {
         _waitingSkipIntro.value = value
+    }
+
+    fun clearChapters() {
+        _currentChapter.update { _ -> null }
+        updateChapters(emptyList())
     }
 
     fun setChapter(position: Float) {
