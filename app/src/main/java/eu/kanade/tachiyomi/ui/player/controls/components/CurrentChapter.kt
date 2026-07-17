@@ -47,7 +47,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import dev.vivvvek.seeker.Segment
 import `is`.xyz.mpv.Utils
+import tachiyomi.i18n.aniyomi.AYMR
 import tachiyomi.presentation.core.components.material.padding
+import tachiyomi.presentation.core.i18n.stringResource
 
 @Composable
 fun CurrentChapter(
@@ -98,7 +100,13 @@ fun CurrentChapter(
                     color = MaterialTheme.colorScheme.tertiary,
                 )
                 currentChapter.name.let { name ->
-                    val truncatedName = if (name.length > 60) name.take(60) + "…" else name
+                    val truncatedName = if (name.isBlank()) {
+                        stringResource(AYMR.strings.label_na)
+                    } else if (name.length > 60) {
+                        name.take(60) + "…"
+                    } else {
+                        name
+                    }
                     Text(
                         text = Typography.bullet.toString(),
                         textAlign = TextAlign.Center,

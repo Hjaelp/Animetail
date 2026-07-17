@@ -83,7 +83,11 @@ fun ChapterTrack(
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
         Text(
-            stringResource(AYMR.strings.player_sheets_track_title_wo_lang, index + 1, chapter.name),
+            stringResource(
+                AYMR.strings.player_sheets_track_title_wo_lang,
+                index + 1,
+                if (chapter.name.isBlank()) stringResource(AYMR.strings.label_na) else chapter.name,
+            ),
             fontStyle = if (selected) FontStyle.Italic else FontStyle.Normal,
             fontWeight = if (selected) FontWeight.ExtraBold else FontWeight.Normal,
             maxLines = 1,
