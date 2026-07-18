@@ -2202,7 +2202,15 @@ class PlayerViewModel @JvmOverloads constructor(
                 _skipIntroText.update { _ -> null }
                 updateWaitingSkipIntro(defaultWaitingTime)
             } else {
-                val nextChapterPos = chapters.value.getOrNull(chapterIndex + 1)?.start ?: pos.value
+                val nextChapter = chapters.value.getOrNull(chapterIndex + 1)
+                val nextChapterPos = nextChapter?.start ?: duration.value
+                val isLastChapter = nextChapter == null
+
+                if (isLastChapter && position >= nextChapterPos - 1f) {
+                    _skipIntroText.update { null }
+                    updateWaitingSkipIntro(defaultWaitingTime)
+                    return
+                }
 
                 if (netflixStyle) {
                     // show a toast with the seconds before the skip
@@ -2268,12 +2276,18 @@ class PlayerViewModel @JvmOverloads constructor(
                 return
             }
 
-            val nextChapterPos = chapters.value.getOrNull(chapterIndex + 1)?.start ?: pos.value
+            val nextChapter = chapters.value.getOrNull(chapterIndex + 1)
+            val nextChapterPos = nextChapter?.start ?: duration.value
 
             seekToWithText(
                 seekValue = nextChapterPos.toInt(),
                 text = activity.stringResource(AYMR.strings.player_aniskip_skip, chapter.name),
             )
+
+            if (nextChapter == null) {
+                _skipIntroText.update { _ -> null }
+                updateWaitingSkipIntro(defaultWaitingTime)
+            }
         }
     }
 
