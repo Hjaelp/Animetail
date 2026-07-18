@@ -234,6 +234,8 @@ fun GestureHandler(
                 var originalVolume = currentVolume
                 var originalMPVVolume = currentMPVVolume
                 var originalBrightness = currentBrightness
+                var gestureTriggered = false
+                val gestureTriggerThreshold = 70f
                 val brightnessGestureSens = 0.001f
                 val volumeGestureSens = 0.001f * viewModel.maxVolume
                 val mpvVolumeGestureSens = 0.001f * volumeBoostingCap
@@ -250,15 +252,22 @@ fun GestureHandler(
                         it > 0
                 }
                 detectVerticalDragGestures(
-                    onDragEnd = { startingY = 0f },
+                    onDragEnd = { startingY = 0f; gestureTriggered = false },
                     onDragStart = {
-                        startingY = 0f
+                        startingY = it.y
                         mpvVolumeStartingY = 0f
                         originalVolume = currentVolume
                         originalMPVVolume = currentMPVVolume
                         originalBrightness = currentBrightness
+                        gestureTriggered = false
                     },
                 ) { change, amount ->
+                    if (!gestureTriggered) {
+                        if (kotlin.math.abs(change.position.y - startingY) < gestureTriggerThreshold) {
+                            return@detectVerticalDragGestures
+                        }
+                        gestureTriggered = true
+                    }
                     val changeVolume: () -> Unit = {
                         if (isIncreasingVolumeBoost(amount) || isDecreasingVolumeBoost(amount)) {
                             if (mpvVolumeStartingY == 0f) {
