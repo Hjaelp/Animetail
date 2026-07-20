@@ -34,7 +34,10 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lock
@@ -98,11 +101,14 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.ui.unit.dp
 import androidx.compose.material3.Text
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.drawBehind
 
 @Suppress("CompositionLocalAllowlist")
 val LocalPlayerButtonsClickEvent = staticCompositionLocalOf { {} }
@@ -625,6 +631,41 @@ fun PlayerControls(
                         )
                     }
                 }
+            }
+        }
+
+        val seekLineVisible = gestureSeekAmount != null &&
+            !controlsShown &&
+            !seekBarShown
+
+        var seekLineProgress by remember { mutableFloatStateOf(0f) }
+        val currentSeekAmount = gestureSeekAmount
+        if (currentSeekAmount != null && duration > 0f) {
+            seekLineProgress = ((currentSeekAmount.first + currentSeekAmount.second) / duration)
+                .coerceIn(0f, 1f)
+        }
+        AnimatedVisibility(
+            visible = seekLineVisible,
+            enter = fadeIn(playerControlsEnterAnimationSpec()),
+            exit = fadeOut(playerControlsExitAnimationSpec()),
+            modifier = Modifier.fillMaxSize(),
+        ) {
+            val lineColor = MaterialTheme.colorScheme.primary
+            val lineTrackColor = Color.White.copy(alpha = 0.33f)
+            Box(modifier = Modifier.fillMaxSize()) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .fillMaxWidth()
+                        .height(4.dp)
+                        .drawBehind {
+                            drawRect(color = lineTrackColor)
+                            drawRect(
+                                color = lineColor,
+                                size = Size(size.width * seekLineProgress, size.height),
+                            )
+                        },
+                )
             }
         }
 
