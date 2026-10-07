@@ -13,6 +13,7 @@ class JellyfinInterceptor(private val apiKey: String) : Interceptor {
         // Add the User-Agent header to the original request.
         val uaRequest = originalRequest.newBuilder()
             .header("User-Agent", "Animetail v${BuildConfig.VERSION_NAME} (${BuildConfig.APPLICATION_ID})")
+            .header("Authorization", "MediaBrowser Token=\"${apiKey}\"")
             .build()
 
         // Check api keys

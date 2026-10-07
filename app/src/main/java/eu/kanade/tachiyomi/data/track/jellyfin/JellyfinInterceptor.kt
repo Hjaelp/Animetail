@@ -19,19 +19,20 @@ class JellyfinInterceptor : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         val originalRequest = chain.request()
 
+        val userId = originalRequest.url.queryParameter("userId") ?: originalRequest.url.pathSegments[1]
+        val apiKey = apiKeys[userId] ?: getApiKey(userId)?.also { apiKeys[userId] = it }
+        ?: throw IOException("Please log in through the extension")
+
         // Add the User-Agent header to the original request.
         val uaRequest = originalRequest.newBuilder()
             .header("User-Agent", "Animetail v${BuildConfig.VERSION_NAME} (${BuildConfig.APPLICATION_ID})")
+            .header("Authorization", "MediaBrowser Token=\"${apiKey}\"")
             .build()
 
         // Check api keys
         if (originalRequest.url.queryParameter("api_key") != null) {
             return chain.proceed(uaRequest)
         }
-
-        val userId = originalRequest.url.queryParameter("userId") ?: originalRequest.url.pathSegments[1]
-        val apiKey = apiKeys[userId] ?: getApiKey(userId)?.also { apiKeys[userId] = it }
-            ?: throw IOException("Please log in through the extension")
 
         val authUrl = originalRequest.url.newBuilder()
             .addQueryParameter("api_key", apiKey)
